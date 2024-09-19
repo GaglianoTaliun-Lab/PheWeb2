@@ -18,6 +18,7 @@
                     <v-list-item link variant="plain" @click="selectContent('ContinuousPhenotype')" subtitle="4.3 Selecting Continuous Phenotype"></v-list-item>
                     <v-list-item link variant="plain" @click="selectContent('Regenie')" subtitle="4.4 Association Model (Regenie)"></v-list-item>
                     <v-list-item link variant="plain" @click="selectContent('PheWeb')" title="5. PheWeb"></v-list-item>
+                    <v-list-item link variant="plain" @click="selectContent('UpdateHistory')" title="6. Update History"></v-list-item>
                     <v-list-item link variant="plain" @click="selectContent('Acknowledgements')" title="Acknowledgements"></v-list-item>
 
                 </v-navigation-drawer>
@@ -217,6 +218,25 @@
                     <div v-if="selectedContent === 'PheWeb'" id="PheWeb"> 
                         <p>The CLSA PheWeb is built on the Vue.js platform</p>
                     </div>
+                    <div v-if="selectedContent === 'UpdateHistory'" id='UpdateHistory'>
+                        <h2 class="text-center">Update History</h2>
+                        <hr>
+                        <ul>
+                            <li>Added locus zoom panels for all stratifications in locus zoom region plots (09/07/2024);</li>
+                            <li>Added locus zoom panels for all stratification combinations in locus zoom PheWAS plots (09/07/2024);</li>
+                            <li>Added functionality to MAF filtering for Miami plot (07/29/2024);</li>
+                            <li>Added buttons to order 'category', 'phenotype', '# samples', '# Loci&lt;5e-8 and P-value in all phenotypes page (07/19/2024);</li>
+                            <li>Added stratification, ancestry and interaction term columns to tables (07/18/2024);</li>
+                            <li>Added functionality to allow multiple of same phenotype names, if they have unique stratification combination (07/03/2024);</li>
+                            <li>Added Miami plot functionality: allow users to choose 'male' and 'female' on page loading, if it exists (05/23/2024);</li>
+                            <li>Added drop downs, where users can alternate data on top and bottom plots, or generate simple Manhattan plot (05/20/2024);</li>
+                            <li>Added stratifications to 'all phenotypes' table as columns in all phenotypes page (05/03/2024);</li>    
+                            <li>Download button now includes stratification in all phenotypes page (04/30/2024);</li>
+                            <li>Added functionality to show all QQ plots (04/18/2024);</li>
+                        </ul>    
+
+                    </div>
+
 
                     <div v-if="selectedContent === 'Acknowledgements'"  id="Acknowledgements">
                         <h2 class="text-center">Acknowledgements</h2>
