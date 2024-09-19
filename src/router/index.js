@@ -48,7 +48,7 @@ const routes = [
     }
   },
   {
-    path: '/variant',
+    path: '/variant/:variant_id',
     name: 'Variant',
     component: Variant,
     meta: {
