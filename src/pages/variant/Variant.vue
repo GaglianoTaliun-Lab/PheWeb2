@@ -61,8 +61,8 @@
             <span style="font-weight:bold" id="clinvar-link"></span>
           </p>
         </div>
+        <PhewasPlot :variantCode=variantCode />
       </div>
-      <PhewasPlot :variantCode=variantCode />
       </v-main>
   </v-app>
 
