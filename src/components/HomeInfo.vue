@@ -17,5 +17,10 @@
 </script>
 
 <style lang="scss" scoped>
-
+    .container-fluid {
+        max-width: 1280px; /* Set the max width */
+        width: 100%;       /* Responsive width */
+        margin: 0 auto;    /* Center it horizontally */
+        padding: 1rem;     /* Add padding for some space around the container */
+    }
 </style>

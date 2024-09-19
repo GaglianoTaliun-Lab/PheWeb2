@@ -1,21 +1,17 @@
 <template >
-  <v-app >
+  <v-app>
     <Navbar2 />
-    <v-main class="home">
-      <div>
+    <v-main class="centered-content">
         <img src="../../assets/CLSA_logo.png" class="img-fluid mb-3 custom-img" alt="...">
         <div class="container-fluid mb-3">
           <h1 class="fw-bold">{{appTitle}}</h1>
           <small class="text-body-secondary">{{appSubtitle}}</small>
         </div>
-        <div>
-          <SearchBox />
-          <Home_info />
-        </div>
+        <SearchBox />
+        <HomeInfo />
         <v-card elevation="0" variant="plain" style="position: relative; bottom: 5%; margin-top: 10%;" >
           <Acknowledge_Image />
         </v-card>
-      </div>
     </v-main>
   </v-app>
 </template>
@@ -23,7 +19,7 @@
 
 <script setup name="Home">
   import { ref } from 'vue'
-  import Home_info from '../../components/HomeInfo.vue';
+  import HomeInfo from '../../components/HomeInfo.vue';
   import SearchBox from '../../components/SearchBox.vue';
   import Acknowledge_Image from '../../components/AcknowledgeImage.vue';
   import Navbar2 from '../../components/Navbar2.vue';
@@ -34,7 +30,15 @@
 </script>
 
    
-<style scoped>
+<style>
+
+.centered-content {
+  max-width:fit-content;
+  margin-inline: auto;
+  text-align: center;
+  padding: 2rem;
+}
+
 .custom-img {
   width: 200px; 
   height: auto; 

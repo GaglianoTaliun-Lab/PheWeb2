@@ -1,12 +1,12 @@
 <template>
-    <v-app-bar app fixed elevation="0" style="width: 95%; margin-left: 2%;" >
+    <v-app-bar app fixed elevation="0" style="width: 100%;" >
       <v-row align="center" justify="space-between">
-        <v-col cols="auto">
+        <v-col cols="auto" style="margin-left:2%">
             <router-link :to="{ name: 'Home' }" tag="v-btn" icon="$vuetify">
                     <img src="../assets/favicon.svg" alt="Icon" class="custom-icon">
             </router-link>
         </v-col>
-        <v-row align="center" justify="end">
+        <v-row align="center" justify="end" style="margin-right:2%">
           <v-col cols="auto">
             <v-btn text variant="plain" class="custom-btn" :to="{ name: 'Phenotypes' }">Phenotypes</v-btn>
           </v-col>

@@ -17,6 +17,7 @@ import { faSearch } from '@fortawesome/free-solid-svg-icons';
 </script>
 
 <style lang="scss" scoped>
+
 .custom-input {
   transition: box-shadow 0.3s ease, border-color 0.3s ease; 
   box-shadow: none; 
