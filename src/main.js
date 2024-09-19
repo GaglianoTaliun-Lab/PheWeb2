@@ -1,17 +1,9 @@
 import { createApp } from 'vue'
-import './style.css'
 import App from './App.vue'
 import router from './router/index'
 
 // Import our custom CSS
 import './scss/styles.scss'
-// Import all of Bootstrap's JS
-import * as bootstrap from 'bootstrap'
-import Alert from 'bootstrap/js/dist/alert';
-// or, specify which plugins you need:
-import { Tooltip, Toast, Popover } from 'bootstrap';
-// Import the FontAwesome core
-import { library } from '@fortawesome/fontawesome-svg-core'
 // Import the FontAwesome icon component
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 // Vuetify

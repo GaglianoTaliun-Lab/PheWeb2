@@ -1,9 +1,10 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import Home from '../pages/home/home.vue'; 
-import About from '../pages/about/about.vue';
-import Phenotypes from '../pages/phenotypes/phenotypes.vue';
-import Random from '../pages/random/random.vue';
-import Tophits from '../pages/tophits/tophits.vue';
+import Home from '../pages/home/Home.vue'; 
+import About from '../pages/about/About.vue';
+import Phenotypes from '../pages/phenotypes/Phenotypes.vue';
+import Random from '../pages/random/Random.vue';
+import Tophits from '../pages/tophits/TopHits.vue';
+import Variant from '../pages/variant/Variant.vue'
 
 const routes = [
   {
@@ -12,7 +13,6 @@ const routes = [
     component: Home,
     meta: {
       title: 'CLSA-PheWeb: Home',
-      // icon: '/path/to/home-icon.svg'
     }
   },
   {
@@ -21,7 +21,6 @@ const routes = [
     component: About,
     meta: {
       title: 'CLSA-PheWeb: About',
-      // icon: '/path/to/home-icon.svg'
     }
   },
   {
@@ -30,7 +29,6 @@ const routes = [
     component: Phenotypes,
     meta: {
       title: 'CLSA-PheWeb: Phenotypes',
-      // icon: '/path/to/home-icon.svg'
     }
   },
   {
@@ -39,7 +37,6 @@ const routes = [
     component: Random,
     meta: {
       title: 'CLSA-PheWeb: Random',
-      // icon: '/path/to/home-icon.svg'
     }
   },
   {
@@ -48,9 +45,16 @@ const routes = [
     component: Tophits,
     meta: {
       title: 'CLSA-PheWeb: Tophits',
-      // icon: '/path/to/home-icon.svg'
     }
   },
+  {
+    path: '/variant',
+    name: 'Variant',
+    component: Variant,
+    meta: {
+      title: 'CLSA-PheWeb: Variant'
+    }
+  }
 ];
 
 const router = createRouter({
