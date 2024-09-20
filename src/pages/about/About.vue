@@ -222,17 +222,17 @@
                         <h2 class="text-center">Update History</h2>
                         <hr>
                         <ul>
-                            <li>Added locus zoom panels for all stratifications in locus zoom region plots (09/07/2024);</li>
-                            <li>Added locus zoom panels for all stratification combinations in locus zoom PheWAS plots (09/07/2024);</li>
+                            <li>Added LocusZoom panels for all stratifications in LocusZoom region plots (09/07/2024);</li>
+                            <li>Added LocusZoom panels for all stratification combinations in LocusZoom PheWAS plots (09/07/2024);</li>
                             <li>Added functionality to MAF filtering for Miami plot (07/29/2024);</li>
-                            <li>Added buttons to order 'category', 'phenotype', '# samples', '# Loci&lt;5e-8 and P-value in all phenotypes page (07/19/2024);</li>
+                            <li>Added buttons to order 'category', 'phenotype', '# samples', '# Loci&lt;5e-8' and 'P-value' in all phenotypes page (07/19/2024);</li>
                             <li>Added stratification, ancestry and interaction term columns to tables (07/18/2024);</li>
                             <li>Added functionality to allow multiple of same phenotype names, if they have unique stratification combination (07/03/2024);</li>
                             <li>Added Miami plot functionality: allow users to choose 'male' and 'female' on page loading, if it exists (05/23/2024);</li>
                             <li>Added drop downs, where users can alternate data on top and bottom plots, or generate simple Manhattan plot (05/20/2024);</li>
                             <li>Added stratifications to 'all phenotypes' table as columns in all phenotypes page (05/03/2024);</li>    
                             <li>Download button now includes stratification in all phenotypes page (04/30/2024);</li>
-                            <li>Added functionality to show all QQ plots (04/18/2024);</li>
+                            <li>Added functionality to show all QQ plots (04/18/2024).</li>
                         </ul>    
 
                     </div>
