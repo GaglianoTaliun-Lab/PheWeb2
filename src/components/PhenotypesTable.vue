@@ -34,6 +34,8 @@
     import { ref, onMounted } from 'vue';
     import axios from 'axios';
 
+    const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URI
+
     const headers = ref([
       { title: 'Category', key: 'category' },
       { title: 'Phenotype', value: 'phenostring' },
@@ -52,7 +54,8 @@
 
     const fetchSampleData = async () => {
       try {
-        const response = await axios.get('../../test_data/phenotypes.json');
+        // const response = await axios.get('../../test_data/phenotypes.json');
+        const response = await axios.get(`${api}/phenotypes`)
         phenotypes.value = response.data;
       } catch (error) {
         console.error("There was an error fetching the sample data:", error);
