@@ -1,29 +1,36 @@
 <script setup>
 import LocusZoom from 'locuszoom';
 import 'locuszoom/dist/locuszoom.css';
-import { ref, onMounted } from 'vue';
-import axios from 'axios'
 import * as d3 from 'd3'
 import _ from 'underscore'
+import { onMounted } from 'vue';
 
+// TODO : This works for our purposes, but we need to investiate why it was passed as a variable in the pheweb v1.
+var lz_template = `{{#if rsid}}<strong>{{rsid}}</strong><br>{{/if}}\n
+{{#if consequence}}consequence: <strong>{{consequence}}</strong><br>{{/if}}\n
+{{#if pvalue|is_numeric}}P-value: <strong>{{pvalue|scinotation}}</strong><br>{{/if}}\n
+{{#if pval|is_numeric}}P-value: <strong>{{pval|scinotation}}</strong><br>{{/if}}\n
+{{#if beta}}Beta: <strong>{{beta}}</strong>{{#if sebeta|is_numeric}} (se:<strong>{{sebeta}}</strong>){{/if}}<br>{{/if}}\n
+{{#if or}}Odds Ratio: <strong>{{or}}</strong><br>{{/if}}\n
+{{#if maf}}MAF: <strong>{{maf|percent}}</strong><br>{{/if}}\n
+{{#if af}}AF: <strong>{{af|percent}}</strong><br>{{/if}}\n
+{{#if case_af}}AF among cases: <strong>{{case_af|percent}}</strong><br>{{/if}}\n
+{{#if control_af}}AF among controls: <strong>{{control_af|percent}}</strong><br>{{/if}}\n
+{{#if ac}}AC: <strong>{{ac}}</strong><br>{{/if}}\n
+{{#if r2}}R2: <strong>{{r2}}</strong><br>{{/if}}\n
+{{#if tstat}}Tstat: <strong>{{tstat}}</strong><br>{{/if}}\n
+{{#if num_cases}}#cases: <strong>{{num_cases}}</strong><br>{{/if}}\n
+{{#if num_controls}}#controls: <strong>{{num_controls}}</strong><br>{{/if}}\n
+{{#if num_samples}}#samples: <strong>{{num_samples}}</strong><br>{{/if}}\n`
 
-//example from pheweb backend
+// TODO: need to get URL prefix dynamically
+var url_prefix = "http://localhost:8090"
+
 const props = defineProps({
-    variantCode : String
-})
-
-const info = ref(null);
-
-// TODO: do not recall the api. Pass in the variant data instead ? 
-onMounted(async () => {
-    try {
-      const response = await axios.get("http://localhost:5001/api/variant/" + props.variantCode)
-      info.value = response
-      generatePlot(info.value.data)
-    }
-    catch (error) {
-      console.log(error)
-    }
+    variantList: {
+        type : Array,
+        required : true,
+    },
 });
 
 function custom_LocusZoom_Layouts_get(layout_type, layout_name, customizations) {
@@ -37,7 +44,6 @@ function custom_LocusZoom_Layouts_get(layout_type, layout_name, customizations) 
             var key_parts = key.split(".");
             var obj = layout;
             for (var i=0; i < key_parts.length-1; i++) {
-                // TODO: check that `obj` contains `key_parts[i]`
                 obj = obj[key_parts[i]];
             }
             obj[key_parts[key_parts.length-1]] = value;
@@ -72,9 +78,24 @@ LocusZoom.ScaleFunctions.add("effect_direction", function(parameters, input){
     return null;
 });
 
+function reorderListByValues(dictList, orderedValues, key = 'id') {
+    const dictMap = dictList.reduce((map, obj) => {
+        map[obj[key]] = obj;
+        return map;
+    }, {});
+
+    return orderedValues.map(value => dictMap[value]);
+}
+
 function generatePlot(variant_list){
 
+
     variant_list = JSON.parse(JSON.stringify(variant_list))
+
+    // TODO: accept an argument for order of plots maybe, right now assume : Combined, Female, Male:
+    var order = ['.European.Combined', '.European.Female', '.European.Male']
+
+    variant_list = reorderListByValues(variant_list, order, 'stratification')
 
     var best_neglog10_pval = 0;
 
@@ -106,6 +127,7 @@ function generatePlot(variant_list){
               global_panels = global_panels.concat(panels)
             } 
             var panel = global_panels.shift();
+
 
             // Override all parsing, namespacing, and field extraction mechanisms, and load data embedded within the page
             trans = trans || [];
@@ -211,12 +233,17 @@ function generatePlot(variant_list){
     .add("phewas", ["PheWebSource", {url: '/this/is/not/used'}])
 
     variant_list.forEach((variant,i) => {
+
         panel_list.push(
+            
             custom_LocusZoom_Layouts_get('panel', 'phewas', {
+                title: { 
+                    text: variant_list[i].stratification.split('.').slice(1).join(', '),
+                    x: 50
+                },
                 id: i.toString(),
-                title: { text: variant_list[i].stratification.split('.').slice(1).join(', ') },
                 min_width: 640, // feels reasonable to me
-                margin: { top: 20, right: 40, bottom: 120, left: 50 },
+                margin: { top: 40, right: 40, bottom: 120, left: 50 },
                 data_layers: [
                     LocusZoom.Layouts.get('data_layer', 'significance', {
                         unnamespaced: true,
@@ -252,11 +279,9 @@ function generatePlot(variant_list){
                         "x_axis.min_extent": [-1, variant_list[i].phenos.length], // a little x-padding so that no points intersect the edge
 
                         "tooltip.closable": false,
-                        // TODO: fix me!
                         "tooltip.html": ("<div><strong>{{phewas_string}}</strong></div>\n" +
-                                          "<div><strong style='color:{{color}}'>{{category_name}}</strong></div>\n"
-                                        ),
-                        //                  window.model.tooltip_lztemplate),
+                                          "<div><strong style='color:{{color}}'>{{category_name}}</strong></div>\n" +
+                                          lz_template),
     
                         // Show labels that are: in the top 10, and (by neglog10) >=75% of sig threshold, and >=25% of best
                         "label.text": "{{phewas_string}}",
@@ -271,7 +296,7 @@ function generatePlot(variant_list){
                             return ret;
                         })(),
                         // TODO: fix this!
-                        //"behaviors.onclick": [{action:"link", href:window.model.urlprefix+"/pheno/{{phewas_code}}"}],
+                        "behaviors.onclick": [{action:"link", href:url_prefix+"/pheno/{{phewas_code}}"}],
                     }),
                 ],
     
@@ -306,9 +331,15 @@ function generatePlot(variant_list){
         panels: panel_list,
     };
 
-    console.log(data_sources, layout)
-    return(LocusZoom.populate("#phewas_plot_container", data_sources, layout));
+    var plot = LocusZoom.populate("#phewas_plot_container", data_sources, layout);
+
+    return;
 }
+
+onMounted(() => {
+    generatePlot(props.variantList)
+});
+
 </script>
 
 <template>

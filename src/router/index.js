@@ -4,7 +4,8 @@ import About from '../pages/about/About.vue';
 import Phenotypes from '../pages/phenotypes/Phenotypes.vue';
 import Random from '../pages/random/Random.vue';
 import Tophits from '../pages/tophits/TopHits.vue';
-import Variant from '../pages/variant/Variant.vue'
+import Variant from '../pages/variant/Variant.vue';
+import Pheno from '../pages/pheno/Pheno.vue';
 
 const routes = [
   {
@@ -53,6 +54,14 @@ const routes = [
     component: Variant,
     meta: {
       title: 'CLSA-PheWeb: Variant'
+    }
+  },
+  {
+    path: '/pheno/:phenocode',
+    name: 'Pheno',
+    component: Pheno,
+    meta: {
+      title: 'CLSA-PheWeb: Pheno'
     }
   }
 ];

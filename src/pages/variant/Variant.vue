@@ -1,35 +1,37 @@
 <script setup name="Variant">
-  import axios from 'axios'
+  import axios from 'axios';
   import { ref, onMounted } from 'vue';
-  import { useRoute } from 'vue-router'
+  import { useRoute } from 'vue-router';
 
-  import {maf_range} from './Variant.js'
+  import {maf_range} from './Variant.js';
  
   import Navbar2 from '../../components/Navbar2.vue';
-  import PhewasPlot from '../../components/PhewasPlot.vue'
+  import PhewasPlot from '../../components/PhewasPlot.vue';
 
   // TODO: remove this eventually, should be global
-  var HG_BUILD_NUMBER = "38"
+  var HG_BUILD_NUMBER = "38";
 
-  const route = useRoute()
+  const route = useRoute();
 
-  const variantCode = route.params.variant_id
+  const variantCode = route.params.variant_id;
   const info = ref(null);
-  var maf_text = ref(null)
-  var variant = ref(null)
-  var rsids = ref(null)
+  var maf_text = ref(null);
+  var variant = ref(null);
+  var rsids = ref(null);
+  var variantList = ref(null);
 
   onMounted(async () => {
     try {
-      const response = await axios.get("http://localhost:5001/api/variant/" + variantCode)
-      info.value = response
+      const response = await axios.get("http://localhost:5001/api/variant/" + variantCode);
+      info.value = response;
+      variantList = info.value.data;
 
-      maf_text = maf_range(info.value.data)
-      variant = info.value.data[0]
+      maf_text = maf_range(info.value.data);
+      variant = info.value.data[0];
       rsids = variant.rsids ? variant.rsids.split(',') : [];
     }
     catch (error) {
-      console.log(error)
+      console.log(error);
     }
   });
 
@@ -61,7 +63,9 @@
             <span style="font-weight:bold" id="clinvar-link"></span>
           </p>
         </div>
-        <PhewasPlot :variantCode=variantCode />
+        <div v-if="variantList">
+          <PhewasPlot :variantList=variantList />
+        </div>
       </div>
       </v-main>
   </v-app>
