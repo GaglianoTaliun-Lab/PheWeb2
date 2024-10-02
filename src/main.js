@@ -4,6 +4,9 @@ import router from './router/index'
 
 // Import our custom CSS
 import './scss/styles.scss'
+// Bootstrap css library
+import "bootstrap/dist/css/bootstrap.min.css"
+import "bootstrap"
 // Import the FontAwesome icon component
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 // Vuetify

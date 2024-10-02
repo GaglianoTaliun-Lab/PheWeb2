@@ -14,13 +14,13 @@
         </template>
 
         <v-data-table
-        :items="phenotypes" 
-        :headers="headers"
-        :search="search"
-        height="800"
-        fixed-header
-        :items-per-page="100"
-        hover
+          :items="phenotypes" 
+          :headers="headers"
+          :search="search"
+          height="800"
+          fixed-header
+          :items-per-page="100"
+          hover
         >   
         <template v-slot:item.phenostring="{ item }">
             <a :href="`/phenotypes/${item.phenostring}`" target="_blank">{{ item.phenostring }}</a>
