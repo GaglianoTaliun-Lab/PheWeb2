@@ -22,9 +22,9 @@
 
   onMounted(async () => {
     try {
-      const response = await axios.get("http://localhost:5001/api/variant/" + variantCode);
+      const response = await axios.get("http://localhost:9099/variant/" + variantCode);
       info.value = response;
-      variantList = info.value.data;
+      variantList = info.val.data;
 
       maf_text = maf_range(info.value.data);
       variant = info.value.data[0];

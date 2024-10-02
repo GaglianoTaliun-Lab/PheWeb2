@@ -52,7 +52,7 @@
 
     const fetchSampleData = async () => {
       try {
-        const response = await axios.get('../../test_data/phenotypes.json');
+        const response = await axios.get('http://127.0.0.1:9099/phenotypes');
         phenotypes.value = response.data;
       } catch (error) {
         console.error("There was an error fetching the sample data:", error);

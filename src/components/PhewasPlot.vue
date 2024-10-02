@@ -5,7 +5,7 @@ import * as d3 from 'd3'
 import _ from 'underscore'
 import { onMounted } from 'vue';
 
-// TODO : This works for our purposes, but we need to investiate why it was passed as a variable in the pheweb v1.
+// TODO : This works for our purposes, but we need to investigate why it was passed as a variable in the pheweb v1.
 var lz_template = `{{#if rsid}}<strong>{{rsid}}</strong><br>{{/if}}\n
 {{#if consequence}}consequence: <strong>{{consequence}}</strong><br>{{/if}}\n
 {{#if pvalue|is_numeric}}P-value: <strong>{{pvalue|scinotation}}</strong><br>{{/if}}\n
