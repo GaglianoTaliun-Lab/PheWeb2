@@ -21,12 +21,16 @@ const info = ref(null);
 const qq_data = ref(null);
 const dimension = ref(null);
 
+const refreshKey = ref(0)
+
 const plottingData = ref({});
 const miamiData = ref([]);
 const manhattanData = ref({});
 
 const selectedStratification1 = ref('');
 const selectedStratification2 = ref('');
+
+const sampleSizeLabel = ref({})
 
 const miamiToggle = ref(true);
 
@@ -44,8 +48,18 @@ onMounted(async () => {
       selectedStratification1.value = stratificationsToKey(info.value[1].phenocode, info.value[1].stratification)
       selectedStratification2.value = stratificationsToKey(info.value[1].phenocode, info.value[2].stratification)
 
-        // call plotting function
-        handleRadioChange();
+      // set sample size labels (case controls, etc.) for future use
+      info.value.forEach(pheno => {
+        const key = stratificationsToKey(pheno.phenocode, pheno.stratification);
+        if (pheno.num_cases !== "" && pheno.num_controls !== "") {
+          sampleSizeLabel.value[key] = `${pheno.num_cases} cases, ${pheno.num_controls} controls`;
+        } else {
+          sampleSizeLabel.value[key] = `${pheno.num_samples} samples`;
+        }
+      });
+
+      // call plotting function
+      handleRadioChange();
     }
     catch (error) {
       console.log(error);
@@ -54,8 +68,6 @@ onMounted(async () => {
 
 // this function will just change a value that determins if a manhattan or miami plot is generated
 const handleRadioChange = () => {
-  console.log('Selected value 1:', selectedStratification1.value);
-  console.log('Selected value 2:', selectedStratification2.value);
 
   if (selectedStratification2.value === "None"){
     miamiToggle.value = false;
@@ -64,6 +76,8 @@ const handleRadioChange = () => {
     miamiToggle.value = true;
     miamiData.value = [plottingData.value[selectedStratification1.value], plottingData.value[selectedStratification2.value]]
   }
+
+  refreshKey.value += 1
 };
 
 const stratificationsToLabel = (strats) => {
@@ -74,29 +88,33 @@ const stratificationsToKey = (phenocode, strats) => {
     return functions.stratificationToKey(phenocode, strats);
 }
 
+const keyToLabel = (phenoLabel) => {
+  return functions.keyToLabel(phenoLabel);
+}
+
 
 function calculate_qq_dimension(combined_data){
 
-var height = 0
-var width = 0
-var dimensions = [height, width]
-for (var qq_data of combined_data){
-    qq_data.by_maf.forEach(function(data){
+  var height = 0
+  var width = 0
+  var dimensions = [height, width]
+  for (var qq_data of combined_data){
+      qq_data.by_maf.forEach(function(data){
 
-        //the last one will always be the one to increase the figure size
-        var max_height = data.qq.bins[data.qq.bins.length - 1][1]
-        var max_width = data.qq.bins[data.qq.bins.length - 1][0]
+          //the last one will always be the one to increase the figure size
+          var max_height = data.qq.bins[data.qq.bins.length - 1][1]
+          var max_width = data.qq.bins[data.qq.bins.length - 1][0]
 
-        if (dimensions[0] < max_height)
-            dimensions[0] = max_height;
+          if (dimensions[0] < max_height)
+              dimensions[0] = max_height;
 
-        if (dimensions[1] < max_width)
-            dimensions[1] = max_width;
-    });
+          if (dimensions[1] < max_width)
+              dimensions[1] = max_width;
+      });
 
-}
+  }
 
-return dimensions
+  return dimensions
 }
 
 async function generateQQs(phenocodes){
@@ -127,7 +145,6 @@ async function fetchPlottingData(phenocodes){
     }
 
     plottingData.value = pheno_data_temp;
-    console.log(plottingData.value)
 }
 
 
@@ -141,7 +158,7 @@ async function fetchPlottingData(phenocodes){
             <div class="pheno-info col-12">
                 <!-- TODO: needs to start on female male, not indices 2 and 1 -->
                 <div class="dropdown p-1" id="dropdown-data1">
-                    <button class="btn btn-primary btn-drop" id="button-data1">Select Data 1<span class="arrow-container"><span class="arrow-down"></span></span></button>
+                    <button class="btn btn-primary btn-drop" id="button-data1">{{keyToLabel(selectedStratification1) + " (" + sampleSizeLabel[selectedStratification1] + ")"}}<span class="arrow-container"><span class="arrow-down"></span></span></button>
                     <div class="dropdown-menu" id="dropdown-content-data1">
                         <label v-for="(pheno, index) in info" >
                             <input 
@@ -151,12 +168,12 @@ async function fetchPlottingData(phenocodes){
                             :name="pheno.phenocode + '1'" 
                             v-model="selectedStratification1"
                             @change="handleRadioChange">
-                            {{ stratificationsToLabel(pheno.stratification) }} 
+                            {{ stratificationsToLabel(pheno.stratification) + " (" + sampleSizeLabel[selectedStratification1] + ")"}} 
                         </label> 
                     </div>
                   </div>
-                  <div class="dropdown" id="dropdown-data2">
-                    <button class="btn btn-primary btn-drop" id="button-data2">Select Data 2<span class="arrow-container"><span class="arrow-down"></span></span></button>
+                  <div class="dropdown p-1" id="dropdown-data2">
+                    <button class="btn btn-primary btn-drop" id="button-data2"> {{keyToLabel(selectedStratification2) + " (" + sampleSizeLabel[selectedStratification2] + ")"}} <span class="arrow-container"><span class="arrow-down"></span></span></button>
                     <div class="dropdown-menu" id="dropdown-content-data2">
                         <label v-for="(pheno, index) in info" >
                             <input 
@@ -166,7 +183,7 @@ async function fetchPlottingData(phenocodes){
                             :name="pheno.phenocode + '2'"
                             v-model="selectedStratification2"
                             @change="handleRadioChange"> 
-                            {{ stratificationsToLabel(pheno.stratification) }} 
+                            {{ stratificationsToLabel(pheno.stratification) + " (" + sampleSizeLabel[selectedStratification2] + ")" }} 
                         </label>
                         <label v-if="info">
                             <input type="radio" value="None" :name="info[0].phenocode + '2'" @change="handleRadioChange"> None
@@ -185,10 +202,10 @@ async function fetchPlottingData(phenocodes){
                   </div>
             </div> 
             <div v-if="miamiToggle && miamiData.length != []">
-                <MiamiPlot :data="miamiData"/>
+                <MiamiPlot :key="refreshKey" :data="miamiData"/>
             </div>
             <div v-else-if="!miamiToggle && manhattanData != {}">
-                <ManhattanPlot :data="manhattanData"/>
+                <ManhattanPlot :key="refreshKey" :data="manhattanData"/>
             </div>
             <br>
             <h2> Top Loci: </h2>

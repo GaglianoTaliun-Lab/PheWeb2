@@ -16,6 +16,10 @@ export function stratificationToKey(phenocode, stratification){
     return(label)
 }
 
+export function keyToLabel(phenoLabel){
+    return phenoLabel.split(".").slice(1).join(', ')
+}
+
 function capitalizeFirstLetter(str) {
     if (!str) return str; // Return if the string is empty or null
     return str.charAt(0).toUpperCase() + str.slice(1);
