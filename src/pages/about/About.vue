@@ -145,8 +145,10 @@
                         </ol>
                         <p>These steps resulted in 24,505 individuals in the European subset for analysis.</p>
                         <br/>
+                        <!-- Insert the image here -->
                         <v-card>
                             <b>Figure 1.</b>CLSA sample's with inferred European ancestry projected onto the HGDP and 1KG's PCA space.
+                            <img src="../../assets/pca.png" alt="Figure 1 - PCA Projection" class="img-fluid mt-3" />
                         </v-card>
                     </div>
 
@@ -163,6 +165,7 @@
                         <br>
                         <v-card>
                             <b>Figure 2.</b>Flow chart of filtering criteria for binary variables.
+                            <img src="../../assets/binary_diagram.png" alt="Figure 2 - Binary Diagram" class="img-fluid mt-3" />
                         </v-card>
                     </div>
 
@@ -181,6 +184,7 @@
                         <br>
                         <v-card>
                             <b>Figure 3.</b>Flow chart of filtering criteria for continuous variables.
+                            <img src="../../assets/continuous_diagram.png" alt="Figure 3 - Continuous Diagram" class="img-fluid mt-3" />
                         </v-card>
                     </div>
 
