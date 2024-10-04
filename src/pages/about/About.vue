@@ -95,7 +95,7 @@
                             height="300"
                             >
                             <template v-slot:item.snp="{ value }">
-                                <v-chip :color="getColor(value)">
+                                <v-chip>
                                     {{ value }}
                                 </v-chip>
                             </template>
@@ -207,7 +207,7 @@
                             height="300"
                             >
                             <template v-slot:item.snp="{ value }">
-                                <v-chip :color="getColor(value)">
+                                <v-chip>
                                     {{ value }}
                                 </v-chip>
                             </template>
@@ -330,11 +330,7 @@
         { chr: 'X', snp: 7860},
     ]
 
-    function getColor(value) {
-        if (value > 30000) return 'red';
-        else if (value > 10000) return 'orange';
-        else return 'green';
-    }
+
 </script>
 
 <style scoped>
