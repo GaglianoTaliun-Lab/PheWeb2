@@ -56,15 +56,14 @@
                     <div v-if="selectedContent === 'Pre-LiftOver'" id="Pre-LiftOver">
                         <h3>Pre-LiftOver Filtering</h3>
                         <hr>
-                        <p>Before liftOver, we applied the CLSA's quality checks for marker and sample quality control.</p>
-                        <p>Speficially, the CLSA filtered out variants with:</p>
+                        <p>CLSA flagged variants that may have low quality due to:</p>
                         <ol>
                             <li>Batch Discordance</li>
                             <li>Hardy-Weinberg Discordance (p < 3.15e-10)</li>
                             <li>Control Genotype Discordance </li>
                             <li>Sex Discordance</li>
                         </ol>
-                        <p>These filters removed 131,892 variants, keeping 662,517.</p>
+                        <p>Before liftOver, we removed these flagged variants. This filter removed 131,892 variants, resulting in 662,517 kept.</p>
                         <p>With regard to sample quality control, we removed samples:</p>
                         <ol>
                             <li>Identified as an outlier in relation to heterozygosity or genotype missingness</li>
@@ -115,14 +114,14 @@
                         <h2 class="text-center">TOPMed Imputation</h2>
                         <hr>
                         <p>Genotype imputation is a computational method to infer genotypes at genetic variants that are not directly capture by the genotype array, but are present in reference whole-genome sequences.</p>
-                        <p>Genotype imputation was carried out by the CLSA, and <a href="https://www.nhlbi.nih.gov/science/trans-omics-precision-medicine-topmed-program" target="_blank"></a>TOPMed was used as a reference panel.</p>
-                        <p>As input to the imputation process, the CLSA team used all 26,622 participants and 716,347 genetic variants that:</p>
+                        <p>Genotype imputation was carried out by the CLSA, and <a href="https://www.nhlbi.nih.gov/science/trans-omics-precision-medicine-topmed-program" target="_blank"></a>TOPMed version r2 was used as a reference panel.</p>
+                        <p>As input to the imputation process, the CLSA team used all 26,622 participants and 716,347 genotyped variants that:</p>
                         <ol>
                             <li>Pass all tests (no discordance from genotype frequency, no departure form HWE, no discordance from controls, no discordance in genotype frequency between males and females).</li>
                             <li>Genotype missingness of < 0.05</li>
                             <li>MAF > 0.0001</li>
                         </ol>
-                        <p>The CLSA team used the TOPMed reference panel version r2, containing 97,256 reference samples with 308,107,085 genetic markers. EAGLE2 and Minimac where used to pre-phase and impute the genotyping data. </p>
+                        <p>The TOPMed reference panel version r2, contains 97,256 reference samples belonging to diverse genetic ancestries and 308,107,085 genetic variants. EAGLE2 and Minimac where used to pre-phase and impute the genotyping data. </p>
                     </div>
 
                     <!-- Single variant genome-wide association analyses across the phenome -->
