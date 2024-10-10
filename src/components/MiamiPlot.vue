@@ -52,13 +52,66 @@ onMounted(() => {
     )
 });
 
+const downloadSVG = () => {
+  // svg to string
+  const svg = miamiPlotContainer.value.querySelector('svg');
+  const serializer = new XMLSerializer();
+  const svgString = serializer.serializeToString(svg);
+
+  // blob is a format that will allow it to be downloaded
+  const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+
+  // Create a download link
+  const url = URL.createObjectURL(blob);
+  const downloadLink = document.createElement('a');
+  downloadLink.href = url;
+  downloadLink.download = 'image.svg';
+
+  // hacky way to rigger download
+  document.body.appendChild(downloadLink);
+  downloadLink.click();
+  document.body.removeChild(downloadLink);
+  URL.revokeObjectURL(url);  // Clean up
+};
+
+const downloadPNG = () => {
+    // I can probably do when done calling createMiamiPlot so that I don't have to redo..
+  const svg = miamiPlotContainer.value.querySelector('svg');
+  const serializer = new XMLSerializer();
+  const svgString = serializer.serializeToString(svg);
+
+  const img = new Image();
+  const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+  const url = URL.createObjectURL(svgBlob);
+
+  img.onload = () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = svg.width.baseVal.value;
+    canvas.height = svg.height.baseVal.value;
+    const context = canvas.getContext('2d');
+
+    context.drawImage(img, 0, 0);
+
+    const pngUrl = canvas.toDataURL('image/png');
+    const downloadLink = document.createElement('a');
+    downloadLink.href = pngUrl;
+    downloadLink.download = 'image.png';
+
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
+    URL.revokeObjectURL(url); 
+  };
+
+  img.src = url;
+};
+
 function fmt(format) {
     var args = Array.prototype.slice.call(arguments, 1);
     return format.replace(/{(\d+)}/g, function(match, number) {
         return (typeof args[number] != 'undefined') ? args[number] : match;
     });
 }
-
 
 function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, variant_unbinned2, label1 = "Data 1", label2 = "Data 2"){
 
@@ -815,13 +868,21 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
 
 
 <template>
-    <div>
-        <!-- {{ data }} -->
+    <div class="shadow-sm border rounded mt-5 mb-5">
+        <div class="float-end">
+            <button type="button" class="btn btn-light border mt-2 mr-2 bg-body rounded " @click="downloadPNG">Download PNG</button>
+            <button type="button" class="btn btn-light border mt-2 mr-2 bg-body rounded " @click="downloadSVG">Download SVG</button>
+        </div>
         <div class="miami" ref="miamiPlotContainer"></div>
     </div>
 </template>
 
 <style lang="scss">
+
+
+.btn:hover {
+    background-color: #f0f0f0 !important;
+}
 
 .miami div {
     min-width: 100%;
@@ -831,11 +892,11 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
 .d3-tip {
     line-height: 1.5;
     padding: 8px;
-    background-color: #333; /* Tooltip background color */
-    color: #fff; /* Tooltip text color */
-    border-radius: 4px; /* Rounded corners */
+    background-color: #333;
+    color: #fff; 
+    border-radius: 4px; 
     font-size: 12px;
-    box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3); /* Add shadow */
-    pointer-events: none; /* Prevent tooltip from blocking mouse interactions */
+    box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3); 
+    pointer-events: none;
 }
 </style>

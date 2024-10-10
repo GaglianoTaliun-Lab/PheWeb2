@@ -34,8 +34,6 @@ const sampleSizeLabel = ref({})
 
 const miamiToggle = ref(true);
 
-
-// TODO : call the API and use logic to determine whether to display miami or manhattan plot, pass through data
 onMounted(async () => {
     try {
       const response = await axios.get("http://localhost:9099/phenolist/" + phenocode);
@@ -52,9 +50,9 @@ onMounted(async () => {
       info.value.forEach(pheno => {
         const key = stratificationsToKey(pheno.phenocode, pheno.stratification);
         if (pheno.num_cases !== "" && pheno.num_controls !== "") {
-          sampleSizeLabel.value[key] = `${pheno.num_cases} cases, ${pheno.num_controls} controls`;
+          sampleSizeLabel.value[key] = `${new Intl.NumberFormat('en-US', { maximumSignificantDigits: 3 }).format( pheno.num_cases )} cases, ${new Intl.NumberFormat('en-US', { maximumSignificantDigits: 3 }).format( pheno.num_controls )} controls`;
         } else {
-          sampleSizeLabel.value[key] = `${pheno.num_samples} samples`;
+          sampleSizeLabel.value[key] = `${new Intl.NumberFormat('en-US', { maximumSignificantDigits: 3 }).format( pheno.num_samples )} samples`;
         }
       });
 
@@ -68,10 +66,11 @@ onMounted(async () => {
 
 // this function will just change a value that determins if a manhattan or miami plot is generated
 const handleRadioChange = () => {
-
+  console.log(selectedStratification2.value)
   if (selectedStratification2.value === "None"){
     miamiToggle.value = false;
     manhattanData.value = plottingData.value[selectedStratification1.value]
+    console.log(manhattanData.value)
   } else {
     miamiToggle.value = true;
     miamiData.value = [plottingData.value[selectedStratification1.value], plottingData.value[selectedStratification2.value]]
@@ -168,12 +167,13 @@ async function fetchPlottingData(phenocodes){
                             :name="pheno.phenocode + '1'" 
                             v-model="selectedStratification1"
                             @change="handleRadioChange">
-                            {{ stratificationsToLabel(pheno.stratification) + " (" + sampleSizeLabel[selectedStratification1] + ")"}} 
+                            {{ stratificationsToLabel(pheno.stratification) + " (" + sampleSizeLabel[stratificationsToKey(pheno.phenocode, pheno.stratification)] + ")"}} 
                         </label> 
                     </div>
                   </div>
                   <div class="dropdown p-1" id="dropdown-data2">
-                    <button class="btn btn-primary btn-drop" id="button-data2"> {{keyToLabel(selectedStratification2) + " (" + sampleSizeLabel[selectedStratification2] + ")"}} <span class="arrow-container"><span class="arrow-down"></span></span></button>
+                    <button v-if="selectedStratification2 == 'None'" class="btn btn-primary btn-drop" id="button-data2"> None <span class="arrow-container"><span class="arrow-down"></span></span></button>
+                    <button v-else class="btn btn-primary btn-drop" id="button-data2"> {{keyToLabel(selectedStratification2) + " (" + sampleSizeLabel[selectedStratification2] + ")"}} <span class="arrow-container"><span class="arrow-down"></span></span></button>
                     <div class="dropdown-menu" id="dropdown-content-data2">
                         <label v-for="(pheno, index) in info" >
                             <input 
@@ -183,10 +183,10 @@ async function fetchPlottingData(phenocodes){
                             :name="pheno.phenocode + '2'"
                             v-model="selectedStratification2"
                             @change="handleRadioChange"> 
-                            {{ stratificationsToLabel(pheno.stratification) + " (" + sampleSizeLabel[selectedStratification2] + ")" }} 
+                            {{ stratificationsToLabel(pheno.stratification) + " (" + sampleSizeLabel[stratificationsToKey(pheno.phenocode, pheno.stratification)] + ")" }} 
                         </label>
                         <label v-if="info">
-                            <input type="radio" value="None" :name="info[0].phenocode + '2'" @change="handleRadioChange"> None
+                            <input type="radio" value="None" :name="info[0].phenocode + '2'" v-model="selectedStratification2" @change="handleRadioChange"> None
                         </label>
                     </div>
                   </div>
