@@ -71,7 +71,7 @@
                             <li>Missing self-reported sex </li>
                             <li>Missing chromosomal sex</li>
                         </ol>
-                        <p>These filters removed 66 samples, keeping 26,563</p>
+                        <p>These filters removed 63 samples, keeping 26,559</p>
                     </div>
 
                     <div v-if="selectedContent === 'LiftOverGRCh38'" id="LiftOverGRCh38" >
