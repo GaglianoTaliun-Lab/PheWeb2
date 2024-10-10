@@ -1,4 +1,20 @@
-
 <template>
-    <router-view></router-view>
-</template>
+    <div id="app">
+      <router-view></router-view>
+      <Footer />
+    </div>
+  </template>
+  
+  <script>
+  import Footer from './components/Footer.vue';
+  
+  export default {
+    components: {
+      Footer
+    }
+  };
+  </script>
+  
+  <style>
+  /* Add any global styles here if needed */
+  </style>
