@@ -225,6 +225,8 @@
                         <h2 class="text-center">Update History</h2>
                         <hr>
                         <ul>
+                            <li>Enabled sorting and searching functionalities in the phenotypes table (10/10/2024);</li>
+                            <li>Added support to download Manhattan plot and Miami plot in PNG and SVG format (10/10/2024);</li>
                             <li>Added LocusZoom panels for all stratifications in LocusZoom region plots (09/07/2024);</li>
                             <li>Added LocusZoom panels for all stratification combinations in LocusZoom PheWAS plots (09/07/2024);</li>
                             <li>Added functionality to MAF filtering for Miami plot (07/29/2024);</li>
