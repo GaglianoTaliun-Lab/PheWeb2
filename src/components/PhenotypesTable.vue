@@ -22,8 +22,8 @@
           :items-per-page="100"
           hover
         >   
-        <template v-slot:item.phenostring="{ item }">
-            <a :href="`/phenotypes/${item.phenostring}`" target="_blank">{{ item.phenostring }}</a>
+        <template v-slot:item.phenocode="{ item }">
+            <a :href="`/pheno/${item.phenocode}`" target="_blank">{{ item.phenocode }}</a>
         </template>
         </v-data-table>
     </v-card>
@@ -38,14 +38,16 @@
 
     const headers = ref([
       { title: 'Category', key: 'category' },
-      { title: 'Phenotype', value: 'phenostring' },
-      { title: '# Samples', value: 'num_samples' },
-      { title: 'Nearest Genes', value: 'nearest_genes' },
-      { title: 'P-value', value: 'pval' },
-      { title: 'Chromosome', value: 'chrom' },
-      { title: 'Position', value: 'pos' },
-      { title: '# Loci < 5e-8', value: 'num_peaks' },
-      { title: 'Top Variant', value: 'rsids' }
+      { title: 'Phenotype', key: 'phenocode' },
+      { title: '# Samples', key: 'num_samples' },
+      { title: 'Nearest Genes', key: 'nearest_genes' },
+      { title: 'P-value', key: 'pval' },
+      { title: 'Chromosome', key: 'chrom' },
+      { title: 'Position', key: 'pos' },
+      { title: '# Loci < 5e-8', key: 'num_peaks' },
+      { title: 'Top Variant', key: 'rsids' },
+      { title: '# Peaks', key: 'num_peaks'},
+      { title: 'Stratification', key: 'stratification'}
     ]);
 
     const phenotypes = ref([]);
