@@ -15,16 +15,19 @@ import * as functions from './Pheno.js';
 const route = useRoute();
 
 const phenocode = route.params.phenocode;
+const phenostring = ref(null);
 
 const info = ref(null);
 
-const qq_data = ref(null);
-const dimension = ref(null);
+const qqData = ref({});
+const qqSubset = ref({});
+const dimension = ref([0,0]);
 
 const refreshKey = ref(0)
+const qqRefreshKey = ref(0)
 
 const plottingData = ref({});
-const miamiData = ref([]);
+const miamiData = ref({});
 const manhattanData = ref({});
 
 const selectedStratification1 = ref('');
@@ -38,6 +41,7 @@ onMounted(async () => {
     try {
       const response = await axios.get("http://localhost:9099/phenolist/" + phenocode);
       info.value = response.data;
+      phenostring.value = info.value[0].phenostring
       await generateQQs(info.value.map(pheno => pheno.phenocode+"."+Object.values(pheno.stratification).join('.') ));
       
       await fetchPlottingData(info.value.map(pheno => pheno.phenocode+"."+Object.values(pheno.stratification).join('.') ));
@@ -57,7 +61,7 @@ onMounted(async () => {
       });
 
       // call plotting function
-      handleRadioChange();
+      handleRadioChange(); 
     }
     catch (error) {
       console.log(error);
@@ -66,18 +70,35 @@ onMounted(async () => {
 
 // this function will just change a value that determins if a manhattan or miami plot is generated
 const handleRadioChange = () => {
-  console.log(selectedStratification2.value)
   if (selectedStratification2.value === "None"){
     miamiToggle.value = false;
-    manhattanData.value = plottingData.value[selectedStratification1.value]
-    console.log(manhattanData.value)
+    manhattanData.value = plottingData.value[selectedStratification1.value];
+
+    qqSubset.value = {};
+    qqSubset.value[selectedStratification1.value] = qqData.value[selectedStratification1.value];
   } else {
     miamiToggle.value = true;
-    miamiData.value = [plottingData.value[selectedStratification1.value], plottingData.value[selectedStratification2.value]]
+    miamiData.value = {}
+    miamiData.value[selectedStratification1.value] = plottingData.value[selectedStratification1.value];
+    miamiData.value[selectedStratification2.value] = plottingData.value[selectedStratification2.value];
+
+    qqSubset.value = {};
+    qqSubset.value[selectedStratification1.value] = qqData.value[selectedStratification1.value];
+    qqSubset.value[selectedStratification2.value] = qqData.value[selectedStratification2.value];
+
   }
 
-  refreshKey.value += 1
+  refreshKey.value += 1;
+  qqRefreshKey.value += 1;
 };
+
+const downloadAll = () => {
+
+}
+
+const downloadCurrent = () => {
+  
+}
 
 const stratificationsToLabel = (strats) => {
     return functions.stratificationToLabel(strats);
@@ -97,8 +118,8 @@ function calculate_qq_dimension(combined_data){
   var height = 0
   var width = 0
   var dimensions = [height, width]
-  for (var qq_data of combined_data){
-      qq_data.by_maf.forEach(function(data){
+  for (var qqData of combined_data){
+      qqData.by_maf.forEach(function(data){
 
           //the last one will always be the one to increase the figure size
           var max_height = data.qq.bins[data.qq.bins.length - 1][1]
@@ -117,18 +138,18 @@ function calculate_qq_dimension(combined_data){
 }
 
 async function generateQQs(phenocodes){
-    var qq_data_temp = []; 
+    var qqDataTemp = []; 
 
     for (const phenocode of phenocodes) {
         try {
             const response = await axios.get("http://localhost:9099/qq/" + phenocode);
-            qq_data_temp.push(response.data); 
+            qqDataTemp.push(response.data); 
+            qqData.value[phenocode] = response.data
         } catch (error) {
             console.log(`Error fetching QQ data for ${phenocode}:`, error);
         }
     }
-    dimension.value = calculate_qq_dimension(qq_data_temp);
-    qq_data.value = qq_data_temp;
+    dimension.value = calculate_qq_dimension(qqDataTemp);
 }
 
 async function fetchPlottingData(phenocodes){
@@ -153,7 +174,8 @@ async function fetchPlottingData(phenocodes){
     <v-app>
         <Navbar2 />
         <v-main>
-            <h1>{{phenocode}}</h1>
+            <h1 v-if="phenostring">{{phenocode}}: {{phenostring}}</h1>
+            <h1 v-else>{{phenocode}}</h1>
             <div class="pheno-info col-12">
                 <!-- TODO: needs to start on female male, not indices 2 and 1 -->
                 <div class="dropdown p-1" id="dropdown-data1">
@@ -196,28 +218,28 @@ async function fetchPlottingData(phenocodes){
                   <div class="dropdown float-right" id="dropdown-sumstats">
                     <button class="btn btn-primary btn-drop">  Download Summary Statistics  <span class="arrow-container"><span class="arrow-down"></span></span></button>
                     <div class="dropdown-menu dropdown-menu-right p-1" id="dropdown-content-sumstats">
-                      <button class="btn btn-secondary w-100 mt-1 mb-1"  id="download-all-button">Download All</button>
-                      <button class="btn btn-secondary w-100 mt-1 mb-1"  id="download-current-button">Download Current Selection</button>
+                      <button class="btn btn-secondary w-100 mt-1 mb-1"  id="download-all-button" @click="downloadAll">Download All</button>
+                      <button class="btn btn-secondary w-100 mt-1 mb-1"  id="download-current-button" @click="downloadCurrent">Download Current Selection</button>
                     </div>
                   </div>
             </div> 
-            <div v-if="miamiToggle && miamiData.length != []">
+            <div v-if="miamiToggle && Object.keys(miamiData).length > 0">
                 <MiamiPlot :key="refreshKey" :data="miamiData"/>
             </div>
-            <div v-else-if="!miamiToggle && manhattanData != {}">
+            <div v-else-if="!miamiToggle && Object.keys(manhattanData).length > 0">
                 <ManhattanPlot :key="refreshKey" :data="manhattanData"/>
             </div>
             <br>
             <h2> Top Loci: </h2>
             <GwasTable /> 
             <br>
-            <div v-if="qq_data && dimension"> 
+            <div v-if="qqData && dimension"> 
                 <h2> QQ Plot(s): </h2>
                 <div class="qq-container">
-                    <div class="qq" v-for="(qq, index) in qq_data" :key="index">
-                        <p>{{ Object.values(info[index].stratification).join(", ") }} </p>
+                    <div :key="qqRefreshKey" class="qq" v-for="qq in Object.keys(qqSubset)" >
+                        <p>{{ qq.split(".").slice(1).join(", ") }} </p>
                         <QQPlot :data="{
-                            qq : qq,
+                            qq : qqSubset[qq],
                             dimensions : dimension
                         }" /> 
                     </div>

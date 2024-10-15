@@ -6,10 +6,10 @@ import d3Tip from 'd3-tip';
 import _ from 'underscore'
 
 const props = defineProps({
-    data: [
-        {String : Object, String : Object},
-        {String : Object, String : Object}
-    ]
+    data: {
+        String : {String : Object, String : Object},
+        String : {String : Object, String : Object}
+    }
 });
 
 const info = ref(null);
@@ -44,11 +44,13 @@ const tooltip_underscoretemplate = `
 onMounted(() => {
     info.value = props.data
 
+    var keys = Object.keys(info.value)
+
     // TODO : change props format a bit so that we can pass labels instead of "test top" and "test bottom"
     create_miami_plot( 
-        info.value[0]['variant_bins'], info.value[0]['unbinned_variants'],
-        info.value[1]['variant_bins'], info.value[1]['unbinned_variants'],
-        "test top", "test bottom"
+        info.value[keys[0]]['variant_bins'], info.value[keys[0]]['unbinned_variants'],
+        info.value[keys[1]]['variant_bins'], info.value[keys[1]]['unbinned_variants'],
+        keys[0], keys[1]
     )
 });
 
@@ -260,26 +262,28 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
         if (includes_pval0) { max_plot_qval *= 1.1 }
         var scale = d3.scaleLinear().clamp(true);
 
-        // TODO: fix the chromosomes numbers to actually go in the middle.
+        console.log(max_plot_qval)
+        console.log(plot_height)
+
         if (direction === "upper"){
             if (max_plot_qval <= 40) {
                 scale = scale
-                    .domain([max_plot_qval, 0])
-                    .range([0, plot_height/2]); // divide by 2 for miami
+                    .domain([max_plot_qval, max_plot_qval / 10])
+                    .range([0, plot_height/2 * 0.95]); // 0.9 to leave space for chromosome numbers
             } else {
                 scale = scale
-                    .domain([max_plot_qval, max_plot_qval / 7, 0])
+                    .domain([max_plot_qval, max_plot_qval / 8, 0])
                     .range([0, plot_height/4, plot_height/2 ]); // divide by x2 for miami
             }
         } else if (direction === "lower"){
             if (max_plot_qval <= 40) {
                 scale = scale
-                    .domain([max_plot_qval, max_plot_qval * -0.14])
-                    .range([plot_height, plot_height/2]); // divide by 2 for miami
+                    .domain([max_plot_qval, max_plot_qval / 10])
+                    .range([plot_height, plot_height/2 * 1.05]); // divide by 2 for miami
             } else {
                 scale = scale
-                    .domain([max_plot_qval, max_plot_qval / 7, 0])
-                    .range([plot_height, plot_height/4 * 3, plot_height/2 + 29]); // divide by x2 for miami
+                    .domain([max_plot_qval, -max_plot_qval / 8, 0])
+                    .range([plot_height, plot_height/4 * 3, plot_height/2 ]); // divide by x2 for miami
             }
         }
 
@@ -372,6 +376,7 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
                 });
             })());
 
+        // get highest p-value between the 2 datasets
         if (!isNaN(highest_plot_qval_data2) && !isNaN(highest_plot_qval_data1)){
             var max_value = Math.max(highest_plot_qval_data2,highest_plot_qval_data1);
         } else if (isNaN(highest_plot_qval_data1)){
@@ -440,6 +445,7 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
                                     plot_height/2 + plot_margin.top))
             .text('-log\u2081\u2080(p-value)'); // Unicode subscript "10"
 
+
         var stratification_label1 = label1.split(".")
         var stratification_label2 = label2.split(".")
 
@@ -485,7 +491,7 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
                 });
             })();
             var color_by_chrom = d3.scaleOrdinal()
-            .domain(get_chrom_offsets_data2().chroms)
+            .domain(get_chrom_offsets_data1().chroms)
             .range(['rgb(160,20,20)', 'rgb(59,7,7)']);
         }
 
@@ -500,7 +506,7 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
             .attr('transform', function(d) {
                 return fmt('translate({0},{1})',
                             plot_margin.left + x_scale(d.midpoint),
-                            plot_height/2 + plot_margin.top + 20); // divide by two to have it midway
+                            svg_height/2 + 5); // divide by two to have it midway // TODO : why do I need to +5 here to have it perfectly centered??
             })
             .text(function(d) {
                 return d.chrom;
@@ -571,8 +577,8 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
             .slice(0,7);
 
         var variants_to_label_data2 = _.sortBy(_.where(variant_unbinned2, {peak: true}), _.property('pval'))
-        .filter(function(d) { return d.pval < 5e-8; })
-        .slice(0,7);
+            .filter(function(d) { return d.pval < 5e-8; })
+            .slice(0,7);
 
         var genenames_data1 = miami_plot.append('g')
             .attr('class', 'genenames_data1')
@@ -619,7 +625,7 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
             })
 
         function pp1(flip) {
-                if(flip ){
+                if(flip){
                     miami_plot.append('g')
                     .attr('class', 'variant_hover_rings')
                     .selectAll('a.variant_hover_ring')
