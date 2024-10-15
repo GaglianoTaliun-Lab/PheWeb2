@@ -34,9 +34,11 @@ const sampleSizeLabel = ref({})
 
 const miamiToggle = ref(true);
 
+const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URI
+
 onMounted(async () => {
     try {
-      const response = await axios.get("http://localhost:9099/phenolist/" + phenocode);
+      const response = await axios.get(`${api}/phenolist/` + phenocode);
       info.value = response.data;
       await generateQQs(info.value.map(pheno => pheno.phenocode+"."+Object.values(pheno.stratification).join('.') ));
       
