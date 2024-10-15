@@ -19,10 +19,11 @@
   var variant = ref(null);
   var rsids = ref(null);
   var variantList = ref(null);
+  const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URI;
 
   onMounted(async () => {
     try {
-      const response = await axios.get("http://localhost:9099/variant/" + variantCode);
+      const response = await axios.get(`${api}/variant/` + variantCode);
       info.value = response;
       variantList = info.val.data;
 

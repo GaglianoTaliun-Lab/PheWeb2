@@ -5,13 +5,6 @@ import vue from '@vitejs/plugin-vue'
 export default defineConfig({
   plugins: [vue()],
   server: {
-    port: 8090,
-    proxy: {
-      '/api': {
-        target: 'https://clsa-pheweb-dev.cerc-genomic-medicine.ca',
-        changeOrigin: true,
-        rewrite: path => path.replace(/^\/api/, '')
-      }
-    }
+    port: process.env.PORT || 8090,
   }
 })

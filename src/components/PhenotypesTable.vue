@@ -23,7 +23,15 @@
           hover
         >   
         <template v-slot:item.phenostring="{ item }">
-            <a :href="`/phenotypes/${item.phenostring}`" target="_blank">{{ item.phenostring }}</a>
+            <a :href="`/pheno/${item.phenocode}`" target="_blank">{{ item.phenostring }}</a>
+        </template>
+
+        <template v-slot:item.variantid="{ item }">
+            <a :href="`/variant/${item.variantid}`" target="_blank">{{ item.variantid }}</a>
+        </template>
+
+        <template v-slot:item.rsids="{ item }">
+            <a :href="`/URL/TO/External/Website/${item.rsids}`" target="_blank">{{ item.rsids }}</a>
         </template>
         </v-data-table>
     </v-card>
@@ -38,27 +46,40 @@
 
     const headers = ref([
       { title: 'Category', key: 'category' },
-      { title: 'Phenotype', value: 'phenostring' },
-      { title: '# Samples', value: 'num_samples' },
-      { title: 'Nearest Genes', value: 'nearest_genes' },
-      { title: 'P-value', value: 'pval' },
-      { title: 'Chromosome', value: 'chrom' },
-      { title: 'Position', value: 'pos' },
-      { title: '# Loci < 5e-8', value: 'num_peaks' },
-      { title: 'Top Variant', value: 'rsids' }
+      { title: 'Phenotype', key: 'phenostring' },
+      { title: '# Samples', key: 'num_samples' },
+      { title: 'Nearest Genes', key: 'nearest_genes' },
+      { title: 'P-value', key: 'pval' },
+      { title: 'Top Variant', key: 'variantid' },
+      { title: 'Top Variant rsid', key: 'rsids' },
+      // { title: 'Chromosome', key: 'chrom' },
+      // { title: 'Position', key: 'pos' },
+      { title: '# Loci < 5e-8', key: 'num_peaks' },
+      { title: '# Peaks', key: 'num_peaks'},
+      { title: 'Stratification', key: 'stratification'}
     ]);
 
     const phenotypes = ref([]);
+    const isLoading = ref(false);
+    const errorMessage = ref('');
 
     const search = ref('');
 
     const fetchSampleData = async () => {
+      isLoading.value = true;
+      errorMessage.value = '';
       try {
         // const response = await axios.get('../../test_data/phenotypes.json');
         const response = await axios.get(`${api}/phenotypes`)
-        phenotypes.value = response.data;
+        phenotypes.value = response.data.map(item => ({
+          ...item,
+          variantid: `${item.chrom}-${item.pos}-${item.ref}-${item.alt}`
+        }));
       } catch (error) {
         console.error("There was an error fetching the sample data:", error);
+        errorMessage.value = "Failed to load data. Please try again later.";
+      } finally {
+        isLoading.value = false;
       }
       
     };

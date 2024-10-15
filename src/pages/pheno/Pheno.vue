@@ -37,9 +37,11 @@ const sampleSizeLabel = ref({})
 
 const miamiToggle = ref(true);
 
+const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URI
+
 onMounted(async () => {
     try {
-      const response = await axios.get("http://localhost:9099/phenolist/" + phenocode);
+      const response = await axios.get(`${api}/phenolist/` + phenocode);
       info.value = response.data;
       phenostring.value = info.value[0].phenostring
       await generateQQs(info.value.map(pheno => pheno.phenocode+"."+Object.values(pheno.stratification).join('.') ));
@@ -142,7 +144,7 @@ async function generateQQs(phenocodes){
 
     for (const phenocode of phenocodes) {
         try {
-            const response = await axios.get("http://localhost:9099/qq/" + phenocode);
+            const response = await axios.get("${api}/qq/" + phenocode);
             qqDataTemp.push(response.data); 
             qqData.value[phenocode] = response.data
         } catch (error) {
@@ -157,8 +159,9 @@ async function fetchPlottingData(phenocodes){
 
     for (const phenocode of phenocodes) {
         try {
-            const response = await axios.get("http://localhost:9099/pheno/" + phenocode);
+            const response = await axios.get(`${api}/pheno/` + phenocode);
             pheno_data_temp[phenocode] = response.data ; 
+            // console.log(pheno_data_temp);
         } catch (error) {
             console.log(`Error fetching plotting data for ${phenocode}:`, error);
         }
