@@ -123,7 +123,7 @@ async function generateQQs(phenocodes){
 
     for (const phenocode of phenocodes) {
         try {
-            const response = await axios.get("http://localhost:9099/qq/" + phenocode);
+            const response = await axios.get(`${api}/qq/` + phenocode);
             qq_data_temp.push(response.data); 
         } catch (error) {
             console.log(`Error fetching QQ data for ${phenocode}:`, error);
@@ -138,8 +138,9 @@ async function fetchPlottingData(phenocodes){
 
     for (const phenocode of phenocodes) {
         try {
-            const response = await axios.get("http://localhost:9099/pheno/" + phenocode);
+            const response = await axios.get(`${api}/pheno/` + phenocode);
             pheno_data_temp[phenocode] = response.data ; 
+            // console.log(pheno_data_temp);
         } catch (error) {
             console.log(`Error fetching plotting data for ${phenocode}:`, error);
         }
