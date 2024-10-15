@@ -43,6 +43,7 @@ onMounted(async () => {
     try {
       const response = await axios.get(`${api}/phenolist/` + phenocode);
       info.value = response.data;
+      console.log(info.value)
       phenostring.value = info.value[0].phenostring
       await generateQQs(info.value.map(pheno => pheno.phenocode+"."+Object.values(pheno.stratification).join('.') ));
       
@@ -120,6 +121,9 @@ function calculate_qq_dimension(combined_data){
   var height = 0
   var width = 0
   var dimensions = [height, width]
+
+  console.log(combined_data)
+
   for (var qqData of combined_data){
       qqData.by_maf.forEach(function(data){
 
@@ -144,13 +148,16 @@ async function generateQQs(phenocodes){
 
     for (const phenocode of phenocodes) {
         try {
-            const response = await axios.get("${api}/qq/" + phenocode);
+            const response = await axios.get(`${api}/qq/` + phenocode);
             qqDataTemp.push(response.data); 
-            qqData.value[phenocode] = response.data
+            qqData.value[phenocode] = response.data;
         } catch (error) {
             console.log(`Error fetching QQ data for ${phenocode}:`, error);
         }
     }
+
+    console.log(qqDataTemp)
+
     dimension.value = calculate_qq_dimension(qqDataTemp);
 }
 
