@@ -19,7 +19,7 @@
   var variant = ref(null);
   var rsids = ref(null);
   var variantList = ref(null);
-  const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URI;
+  const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URL;
 
   onMounted(async () => {
     try {

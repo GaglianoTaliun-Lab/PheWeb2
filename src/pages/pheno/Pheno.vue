@@ -37,7 +37,7 @@ const sampleSizeLabel = ref({})
 
 const miamiToggle = ref(true);
 
-const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URI
+const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URL
 
 onMounted(async () => {
     try {
