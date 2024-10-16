@@ -6,6 +6,7 @@ import Random from '../pages/random/Random.vue';
 import Tophits from '../pages/tophits/TopHits.vue';
 import Variant from '../pages/variant/Variant.vue';
 import Pheno from '../pages/pheno/Pheno.vue';
+import PhenoFilter from '../pages/pheno/PhenoFilter.vue';
 
 const routes = [
   {
@@ -62,6 +63,14 @@ const routes = [
     component: Pheno,
     meta: {
       title: 'CLSA-PheWeb: Pheno'
+    }
+  },
+  {
+    path: '/pheno-filter/:phenocode',
+    name: 'Pheno Filter',
+    component: PhenoFilter,
+    meta: {
+      title: 'CLSA-PheWeb: Pheno-Filter'
     }
   }
 ];

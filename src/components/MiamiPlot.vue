@@ -20,6 +20,8 @@ const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URI
 const route = useRoute();
 const phenocode = route.params.phenocode;
 
+// This is obviously a huge pain and mess but it works great with d3 so keep for now.
+// If someone wants to do me a favour and make it nicer, feel free.
 const tooltip_underscoretemplate = `
 <% if(_.has(d, 'chrom')) { %><b><%= d.chrom %>:<%= d.pos.toLocaleString() %> <%= d.ref %> / <%= d.alt %></b><br><% } %>
 <% if(_.has(d, 'rsids')) { %><% _.each(_.filter((d.rsids||"").split(",")), function(rsid) { %>rsid: <b><%= rsid %></b><br><% }) %><% } %>
@@ -46,12 +48,22 @@ onMounted(() => {
 
     var keys = Object.keys(info.value)
 
-    // TODO : change props format a bit so that we can pass labels instead of "test top" and "test bottom"
-    create_miami_plot( 
-        info.value[keys[0]]['variant_bins'], info.value[keys[0]]['unbinned_variants'],
-        info.value[keys[1]]['variant_bins'], info.value[keys[1]]['unbinned_variants'],
-        keys[0], keys[1]
-    )
+    // this means that the same object was passed (eurofemale and eurofemale, for example)
+    // (don't know why a user would want this... but it's better than crashing)
+    if (keys.length < 2){
+        create_miami_plot(
+            info.value[keys[0]]['variant_bins'], info.value[keys[0]]['unbinned_variants'],
+            info.value[keys[0]]['variant_bins'], info.value[keys[0]]['unbinned_variants'],
+            keys[0], keys[0]
+        )
+    } else {
+        create_miami_plot( 
+            info.value[keys[0]]['variant_bins'], info.value[keys[0]]['unbinned_variants'],
+            info.value[keys[1]]['variant_bins'], info.value[keys[1]]['unbinned_variants'],
+            keys[0], keys[1]
+        )
+    }
+
 });
 
 const downloadSVG = () => {
@@ -262,9 +274,6 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
         if (includes_pval0) { max_plot_qval *= 1.1 }
         var scale = d3.scaleLinear().clamp(true);
 
-        console.log(max_plot_qval)
-        console.log(plot_height)
-
         if (direction === "upper"){
             if (max_plot_qval <= 40) {
                 scale = scale
@@ -273,7 +282,7 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
             } else {
                 scale = scale
                     .domain([max_plot_qval, max_plot_qval / 8, 0])
-                    .range([0, plot_height/4, plot_height/2 ]); // divide by x2 for miami
+                    .range([0, plot_height/4, plot_height/2 * 0.95]); // divide by x2 for miami
             }
         } else if (direction === "lower"){
             if (max_plot_qval <= 40) {
@@ -282,8 +291,8 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
                     .range([plot_height, plot_height/2 * 1.05]); // divide by 2 for miami
             } else {
                 scale = scale
-                    .domain([max_plot_qval, -max_plot_qval / 8, 0])
-                    .range([plot_height, plot_height/4 * 3, plot_height/2 ]); // divide by x2 for miami
+                    .domain([max_plot_qval, max_plot_qval / 8, 0])
+                    .range([plot_height, (plot_height/4) * 3, plot_height/2 * 1.05 ]); // divide by x2 for miami
             }
         }
 

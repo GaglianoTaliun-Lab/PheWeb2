@@ -24,3 +24,5 @@ function capitalizeFirstLetter(str) {
     if (!str) return str; // Return if the string is empty or null
     return str.charAt(0).toUpperCase() + str.slice(1);
 }
+
+// If datapreview portal is reachable, then we will add a link to the phenotype's page.

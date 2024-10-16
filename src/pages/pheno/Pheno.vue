@@ -3,6 +3,7 @@
 import axios from 'axios';
 import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
+import '@fortawesome/fontawesome-free/css/all.css';
 
 import Navbar2 from '../../components/Navbar2.vue';
 import ManhattanPlot from '../../components/ManhattanPlot.vue';
@@ -18,6 +19,7 @@ const phenocode = route.params.phenocode;
 const phenostring = ref(null);
 
 const info = ref(null);
+const linkUrl = ref(null)
 
 const qqData = ref({});
 const qqSubset = ref({});
@@ -26,6 +28,7 @@ const dimension = ref([0,0]);
 const refreshKey = ref(0)
 const qqRefreshKey = ref(0)
 
+const allPlottingData = ref({})
 const plottingData = ref({});
 const miamiData = ref({});
 const manhattanData = ref({});
@@ -43,11 +46,11 @@ onMounted(async () => {
     try {
       const response = await axios.get(`${api}/phenolist/` + phenocode);
       info.value = response.data;
-      console.log(info.value)
       phenostring.value = info.value[0].phenostring
       await generateQQs(info.value.map(pheno => pheno.phenocode+"."+Object.values(pheno.stratification).join('.') ));
-      
       await fetchPlottingData(info.value.map(pheno => pheno.phenocode+"."+Object.values(pheno.stratification).join('.') ));
+      
+      populateDataPreview(phenocode)
       // is this appropriate to do here?
       // again, needs to be male or female here, not 2 or 1
       selectedStratification1.value = stratificationsToKey(info.value[1].phenocode, info.value[1].stratification)
@@ -96,11 +99,63 @@ const handleRadioChange = () => {
 };
 
 const downloadAll = () => {
+  var downloads = []
 
-}
+  // get all phenocodes api calls
+  for (const pheno of info.value){
+    console.log(pheno)
+    var phenocode = stratificationsToKey(pheno.phenocode, pheno.stratification)
+    var api_link = `${api}/sumstats/${phenocode}`;
+    downloads.push({url:api_link, filename : phenocode})
+  };
+
+  console.log("downloads: ", downloads)
+
+  //without slowing it down the website would jsut download the last of the list. maybe can use async await here
+  downloads.forEach((file, index) => {
+    setTimeout(() => {
+      const a = document.createElement('a');
+      a.href = file.url;
+      a.download = file.filename;
+      console.log(a);
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }, index * 500);
+  });
+};
 
 const downloadCurrent = () => {
+  var downloads = []
   
+  downloads.push({url: `${api}/sumstats/${selectedStratification1.value}`, filename: selectedStratification1.value})
+  if (selectedStratification2.value != "None"){
+      downloads.push({url: `${api}/sumstats/${selectedStratification2.value}`, filename: selectedStratification2.value})
+  }
+  downloads.forEach((file, index) => {
+    setTimeout(() => {
+      const a = document.createElement('a');
+      a.href = file.url;
+      a.download = file.filename;
+      console.log(a);
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }, index * 500);
+  });
+}
+
+const populateDataPreview = () => {
+  try {
+    var link = "https://datapreview.clsa-elcv.ca/mica/variable/com%3A"+phenocode+"%3ACollected#/"
+    console.log(link)
+    // just checking if it's working
+    axios.get(link);
+    linkUrl.value = link;
+  }
+  catch {
+    console.log('Data preview portal is not reachable.');
+  }
 }
 
 const stratificationsToLabel = (strats) => {
@@ -121,8 +176,6 @@ function calculate_qq_dimension(combined_data){
   var height = 0
   var width = 0
   var dimensions = [height, width]
-
-  console.log(combined_data)
 
   for (var qqData of combined_data){
       qqData.by_maf.forEach(function(data){
@@ -155,9 +208,6 @@ async function generateQQs(phenocodes){
             console.log(`Error fetching QQ data for ${phenocode}:`, error);
         }
     }
-
-    console.log(qqDataTemp)
-
     dimension.value = calculate_qq_dimension(qqDataTemp);
 }
 
@@ -168,13 +218,13 @@ async function fetchPlottingData(phenocodes){
         try {
             const response = await axios.get(`${api}/pheno/` + phenocode);
             pheno_data_temp[phenocode] = response.data ; 
-            // console.log(pheno_data_temp);
         } catch (error) {
             console.log(`Error fetching plotting data for ${phenocode}:`, error);
         }
     }
-
+    allPlottingData.value = pheno_data_temp;
     plottingData.value = pheno_data_temp;
+
 }
 
 
@@ -186,7 +236,8 @@ async function fetchPlottingData(phenocodes){
         <v-main>
             <h1 v-if="phenostring">{{phenocode}}: {{phenostring}}</h1>
             <h1 v-else>{{phenocode}}</h1>
-            <div class="pheno-info col-12">
+            <a class="p-1" v-if="linkUrl" :href="linkUrl" target="_blank" rel="noopener noreferrer"><u><b>Data Preview Portal</b></u> <i class="fas fa-external-link-alt"></i></a>
+            <div class="pheno-info col-12 mt-3">
                 <!-- TODO: needs to start on female male, not indices 2 and 1 -->
                 <div class="dropdown p-1" id="dropdown-data1">
                     <button class="btn btn-primary btn-drop" id="button-data1">{{keyToLabel(selectedStratification1) + " (" + sampleSizeLabel[selectedStratification1] + ")"}}<span class="arrow-container"><span class="arrow-down"></span></span></button>
@@ -283,7 +334,7 @@ async function fetchPlottingData(phenocodes){
 
   .arrow-container {
     float: left;
-    margin-right: 10px; /* Adjust spacing as needed */
+    margin-right: 10px;
     margin-bottom: 0px;
     padding-top:3px
   }
