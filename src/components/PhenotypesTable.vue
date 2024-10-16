@@ -5,7 +5,7 @@
         <template v-slot:text>
             <v-text-field
             v-model="search"
-            label="Search"
+            label="Try 'Diseases', 'Type 2 Diabetes' or '12-121779004-A-G'"
             prepend-inner-icon="mdi-magnify"
             variant="outlined"
             hide-details
@@ -42,20 +42,20 @@
     import { ref, onMounted } from 'vue';
     import axios from 'axios';
 
-    const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URI
+    const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URL
 
     const headers = ref([
       { title: 'Category', key: 'category' },
       { title: 'Phenotype', key: 'phenostring' },
-      { title: '# Samples', key: 'num_samples' },
-      { title: 'Nearest Genes', key: 'nearest_genes' },
+      { title: '#Samples', key: 'num_samples' },
+      { title: '#Loci < 5e-8', key: 'num_peaks' },
       { title: 'P-value', key: 'pval' },
       { title: 'Top Variant', key: 'variantid' },
       { title: 'Top Variant rsid', key: 'rsids' },
       // { title: 'Chromosome', key: 'chrom' },
       // { title: 'Position', key: 'pos' },
-      { title: '# Loci < 5e-8', key: 'num_peaks' },
-      { title: '# Peaks', key: 'num_peaks'},
+      // { title: '#Peaks', key: 'num_peaks'},
+      { title: 'Nearest Genes', key: 'nearest_genes' },
       { title: 'Stratification', key: 'stratification'}
     ]);
 

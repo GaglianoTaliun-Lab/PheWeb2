@@ -12,7 +12,7 @@ const props = defineProps({
 const info = ref(null);
 const manhattanPlotContainer = ref(null)
 
-const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URI
+const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URL
 
 const route = useRoute();
 const phenocode = route.params.phenocode;
