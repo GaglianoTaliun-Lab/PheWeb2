@@ -9,7 +9,7 @@ export default {
   data() {
     return {
       // Manually set the last updated date here
-      lastUpdated: '2024-10-10',  // Set the desired date here
+      lastUpdated: import.meta.env.VITE_APP_DATE,  // Set the desired date here
     };
   },
 };
