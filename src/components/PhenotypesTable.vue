@@ -80,6 +80,7 @@
       try {
         // const response = await axios.get('../../test_data/phenotypes.json');
         const response = await axios.get(`${api}/phenotypes`)
+        // console.log(response);
         phenotypes.value = response.data.map(item => ({
           ...item,
           variantid: `${item.chrom}-${item.pos}-${item.ref}-${item.alt}`,
