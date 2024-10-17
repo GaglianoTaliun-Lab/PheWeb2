@@ -35,7 +35,7 @@
         </template>
 
         <template v-slot:item.rsids="{ item }">
-            <a :href="`/URL/TO/External/Website/${item.rsids}`" target="_blank">{{ item.rsids }}</a>
+            <a :href="`https://www.ncbi.nlm.nih.gov/snp/${item.rsids}`" target="_blank">{{ item.rsids }}</a>
         </template>
         </v-data-table>
     </v-card>
