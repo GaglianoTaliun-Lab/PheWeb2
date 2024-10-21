@@ -27,7 +27,7 @@
         </template>
 
         <template v-slot:item.variantid="{ item }">
-          <router-link :to="`/pheno/${item.variantid}`">{{ item.variantid }}</router-link>
+          <router-link :to="`/variant/${item.variantid}`">{{ item.variantid }}</router-link>
         </template>
 
         <template v-slot:item.nearest_genes="{ item }">
