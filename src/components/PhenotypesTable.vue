@@ -5,13 +5,20 @@
         prepend-inner-icon="mdi-magnify" variant="outlined" hide-details single-line></v-text-field>
     </template>
 
-    <v-data-table :items="phenotypes" :headers="headers" :search="search" height=700 fixed-header :items-per-page="100"
+    <v-data-table 
+      :items="phenotypes" 
+      :headers="headers" 
+      :search="search" 
+      height=700 
+      fixed-header 
+      :items-per-page="100"
       hover>
+
       <template v-slot:item.phenostring="{ item }">
         <router-link :to="`/pheno/${item.phenocode}`">{{ item.phenostring }}</router-link>
       </template>
       <template v-slot:item.variantid="{ item }">
-        <router-link :to="`/variant/${item.variantid}`">{{ item.variantid }}</router-link>
+        <router-link :to="`/variant/${item.variantid}`" style="white-space: nowrap;">{{ item.variantName }}</router-link>
       </template>
 
       <template v-slot:item.nearest_genes="{ item }">
@@ -21,6 +28,49 @@
           </a>
           <span v-if="index < item.nearest_genes.length - 1">, </span>
         </span>
+      </template>
+
+      <template v-slot:item.num_samples="{ item }">
+        <span>
+          {{
+            item.num_controls !== "" && item.num_cases !== ""
+              ? `${item.num_controls} + ${item.num_cases}`
+              : item.num_samples
+          }}
+        </span>
+      </template>
+
+      <template v-slot:header.num_samples="{ column }">
+        <div style="display: flex; align-items: center;">
+          <span style="white-space: nowrap;">{{ column.title }}</span>
+          <v-tooltip text="# Control + # Cases" location="top">
+            <template v-slot:activator="{ props }">
+              <v-icon small color="primary" v-bind="props" v-on="on" class="ml-2">mdi-help-circle-outline</v-icon>
+            </template>
+          </v-tooltip>
+        </div>
+      </template>
+
+      <template v-slot:header.num_peaks="{ column }">
+        <div style="display: flex; align-items: center;">
+          <span style="white-space: nowrap;">{{ column.title }}</span>
+          <v-tooltip text="#peaks" location="top">
+            <template v-slot:activator="{ props }">
+              <v-icon small color="primary" v-bind="props" v-on="on" class="ml-2">mdi-help-circle-outline</v-icon>
+            </template>
+          </v-tooltip>
+        </div>
+      </template>
+
+      <template v-slot:header.nearest_genes="{ column }">
+        <div style="display: flex; align-items: center;">
+          <span style="white-space: nowrap;">{{ column.title }}</span>
+          <v-tooltip text="Head to external links" location="top">
+            <template v-slot:activator="{ props }">
+              <v-icon small color="primary" v-bind="props" v-on="on" class="ml-2">mdi-help-circle-outline</v-icon>
+            </template>
+          </v-tooltip>
+        </div>
       </template>
 
       <template v-slot:item.rsids="{ item }">
@@ -47,7 +97,7 @@
       // { title: 'Top Variant rsid', key: 'rsids' },
       // { title: 'Chromosome', key: 'chrom' },
       // { title: 'Position', key: 'pos' },
-      { title: '#Peaks', key: 'num_peaks'},
+      // { title: '#Peaks', key: 'num_peaks'},
       { title: 'Nearest Genes', key: 'nearest_genes' },
       { title: 'Stratification',
         children: [
@@ -76,7 +126,10 @@
           variantName: `${item.chrom}: ${item.pos} ${item.ref} / ${item.alt} (${item.rsids})`,
           ancestry: `${item.stratification.ancestry}`,
           sex: `${item.stratification.sex}`,
-          nearest_genes: item.nearest_genes ? item.nearest_genes.split(',') : []  // Convert string to array
+          num_controls: `${item.num_controls}`,
+          num_num_cases: `${item.num_cases}`,
+          nearest_genes: item.nearest_genes ? item.nearest_genes.split(',') : [],  // Convert string to array
+          category: item.category ? item.category.replace(/_/g, ' ') : ''
         }));
       } catch (error) {
         console.error("There was an error fetching the sample data:", error);
