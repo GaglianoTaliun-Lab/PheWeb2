@@ -44,7 +44,7 @@
       { title: '#Loci < 5e-8', key: 'num_peaks' },
       { title: 'P-value', key: 'pval' },
       { title: 'Top Variant', key: 'variantid' },
-      { title: 'Top Variant rsid', key: 'rsids' },
+      // { title: 'Top Variant rsid', key: 'rsids' },
       // { title: 'Chromosome', key: 'chrom' },
       // { title: 'Position', key: 'pos' },
       { title: '#Peaks', key: 'num_peaks'},
@@ -73,7 +73,7 @@
         phenotypes.value = response.data.map(item => ({
           ...item,
           variantid: `${item.chrom}-${item.pos}-${item.ref}-${item.alt}`,
-          variantName: `${item.chrom}: ${item.pos} ${item.ref} / ${item.alt}`,
+          variantName: `${item.chrom}: ${item.pos} ${item.ref} / ${item.alt} (${item.rsids})`,
           ancestry: `${item.stratification.ancestry}`,
           sex: `${item.stratification.sex}`,
           nearest_genes: item.nearest_genes ? item.nearest_genes.split(',') : []  // Convert string to array
