@@ -233,7 +233,7 @@ async function fetchPlottingData(phenocodes){
 <template>
     <v-app>
         <Navbar2 />
-        <v-main>
+        <v-main class="pt-10">
             <h1 v-if="phenostring">{{phenocode}}: {{phenostring}}</h1>
             <h1 v-else>{{phenocode}}</h1>
             <a class="p-1" v-if="linkUrl" :href="linkUrl" target="_blank" rel="noopener noreferrer"><u><b>Data Preview Portal</b></u> <i class="fas fa-external-link-alt"></i></a>
@@ -274,7 +274,7 @@ async function fetchPlottingData(phenocodes){
                     </div>
                   </div>
                   <span class="float-right ml-3 mr-3" >
-                    <a class="btn btn-secondary" href="{{ url_for('.pheno_filter_page', phenocode=phenocode) }}">Filter Variants</a>
+                    <router-link :to="`/pheno-filter/${phenocode}`" tag="a" class="btn btn-secondary">Filter Variants</router-link>
                   </span>
                   <div class="dropdown float-right" id="dropdown-sumstats">
                     <button class="btn btn-primary btn-drop">  Download Summary Statistics  <span class="arrow-container"><span class="arrow-down"></span></span></button>

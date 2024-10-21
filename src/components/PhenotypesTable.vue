@@ -10,9 +10,8 @@
       <template v-slot:item.phenostring="{ item }">
         <router-link :to="`/pheno/${item.phenocode}`">{{ item.phenostring }}</router-link>
       </template>
-
       <template v-slot:item.variantid="{ item }">
-        <router-link :to="`/pheno/${item.variantid}`">{{ item.variantName }}</router-link>
+        <router-link :to="`/variant/${item.variantid}`">{{ item.variantid }}</router-link>
       </template>
 
       <template v-slot:item.nearest_genes="{ item }">

@@ -10,7 +10,7 @@
 
     import * as functions from './Pheno.js';
 
-    const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URI
+    const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URL
 
     const route = useRoute();
 
@@ -39,6 +39,7 @@
         try {
             const response = await axios.get(`${api}/phenolist/` + phenocode);
             info.value = response.data;
+            phenostring.value = info.value[0].phenostring
             
             // call plotting function
             selectedStratification1.value = stratificationsToKey(info.value[1].phenocode, info.value[1].stratification)
@@ -133,7 +134,7 @@ async function fetchPlottingData(phenocodes){
         <a class="p-1" v-if="linkUrl" :href="linkUrl" target="_blank" rel="noopener noreferrer"><u><b>Data Preview Portal</b></u> <i class="fas fa-external-link-alt"></i></a>
         <div class="pheno-info col-12 mt-3">
             <!-- TODO: needs to start on female male, not indices 2 and 1 -->
-            <div class="dropdown p-1" id="dropdown-data1">
+            <div class="dropdown p-1 mr-0" id="dropdown-data1">
                 <button class="btn btn-primary btn-drop" id="button-data1">{{keyToLabel(selectedStratification1) + " (" + sampleSizeLabel[selectedStratification1] + ")"}}<span class="arrow-container"><span class="arrow-down"></span></span></button>
                 <div class="dropdown-menu" id="dropdown-content-data1">
                     <label v-for="(pheno, index) in info" >
@@ -167,8 +168,55 @@ async function fetchPlottingData(phenocodes){
                     </label>
                 </div>
             </div>
-            <span class="float-right ml-3 mr-3" >
-            </span>
+            <div class="float-right d-flex align-items-center justify-content-right ml-2 mr-0" >
+              <label class="mr-1" ><b>Minor Allele Freq Range:</b></label>
+    
+              <input 
+                type="number" 
+                v-model="minFreq" 
+                class="form-control form-control-sm mr-1"
+                style="border: 1px solid black; padding: 5px; color: black; font-size: 16px;" 
+                :min="0" 
+                :max="1" 
+                :step="0.05" 
+              />
+              <span class="mr-1">-</span>
+              <input 
+                type="number" 
+                v-model="maxFreq" 
+                class="form-control form-control-sm mr-3" 
+                style="border: 1px solid black; padding: 5px; color: black; font-size: 16px;"
+                :min="0" 
+                :max="1" 
+                :step="0.05" 
+              />
+              
+              <div class="btn-group mr-2">
+                <button 
+                  type="button" 
+                  class="btn btn-primary" 
+                  :class="{ active: selectedType === 'SNP' }" 
+                  @click="selectType('SNP')">
+                  SNP
+                </button>
+                <button 
+                  type="button" 
+                  class="btn btn-primary" 
+                  :class="{ active: selectedType === 'Indel' }" 
+                  @click="selectType('Indel')">
+                  Indel
+                </button>
+                <button 
+                  type="button" 
+                  class="btn btn-primary" 
+                  :class="{ active: selectedType === 'Both' }" 
+                  @click="selectType('Both')">
+                  Both
+                </button>
+              </div>
+
+              <button class="btn btn-primary blue-button" @click="applyFilter">Filter</button>
+            </div>
         </div> 
         <div v-if="miamiToggle && Object.keys(miamiData).length > 0">
             <MiamiPlotFilter :key="refreshKey" :data="miamiData"/>
@@ -268,5 +316,30 @@ async function fetchPlottingData(phenocodes){
   .btn-primary:hover {
     background-color:grey;
     color: black;
+  }
+
+  .form-control-sm {
+    width: 25%;
+  }
+
+  .blue-button {
+    background-color:blue !important; 
+    color:white !important;
+  }
+  .blue-button:hover{
+    background-color:darkblue !important;
+  }
+
+  .d-flex{
+    width : 44%;
+    height: 45px
+  }
+
+  .d-flex label{
+    align-items: center !important;
+  }
+
+  .d-flex input {
+    width : 62px;
   }
 </style>

@@ -1,5 +1,5 @@
 <template>
-    <v-app-bar app fixed elevation="0" style="width: 100%;" >
+    <v-app-bar app fixed elevation="0" style="width: 100% " >
       <v-row align="center" justify="space-between">
         <v-col cols="auto" style="margin-left:2%">
             <router-link :to="{ name: 'Home' }" tag="v-btn" icon="$vuetify">
