@@ -518,6 +518,9 @@ function create_manhattan_plot(variant_bins, unbinned_variants) {
 
 <template>
     <div class="shadow-sm border rounded mt-5 pb-3">
+        <span class="ml-3 mr-3" >
+            <router-link :to="`/pheno-filter/${phenocode}`" tag="a" class="btn btn-secondary">Filter Variants</router-link>
+        </span>
         <div class="float-end">
             <button type="button" class="btn btn-light border mt-2 mr-2 bg-body rounded " @click="downloadPNG">Download PNG</button>
             <button type="button" class="btn btn-light border mt-2 mr-2 bg-body rounded " @click="downloadSVG">Download SVG</button>
@@ -527,7 +530,6 @@ function create_manhattan_plot(variant_bins, unbinned_variants) {
 </template>
 
 <style lang="scss">
-
 
 .btn:hover {
     background-color: #f0f0f0 !important;
@@ -547,5 +549,30 @@ function create_manhattan_plot(variant_bins, unbinned_variants) {
     font-size: 12px;
     box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3); 
     pointer-events: none;
+}
+
+.expanded-content {
+    transition: opacity 0.3s ease, max-height 0.3s ease;
+    overflow: hidden;
+    max-height: 300px; /* Adjust height as needed */
+    opacity: 1;
+}
+
+.expanded-content[style*="display: none;"] {
+    max-height: 0;
+    opacity: 0;
+}
+
+.d-flex{
+    width : 44%;
+    height: 45px
+}
+
+.d-flex label{
+    align-items: center !important;
+}
+
+.d-flex input {
+    width : 62px;
 }
 </style>

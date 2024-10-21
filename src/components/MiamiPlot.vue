@@ -15,6 +15,24 @@ const props = defineProps({
 const info = ref(null);
 const miamiPlotContainer = ref(null)
 
+const showExpanded = ref(false);
+const showExpandedClick = ref(false)
+const minFreq = ref(0);
+const maxFreq = ref(0.5);
+const selectedType = ref('SNP');
+
+const toggleExpanded = () => {
+  showExpandedClick.value = !showExpandedClick.value;
+};
+
+const selectType = (type) => {
+  selectedType.value = type;
+};
+
+const applyFilter = () => {
+  console.log('Filter applied:', { minFreq: minFreq.value, maxFreq: maxFreq.value, selectedType: selectedType.value });
+};
+
 const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URL
 
 const route = useRoute();
@@ -81,11 +99,11 @@ const downloadSVG = () => {
   downloadLink.href = url;
   downloadLink.download = 'image.svg';
 
-  // hacky way to rigger download
+  // hacky way to trigger download
   document.body.appendChild(downloadLink);
   downloadLink.click();
   document.body.removeChild(downloadLink);
-  URL.revokeObjectURL(url);  // Clean up
+  URL.revokeObjectURL(url); 
 };
 
 const downloadPNG = () => {
@@ -876,27 +894,108 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
 
 }
 
-
-
-
 </script>
 
 
 <template>
     <div class="shadow-sm border rounded mt-5 mb-5">
-        <div class="float-end">
-            <button type="button" class="btn btn-light border mt-2 mr-2 bg-body rounded " @click="downloadPNG">Download PNG</button>
-            <button type="button" class="btn btn-light border mt-2 mr-2 bg-body rounded " @click="downloadSVG">Download SVG</button>
+      <div class="container-fluid mt-2 ml-1 mr-2">
+        <!-- Left: Filter Button and Filter Options -->
+        <div class="d-flex flex-grow-0 flex-shrink-0" style="width:75%" @mouseleave="showExpanded = false"
+        >
+          <button 
+            class="btn btn-primary" 
+            @click="toggleExpanded" 
+            @mouseover="showExpanded = true" 
+          > 
+            Filter Variants 
+          </button>
+  
+          <transition name="slide-fade">
+            <div v-if="showExpanded || showExpandedClick" class="expanded-content">
+              <label class="mr-1 ml-2" ><b>Minor Allele Freq Range:</b></label>
+  
+              <input
+                type="number"
+                v-model="minFreq"
+                class="form-control form-control-sm mr-1"
+                style="border: 1px solid black; color: black; font-size: 16px;"
+                :min="0"
+                :max="0.5"
+                :step="0.05"
+              />
+              <span class="mr-1">-</span>
+              <input
+                type="number"
+                v-model="maxFreq"
+                class="form-control form-control-sm mr-3"
+                style="border: 1px solid black; color: black; font-size: 16px;"
+                :min="0"
+                :max="0.5"
+                :step="0.05"
+              />
+  
+              <div class="btn-group mr-2">
+                <button
+                  type="button"
+                  class="btn btn-primary"
+                  :class="{ active: selectedType === 'SNP' }"
+                  @click="selectType('SNP')"
+                >
+                  SNP
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-primary"
+                  :class="{ active: selectedType === 'Indel' }"
+                  @click="selectType('Indel')"
+                >
+                  Indel
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-primary"
+                  :class="{ active: selectedType === 'Both' }"
+                  @click="selectType('Both')"
+                >
+                  Both
+                </button>
+              </div>
+              <button class="btn btn-primary blue-button" @click="applyFilter">
+                Filter
+              </button>
+            </div>
+          </transition>
         </div>
-        <div class="miami" ref="miamiPlotContainer"></div>
+
+        <div class="d-flex flex-grow-0 flex-shrink-0" style="width:25%">
+          <button 
+            type="button" 
+            class="btn btn-light border bg-body rounded"
+            style="width:150px" 
+            @click="downloadPNG"
+          >
+            Download PNG
+          </button>
+          <button 
+            type="button" 
+            class="btn btn-light border ml-2 bg-body rounded"
+            style="width:150px" 
+            @click="downloadSVG"
+          >
+            Download SVG
+          </button>
+        </div>
+      </div>
+  
+      <div class="miami" ref="miamiPlotContainer"></div>
     </div>
-</template>
+  </template>
 
 <style lang="scss">
 
-
-.btn:hover {
-    background-color: #f0f0f0 !important;
+.btn-secondary:hover{
+    background-color : grey
 }
 
 .miami div {
@@ -914,4 +1013,32 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
     box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3); 
     pointer-events: none;
 }
+
+.container-fluid {
+    display: flex;
+    width: 100%; 
+  }
+  
+  .expanded-content {
+    display: flex;
+    align-items: center;
+  }
+
+  
+  .btn-light:hover {
+    background-color: #f0f0f0 !important;
+  }
+
+  .btn-primary:hover {
+    background-color: darkblue !important;
+  }
+
+.slide-fade-enter-active, .slide-fade-leave-active {
+    transition: all 0.3s ease;
+  }
+  
+  .slide-fade-enter-from, .slide-fade-leave-to {
+    transform: translateX(-10px);
+    opacity: 0;
+  }
 </style>
