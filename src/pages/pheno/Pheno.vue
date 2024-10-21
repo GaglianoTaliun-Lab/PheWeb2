@@ -273,9 +273,7 @@ async function fetchPlottingData(phenocodes){
                         </label>
                     </div>
                   </div>
-                  <span class="float-right ml-3 mr-3" >
-                    <router-link :to="`/pheno-filter/${phenocode}`" tag="a" class="btn btn-secondary">Filter Variants</router-link>
-                  </span>
+
                   <div class="dropdown float-right" id="dropdown-sumstats">
                     <button class="btn btn-primary btn-drop">  Download Summary Statistics  <span class="arrow-container"><span class="arrow-down"></span></span></button>
                     <div class="dropdown-menu dropdown-menu-right p-1" id="dropdown-content-sumstats">
