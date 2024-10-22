@@ -21,6 +21,7 @@
       <template v-slot:item.phenostring="{ item }">
         <router-link :to="`/pheno/${item.phenocode}`">{{ item.phenostring }}</router-link>
       </template>
+
       <template v-slot:item.variantid="{ item }">
         <router-link :to="`/variant/${item.variantid}`" style="white-space: nowrap;">{{ item.variantName }}</router-link>
       </template>
@@ -49,7 +50,7 @@
           <span style="white-space: nowrap;">{{ column.title }}</span>
           <v-tooltip text="# Control + # Cases" location="top">
             <template v-slot:activator="{ props }">
-              <v-icon small color="primary" v-bind="props" v-on="on" class="ml-2">mdi-help-circle-outline</v-icon>
+              <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
             </template>
           </v-tooltip>
         </div>
@@ -60,7 +61,7 @@
           <span style="white-space: nowrap;">{{ column.title }}</span>
           <v-tooltip text="#peaks" location="top">
             <template v-slot:activator="{ props }">
-              <v-icon small color="primary" v-bind="props" v-on="on" class="ml-2">mdi-help-circle-outline</v-icon>
+              <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
             </template>
           </v-tooltip>
         </div>
@@ -71,11 +72,12 @@
           <span style="white-space: nowrap;">{{ column.title }}</span>
           <v-tooltip text="Head to external links" location="top">
             <template v-slot:activator="{ props }">
-              <v-icon small color="primary" v-bind="props" v-on="on" class="ml-2">mdi-help-circle-outline</v-icon>
+              <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
             </template>
           </v-tooltip>
         </div>
       </template>
+
 
       <template v-slot:item.rsids="{ item }">
         <a :href="`https://www.ncbi.nlm.nih.gov/snp/${item.rsids}`" target="_blank">{{ item.rsids }}</a>
@@ -121,9 +123,8 @@
       isLoading.value = true;
       errorMessage.value = '';
       try {
-        // const response = await axios.get('../../test_data/phenotypes.json');
         const response = await axios.get(`${api}/phenotypes`)
-        // console.log(response);
+        console.log(response);
         phenotypes.value = response.data.map(item => ({
           ...item,
           variantid: `${item.chrom}-${item.pos}-${item.ref}-${item.alt}`,
