@@ -1,4 +1,16 @@
 <template>
+  <div class="text-left" style="width: 20%"> 
+      <v-select
+          v-model="selectedSex"
+          :items="sexOptions"
+          label="Sex Stratification"
+          prepend-icon="mdi-gender-male-female"
+          class="mb-4"
+          variant="underlined"
+          hint="Choose the stratification filter"
+          persistent-hint
+      ></v-select>
+  </div>  
   <div class="text-right">
       <v-btn color="primary" @click="downloadCSV">Download CSV</v-btn>
   </div>
@@ -10,7 +22,7 @@
     </template>
 
     <v-data-table 
-      :items="phenotypes" 
+      :items="filteredPhenotypes" 
       :headers="headers" 
       :search="search" 
       height=700 
@@ -88,11 +100,12 @@
 </template>
 
 <script setup>
-    import { ref, onMounted } from 'vue';
+    import { ref, onMounted, computed } from 'vue';
     import axios from 'axios';
 
     const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URL
 
+    // main table
     const headers = ref([
       { title: 'Category', key: 'category' },
       { title: 'Phenotype', key: 'phenostring' },
@@ -100,17 +113,12 @@
       { title: '#Loci < 5e-8', key: 'num_peaks' },
       { title: 'P-value', key: 'pval' },
       { title: 'Top Variant', key: 'variantid' },
-      // { title: 'Top Variant rsid', key: 'rsids' },
-      // { title: 'Chromosome', key: 'chrom' },
-      // { title: 'Position', key: 'pos' },
-      // { title: '#Peaks', key: 'num_peaks'},
       { title: 'Nearest Genes', key: 'nearest_genes' },
       { title: 'Stratification',
         children: [
-          { title: 'Ancestry', key:'ancestry' },
-          { title: 'Sex', key: 'sex' },
+          { title: 'Sex', key: 'sex' }
         ]
-      }
+      },
     ]);
 
     const phenotypes = ref([]);
@@ -119,6 +127,7 @@
 
     const search = ref('');
 
+    // data
     const fetchSampleData = async () => {
       isLoading.value = true;
       errorMessage.value = '';
@@ -145,6 +154,19 @@
       
     };
 
+    // stratification filter
+    const selectedSex = ref('All');
+    const sexOptions = ref(['All', 'Combined', 'Male', 'Female']);
+
+    const filteredPhenotypes = computed(() => {
+      if (selectedSex.value === 'All') {
+        return phenotypes.value;
+      }
+      return phenotypes.value.filter(item => item.sex === selectedSex.value);
+    });
+
+
+    // download
     const coverToCSV = (data) => {
       if (!data || data.length === 0) return '';
 
