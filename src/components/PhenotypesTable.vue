@@ -1,5 +1,9 @@
 <template>
+  <div class="text-right">
+      <v-btn color="primary" @click="downloadCSV">Download CSV</v-btn>
+  </div>
   <v-card elevation="5">
+
     <template v-slot:text>
       <v-text-field v-model="search" label="Try 'Diseases', 'Type 2 Diabetes', '12-121779004-A-G', etc."
         prepend-inner-icon="mdi-magnify" variant="outlined" hide-details single-line></v-text-field>
@@ -138,6 +142,33 @@
         isLoading.value = false;
       }
       
+    };
+
+    const coverToCSV = (data) => {
+      if (!data || data.length === 0) return '';
+
+      const keys = Object.keys(data[0]);
+      const rows = [];
+
+      rows.push(keys.join(','));
+
+      data.forEach((item) => {
+        const values = keys.map((key) => item[key]);
+        rows.push(values.join(','));
+      });
+
+      return rows.join('\n');
+    };
+
+    const downloadCSV = () => {
+      const csvContent = coverToCSV(phenotypes.value);
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'phenotype_data.csv';
+      link.click();
+      URL.revokeObjectURL(url);
     };
 
     onMounted(() => {
