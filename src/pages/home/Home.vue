@@ -2,13 +2,17 @@
   <v-app>
     <Navbar2 />
     <v-main class="centered-content">
-        <img src="../../assets/CLSA_logo.png" class="img-fluid mb-3 custom-img" alt="...">
-        <div class="container-fluid mb-3">
+        <v-card elevation="0">
+          <img src="../../assets/CLSA_logo.png" class="img-fluid mb-3 custom-img" alt="...">
           <h1 class="fw-bold">{{appTitle}}</h1>
           <small class="text-body-secondary">{{appSubtitle}}</small>
-        </div>
-        <SearchBox />
-        <HomeInfo />
+        </v-card>
+
+        <v-container class="centered-content" style="margin-top: 2%;">
+          <SearchBox />
+          <HomeInfo />
+          
+        </v-container>
         <Citations />
 
         <v-card elevation="0" variant="plain" style="position: relative; bottom: 5%; margin-top: 10%;" >

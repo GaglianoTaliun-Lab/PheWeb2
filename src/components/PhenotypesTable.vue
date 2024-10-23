@@ -17,7 +17,7 @@
   <v-card elevation="5">
 
     <template v-slot:text>
-      <v-text-field v-model="search" label="Try 'Diseases', 'Type 2 Diabetes', '12-121779004-A-G', etc."
+      <v-text-field v-model="search" label="Try 'Diseases', 'Type 2 Diabetes', '12: 121779004 A/G', etc."
         prepend-inner-icon="mdi-magnify" variant="outlined" hide-details single-line></v-text-field>
     </template>
 
@@ -57,7 +57,13 @@
         </span>
       </template>
 
-      <template v-slot:header.num_samples="{ column }">
+      <template v-slot:item.pval="{ item }">
+        <span style="white-space: nowrap;">
+          {{ item.pval }}
+        </span>
+      </template>
+
+      <template v-slot:header.num_samples="{ column, isSorted, getSortIcon, }">
         <div style="display: flex; align-items: center;">
           <span style="white-space: nowrap;">{{ column.title }}</span>
           <v-tooltip text="# Control + # Cases" location="top">
@@ -65,21 +71,27 @@
               <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
             </template>
           </v-tooltip>
+          <template v-if="isSorted(column)">
+              <v-icon :icon="getSortIcon(column)"></v-icon>
+          </template>
         </div>
       </template>
 
-      <template v-slot:header.num_peaks="{ column }">
+      <template v-slot:header.num_peaks="{ column, isSorted, getSortIcon }">
         <div style="display: flex; align-items: center;">
           <span style="white-space: nowrap;">{{ column.title }}</span>
-          <v-tooltip text="#peaks" location="top">
+          <v-tooltip text="# peaks" location="top">
             <template v-slot:activator="{ props }">
               <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
             </template>
           </v-tooltip>
+          <template v-if="isSorted(column)">
+              <v-icon :icon="getSortIcon(column)"></v-icon>
+          </template>
         </div>
       </template>
 
-      <template v-slot:header.nearest_genes="{ column }">
+      <template v-slot:header.nearest_genes="{ column, isSorted, getSortIcon }">
         <div style="display: flex; align-items: center;">
           <span style="white-space: nowrap;">{{ column.title }}</span>
           <v-tooltip text="Head to external links" location="top">
@@ -87,6 +99,41 @@
               <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
             </template>
           </v-tooltip>
+          <template v-if="isSorted(column)">
+              <v-icon :icon="getSortIcon(column)"></v-icon>
+          </template>
+        </div>
+      </template>
+
+      <template v-slot:header.variantid="{ column, isSorted, getSortIcon }">
+        <div style="display: flex; align-items: center;">
+          <span style="white-space: nowrap;">{{ column.title }}</span>
+          <v-tooltip 
+
+            location="top">
+            <template v-slot:activator="{ props }">
+              <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
+            </template>
+            <span style="white-space: normal;">
+              1) Chromosome <br>
+              2) Position <br>
+              3) Reference allele <br>
+              4) Alternate allele <br> 
+              5) rsid (if applicable)
+            </span>
+          </v-tooltip>
+          <template v-if="isSorted(column)">
+              <v-icon :icon="getSortIcon(column)"></v-icon>
+          </template>
+        </div>
+      </template>
+
+      <template v-slot:header.pval="{ column, isSorted, getSortIcon }">
+        <div style="display: flex; align-items: center;">
+          <span style="white-space: nowrap;">{{ column.title }}</span>
+          <template v-if="isSorted(column)">
+              <v-icon :icon="getSortIcon(column)"></v-icon>
+          </template>
         </div>
       </template>
 
@@ -137,7 +184,9 @@
         phenotypes.value = response.data.map(item => ({
           ...item,
           variantid: `${item.chrom}-${item.pos}-${item.ref}-${item.alt}`,
-          variantName: `${item.chrom}: ${item.pos} ${item.ref} / ${item.alt} (${item.rsids})`,
+          variantName: item.rsids 
+            ? `${item.chrom}: ${item.pos} ${item.ref} / ${item.alt} (${item.rsids})`
+            : `${item.chrom}: ${item.pos} ${item.ref} / ${item.alt}`,
           ancestry: `${item.stratification.ancestry}`,
           sex: `${item.stratification.sex}`,
           num_controls: `${item.num_controls}`,
