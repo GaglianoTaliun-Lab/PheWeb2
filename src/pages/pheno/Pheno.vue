@@ -10,6 +10,7 @@ import ManhattanPlot from '../../components/ManhattanPlot.vue';
 import MiamiPlot from '../../components/MiamiPlot.vue';
 import GwasTable from '../../components/GwasTable.vue';
 import QQPlot from '../../components/QQPlot.vue';
+import GWASTable from '../../components/GWASTable.vue';
 
 import * as functions from './Pheno.js';
 
@@ -289,8 +290,7 @@ async function fetchPlottingData(phenocodes){
                 <ManhattanPlot :key="refreshKey" :data="manhattanData"/>
             </div>
             <br>
-            <h2> Top Loci: </h2>
-            <GwasTable /> 
+            <GWASTable />
             <br>
             <div v-if="qqData && dimension"> 
                 <h2> QQ Plot(s): </h2>

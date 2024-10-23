@@ -17,7 +17,7 @@
   <v-card elevation="5">
 
     <template v-slot:text>
-      <v-text-field v-model="search" label="Try 'Diseases', 'Type 2 Diabetes', '12-121779004-A-G', etc."
+      <v-text-field v-model="search" label="Try 'Diseases', 'Type 2 Diabetes', '12: 121779004 A/G', etc."
         prepend-inner-icon="mdi-magnify" variant="outlined" hide-details single-line></v-text-field>
     </template>
 
@@ -54,6 +54,12 @@
               ? `${item.num_controls} + ${item.num_cases}`
               : item.num_samples
           }}
+        </span>
+      </template>
+
+      <template v-slot:item.pval="{ item }">
+        <span style="white-space: nowrap;">
+          {{ item.pval }}
         </span>
       </template>
 
@@ -116,6 +122,15 @@
               5) rsid (if applicable)
             </span>
           </v-tooltip>
+          <template v-if="isSorted(column)">
+              <v-icon :icon="getSortIcon(column)"></v-icon>
+          </template>
+        </div>
+      </template>
+
+      <template v-slot:header.pval="{ column, isSorted, getSortIcon }">
+        <div style="display: flex; align-items: center;">
+          <span style="white-space: nowrap;">{{ column.title }}</span>
           <template v-if="isSorted(column)">
               <v-icon :icon="getSortIcon(column)"></v-icon>
           </template>
