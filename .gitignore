@@ -26,3 +26,4 @@ test_data
 *.njsproj
 *.sln
 *.sw?
+.env
