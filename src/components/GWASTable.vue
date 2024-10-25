@@ -100,7 +100,7 @@
   </template>
   
   <script setup>
-      import { ref, onMounted, computed, effect } from 'vue';
+      import { ref, onMounted, watch, computed } from 'vue';
       import axios from 'axios';
       import { useRoute } from 'vue-router';
   
@@ -111,7 +111,7 @@
       // main table
       const headers = ref([
         { title: 'Top Variant', key: 'variantid' },
-        { title: 'Nearest Genes', key: 'nearest_genes' },
+        { title: 'Nearest Gene(s)', key: 'nearest_genes' },
         { title: 'MAF', key: 'af' },
         { title: 'P-value', key: 'pval' },
         { title: 'Effect Size (se)', key: 'effect_size' },
@@ -127,7 +127,7 @@
 
       const options = ref(['European, Combined', 'European, Male', 'European, Female']);
 
-      const buildApiUrl = (phenocode) => {
+      const buildApiUrl = () => {
         const formattedSelected = selected.value.replace(', ', '.');
         return `${api}/pheno/${phenocode}.${formattedSelected}`;
       };
@@ -137,8 +137,9 @@
         isLoading.value = true;
         errorMessage.value = '';
         try {
-          const apiUrl = buildApiUrl(phenocode);
+          const apiUrl = buildApiUrl();
           const response = await axios.get(apiUrl);
+          console.log(apiUrl);
           console.log(response);
           variants.value = response.data.unbinned_variants.map(item => ({
             ...item,
@@ -146,7 +147,6 @@
             variantName: item.rsids 
               ? `${item.chrom}: ${item.pos} ${item.ref} / ${item.alt} (${item.rsids})`
               : `${item.chrom}: ${item.pos} ${item.ref} / ${item.alt}`,
-            // sex: `${item.stratification.sex}`,
             nearest_genes: item.nearest_genes ? item.nearest_genes.split(',') : [], 
             effect_size: `${item.beta} (${item.sebeta})`
           }));
@@ -159,11 +159,6 @@
         
       };
 
-      const sortBy = ref('pval');
-      const sortDesc = ref(true);
-  
-  
-  
       // download
       const coverToCSV = (data) => {
         if (!data || data.length === 0) return '';
@@ -193,6 +188,11 @@
       };
   
       onMounted(() => {
+        fetchSampleData();
+      });
+
+      watch(selected, (newSelected) => {
+        console.log(`Selected value changed to: ${newSelected}`);
         fetchSampleData();
       });
   

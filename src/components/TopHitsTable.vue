@@ -98,7 +98,7 @@
         { title: 'Top Variant', key: 'variantid' },
         { title: 'P-value', key: 'pval' },
         { title: 'MAF', key: 'maf'},
-        { title: 'Nearest Genes', key: 'nearest_genes' },
+        { title: 'Nearest Gene(s)', key: 'nearest_genes' },
       ]);
   
       const phenotypes = ref([]);

@@ -225,7 +225,11 @@
                         <h2 class="text-center">Update History</h2>
                         <hr>
                         <ul>
-                            <li>The rsid and nearest genes columns now features clickable rsid/gene names, allowing users to easily access detailed information on external databases (10/17/2024)</li>
+                            <li>Added support for Miamiplot filtering (10/23/2024);</li>
+                            <li>Enabled selecting sex from the GWAS table (10/23/2024);</li>
+                            <li>Enabled filtering functionality by sex (10/22/2024);</li>
+                            <li>Enabled displaying tophits table & download functionality for the phenotypes table (10/22/2024);</li>
+                            <li>The rsid and nearest genes columns now features clickable rsid/gene names, allowing users to easily access detailed information on external databases (10/17/2024);</li>
                             <li>Enabled sorting and searching functionalities in the phenotypes table (10/10/2024);</li>
                             <li>Added support to download Manhattan plot and Miami plot in PNG and SVG format (10/10/2024);</li>
                             <li>Added LocusZoom panels for all stratifications in LocusZoom region plots (09/07/2024);</li>
