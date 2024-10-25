@@ -51,7 +51,7 @@
         <span>
           {{
             item.num_controls !== "" && item.num_cases !== ""
-              ? `${item.num_controls} + ${item.num_cases}`
+              ? `${item.num_cases} + ${item.num_controls}`
               : item.num_samples
           }}
         </span>
@@ -66,7 +66,7 @@
       <template v-slot:header.num_samples="{ column, isSorted, getSortIcon, }">
         <div style="display: flex; align-items: center;">
           <span style="white-space: nowrap;">{{ column.title }}</span>
-          <v-tooltip text="# Control + # Cases" location="top">
+          <v-tooltip text="# Cases + # Controls" location="top">
             <template v-slot:activator="{ props }">
               <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
             </template>
@@ -160,7 +160,7 @@
       { title: '#Loci < 5e-8', key: 'num_peaks' },
       { title: 'P-value', key: 'pval' },
       { title: 'Top Variant', key: 'variantid' },
-      { title: 'Nearest Genes', key: 'nearest_genes' },
+      { title: 'Nearest Gene(s)', key: 'nearest_genes' },
       { title: 'Stratification',
         children: [
           { title: 'Sex', key: 'sex' }
@@ -179,13 +179,14 @@
       isLoading.value = true;
       errorMessage.value = '';
       try {
+        console.log(`${api}/phenotypes`)
         const response = await axios.get(`${api}/phenotypes`)
         console.log(response);
         phenotypes.value = response.data.map(item => ({
           ...item,
           variantid: `${item.chrom}-${item.pos}-${item.ref}-${item.alt}`,
           variantName: item.rsids 
-            ? `${item.chrom}: ${item.pos} ${item.ref} / ${item.alt} (${item.rsids})`
+            ? `chr${item.chrom}: ${item.pos} ${item.ref} / ${item.alt} (${item.rsids})`
             : `${item.chrom}: ${item.pos} ${item.ref} / ${item.alt}`,
           ancestry: `${item.stratification.ancestry}`,
           sex: `${item.stratification.sex}`,
