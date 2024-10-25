@@ -111,7 +111,7 @@
       // main table
       const headers = ref([
         { title: 'Top Variant', key: 'variantid' },
-        { title: 'Nearest Genes', key: 'nearest_genes' },
+        { title: 'Nearest Gene(s)', key: 'nearest_genes' },
         { title: 'MAF', key: 'af' },
         { title: 'P-value', key: 'pval' },
         { title: 'Effect Size (se)', key: 'effect_size' },
