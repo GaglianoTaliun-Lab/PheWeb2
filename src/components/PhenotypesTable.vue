@@ -160,7 +160,7 @@
       { title: '#Loci < 5e-8', key: 'num_peaks' },
       { title: 'P-value', key: 'pval' },
       { title: 'Top Variant', key: 'variantid' },
-      { title: 'Nearest Genes', key: 'nearest_genes' },
+      { title: 'Nearest Gene(s)', key: 'nearest_genes' },
       { title: 'Stratification',
         children: [
           { title: 'Sex', key: 'sex' }
