@@ -22,7 +22,7 @@ const showExpanded = ref(false);
 const showExpandedClick = ref(false)
 const minFreq = ref(0);
 const maxFreq = ref(0.5);
-const selectedType = ref('SNP');
+const selectedType = ref('Both');
 const hiddenToggle = ref(null);
 
 const get_chrom_offsets_data1 = ref(null)
@@ -51,7 +51,38 @@ const selectType = (type) => {
   selectedType.value = type;
 };
 
+const createMiamis = (option) => {
+    var keys = Object.keys(info.value)
+
+    pheno1.value = keys[0]
+    pheno2.value = keys[1]
+
+    // this means that the same object was passed (eurofemale and eurofemale, for example)
+    // (don't know why a user would want this... but it's better than crashing)
+    if (keys.length < 2){
+        create_miami_plot(
+            info.value[keys[0]]['variant_bins'], info.value[keys[0]]['unbinned_variants'],
+            info.value[keys[0]]['variant_bins'], info.value[keys[0]]['unbinned_variants'],
+            keys[0], keys[0],
+            option
+        )
+    } else {
+        create_miami_plot( 
+            info.value[keys[0]]['variant_bins'], info.value[keys[0]]['unbinned_variants'],
+            info.value[keys[1]]['variant_bins'], info.value[keys[1]]['unbinned_variants'],
+            keys[0], keys[1],
+            option
+        )
+    }
+}
+
+const cancelFilter = () => {
+    createMiamis('all')
+}
+
 const applyFilter = () => {
+
+  createMiamis('filtered');
   refilter();
 };
 
@@ -85,27 +116,7 @@ const tooltip_underscoretemplate = `
 onMounted(() => {
     info.value = props.data
 
-    var keys = Object.keys(info.value)
-
-    pheno1.value = keys[0]
-    pheno2.value = keys[1]
-
-    // this means that the same object was passed (eurofemale and eurofemale, for example)
-    // (don't know why a user would want this... but it's better than crashing)
-    if (keys.length < 2){
-        create_miami_plot(
-            info.value[keys[0]]['variant_bins'], info.value[keys[0]]['unbinned_variants'],
-            info.value[keys[0]]['variant_bins'], info.value[keys[0]]['unbinned_variants'],
-            keys[0], keys[0]
-        )
-    } else {
-        create_miami_plot( 
-            info.value[keys[0]]['variant_bins'], info.value[keys[0]]['unbinned_variants'],
-            info.value[keys[1]]['variant_bins'], info.value[keys[1]]['unbinned_variants'],
-            keys[0], keys[1]
-        )
-    }
-
+    createMiamis('all');
 });
 
 const downloadSVG = () => {
@@ -185,7 +196,7 @@ function get_link_to_LZ_data2(variant) {
                 variant.pos + 200*1000);
 }
 
-function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, variant_unbinned2, label1 = "Data 1", label2 = "Data 2"){
+function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, variant_unbinned2, label1 = "Data 1", label2 = "Data 2", variants = "filtered"){
 
     reset_for_miami_plot();
 
@@ -327,21 +338,21 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
         if (direction === "upper"){
             if (max_plot_qval <= 40) {
                 scale = scale
-                    .domain([max_plot_qval, max_plot_qval / 10])
-                    .range([0, plot_height/2 * 0.95]); // 0.9 to leave space for chromosome numbers
+                    .domain([max_plot_qval, 0])
+                    .range([0, plot_height/2 * 0.95]); // 0.95 to leave space for chromosome numbers
             } else {
                 scale = scale
-                    .domain([max_plot_qval, max_plot_qval / 8, 0])
+                    .domain([max_plot_qval, max_plot_qval / 7, 0]) // TODO: divided by 7 is best for BLD_MPV_COM, but need to find a way to be more dynamics
                     .range([0, plot_height/4, plot_height/2 * 0.95]); // divide by x2 for miami
             }
         } else if (direction === "lower"){
             if (max_plot_qval <= 40) {
                 scale = scale
-                    .domain([max_plot_qval, max_plot_qval / 10])
+                    .domain([max_plot_qval, 0])
                     .range([plot_height, plot_height/2 * 1.05]); // divide by 2 for miami
             } else {
                 scale = scale
-                    .domain([max_plot_qval, max_plot_qval / 8, 0])
+                    .domain([max_plot_qval, max_plot_qval / 7, 0])
                     .range([plot_height, (plot_height/4) * 3, plot_height/2 * 1.05 ]); // divide by x2 for miami
             }
         }
@@ -532,9 +543,17 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
                     };
                 });
             })();
-            var color_by_chrom_dim = d3.scaleOrdinal()
+            if (variants === "filtered"){
+                console.log("HERE")
+                var color_by_chrom_dim = d3.scaleOrdinal()
                 .domain(get_chrom_offsets_data1.value().chroms)
                 .range(['rgb(221,221,237)', 'rgb(191,191,208)']);
+            } else {
+                var color_by_chrom_dim = d3.scaleOrdinal()
+                .domain(get_chrom_offsets_data1.value().chroms)
+                .range(['rgb(120,120,186)', 'rgb(0,0,66)']);
+            }
+
         } else if ( variant_bins2 != null){
             var chroms_and_midpoints = (function() {
                 var v = get_chrom_offsets_data2.value();
@@ -545,9 +564,15 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
                     };
                 });
             })();
-            var color_by_chrom_dim = d3.scaleOrdinal()
-            .domain(get_chrom_offsets_data1.value().chroms)
-            .range(['rgb(221,221,237)', 'rgb(191,191,208)']);
+            if (variants === "filtered"){
+                var color_by_chrom_dim = d3.scaleOrdinal()
+                .domain(get_chrom_offsets_data1.value().chroms)
+                .range(['rgb(221,221,237)', 'rgb(191,191,208)']);
+            } else {
+                var color_by_chrom_dim = d3.scaleOrdinal()
+                .domain(get_chrom_offsets_data1.value().chroms)
+                .range(['rgb(120,120,186)', 'rgb(0,0,66)']);
+            }
         }
 
         //colors to maybe sample from later:
@@ -1180,10 +1205,11 @@ async function refilter() {
     var phenocode_with_stratifications1 = pheno1.value
     var phenocode_with_stratifications2 = pheno2.value
 
-    let url_base;
-
+    //remove any past filters
     miami_filter_view.clear();
-    url_base = `${api}/pheno-filter/${phenocode_with_stratifications1}/${phenocode_with_stratifications2}?`
+
+    // get variants which pass the filters
+    var url_base = `${api}/pheno-filter/${phenocode_with_stratifications1}/${phenocode_with_stratifications2}?`
     var get_params = [];
     get_params.push(fmt("min_maf={0}", minFreq.value ));
     get_params.push(fmt("max_maf={0}", maxFreq.value ));
@@ -1257,7 +1283,7 @@ function reset_for_miami_plot() {
 
 
 <template>
-    <div class="shadow-sm border rounded mt-5 mb-5">
+    <div class="shadow-sm border rounded mt-3 mb-3">
       <div class="container-fluid mt-2 ml-1 mr-2">
         <!-- Left: Filter Button and Filter Options -->
         <div class="d-flex flex-grow-0 flex-shrink-0" style="width:75%; " @mouseleave="showExpanded = false"
@@ -1272,14 +1298,14 @@ function reset_for_miami_plot() {
           </button>
   
           <transition name="slide-fade">
-            <div v-if="showExpanded || showExpandedClick" class="expanded-content rounded" style="border:solid;border-width:1px;border-color:lightgrey">
+            <div v-if="showExpanded || showExpandedClick" class="expanded-content rounded" >
               <label class="mr-1 ml-2" ><b>Minor Allele Freq Range:</b></label>
   
               <input
                 type="number"
                 v-model="minFreq"
                 class="form-control form-control-sm mr-1"
-                style="border: 1px solid black; color: black; font-size: 16px;"
+                style="width:70px; border: 1px solid black; color: black; font-size: 16px;"
                 :min="0"
                 :max="0.5"
                 :step="0.05"
@@ -1289,7 +1315,7 @@ function reset_for_miami_plot() {
                 type="number"
                 v-model="maxFreq"
                 class="form-control form-control-sm mr-3"
-                style="border: 1px solid black; color: black; font-size: 16px;"
+                style="width:70px; border: 1px solid black; color: black; font-size: 16px;"
                 :min="0"
                 :max="0.5"
                 :step="0.05"
@@ -1299,6 +1325,7 @@ function reset_for_miami_plot() {
                 <button
                   type="button"
                   class="btn btn-primary"
+                  style="color: white;"
                   :class="{ active: selectedType === 'SNP' }"
                   @click="selectType('SNP')"
                 >
@@ -1307,6 +1334,7 @@ function reset_for_miami_plot() {
                 <button
                   type="button"
                   class="btn btn-primary"
+                  style="color: white;"
                   :class="{ active: selectedType === 'Indel' }"
                   @click="selectType('Indel')"
                 >
@@ -1315,14 +1343,19 @@ function reset_for_miami_plot() {
                 <button
                   type="button"
                   class="btn btn-primary"
+                  style="color: white;"
                   :class="{ active: selectedType === 'Both' }"
                   @click="selectType('Both')"
                 >
                   Both
                 </button>
+
               </div>
               <button class="btn btn-primary blue-button mr-2" @click="applyFilter">
                 Filter
+              </button>
+              <button class="btn btn-secondary" @click="cancelFilter()">
+                Cancel
               </button>
             </div>
           </transition>
@@ -1376,7 +1409,8 @@ function reset_for_miami_plot() {
 
 .container-fluid {
     display: flex;
-    width: 100%; 
+    width: 100%;
+    max-height:40px;
 }
 
 .expanded-content {
