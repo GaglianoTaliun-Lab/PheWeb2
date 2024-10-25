@@ -1,5 +1,5 @@
 <template>
-  <div class="text-left" style="width: 20%"> 
+  <div class="text-left; d-flex" style="width: 50%; gap: 20px;"> 
       <v-select
           v-model="selectedSex"
           :items="sexOptions"
@@ -7,8 +7,24 @@
           prepend-icon="mdi-gender-male-female"
           class="mb-4"
           variant="underlined"
-          hint="Choose the stratification filter"
-          persistent-hint
+      ></v-select>
+      <v-select
+          v-model="selectedAncestry"
+          :items="ancestryOptions"
+          label="Ancestry Stratification"
+          prepend-icon="mdi-account-group-outline"
+          class="mb-4"
+          variant="underlined"
+      ></v-select>
+  </div>  
+  <div class="text-left; d-flex" style="width: 25%; gap: 20px; margin-top: 2%;"> 
+      <v-select
+          v-model="selectedCategory"
+          :items="categoryOptions"
+          label="Choose a category"
+          prepend-icon="mdi-shape-outline"
+          class="mb-4"
+          variant="underlined"
       ></v-select>
   </div>  
   <div class="text-right">
@@ -17,8 +33,15 @@
   <v-card elevation="5">
 
     <template v-slot:text>
-      <v-text-field v-model="search" label="Try 'Diseases', 'Type 2 Diabetes', '12: 121779004 A/G', etc."
-        prepend-inner-icon="mdi-magnify" variant="outlined" hide-details single-line></v-text-field>
+      <v-text-field 
+        v-model="search" 
+        label="Try 'Diseases', 'Type 2 Diabetes', '12: 121779004 A/G', etc."
+        prepend-inner-icon="mdi-magnify" 
+        variant="outlined" 
+        hide-details 
+        single-line
+        autocomplete="on"
+      ></v-text-field>
     </template>
 
     <v-data-table 
@@ -28,6 +51,8 @@
       height=700 
       fixed-header 
       :items-per-page="100"
+      :sort-by="[{ key: 'pval', order: 'asc' }]"
+      must-sort
       hover>
 
       <template v-slot:item.phenostring="{ item }">
@@ -161,11 +186,8 @@
       { title: 'P-value', key: 'pval' },
       { title: 'Top Variant', key: 'variantid' },
       { title: 'Nearest Gene(s)', key: 'nearest_genes' },
-      { title: 'Stratification',
-        children: [
-          { title: 'Sex', key: 'sex' }
-        ]
-      },
+      { title: 'Sex', key: 'sex' },
+      { title: 'Ancestry', key: 'ancestry' },
     ]);
 
     const phenotypes = ref([]);
@@ -186,10 +208,11 @@
           ...item,
           variantid: `${item.chrom}-${item.pos}-${item.ref}-${item.alt}`,
           variantName: item.rsids 
-            ? `chr${item.chrom}: ${item.pos} ${item.ref} / ${item.alt} (${item.rsids})`
+            ? `${item.chrom}: ${item.pos} ${item.ref} / ${item.alt} (${item.rsids})`
             : `${item.chrom}: ${item.pos} ${item.ref} / ${item.alt}`,
           ancestry: `${item.stratification.ancestry}`,
           sex: `${item.stratification.sex}`,
+          ancestry: `${item.stratification.ancestry}`,
           num_controls: `${item.num_controls}`,
           num_num_cases: `${item.num_cases}`,
           nearest_genes: item.nearest_genes ? item.nearest_genes.split(',') : [],  // Convert string to array
@@ -208,11 +231,25 @@
     const selectedSex = ref('All');
     const sexOptions = ref(['All', 'Combined', 'Male', 'Female']);
 
+    const selectedAncestry = ref('All');
+    const ancestryOptions = computed(() => {
+      const ancestry = phenotypes.value.map(item => item.ancestry);
+      return ['All', ...new Set(ancestry)];
+    });
+
+    const selectedCategory = ref('All');
+    const categoryOptions = computed(() => {
+      const categories = phenotypes.value.map(item => item.category);
+      return ['All', ...new Set(categories)];
+    });
+
     const filteredPhenotypes = computed(() => {
-      if (selectedSex.value === 'All') {
-        return phenotypes.value;
-      }
-      return phenotypes.value.filter(item => item.sex === selectedSex.value);
+      return phenotypes.value.filter(item => {
+        const sexMatches = selectedSex.value === 'All' || item.sex === selectedSex.value;
+        const ancestryMatches = selectedAncestry.value === 'All' || item.ancestry === selectedAncestry.value;
+        const categoryMatches = selectedCategory.value === 'All' || item.category === selectedCategory.value;
+        return sexMatches && ancestryMatches && categoryMatches;
+      });
     });
 
 
