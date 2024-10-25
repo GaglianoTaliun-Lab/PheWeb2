@@ -17,6 +17,36 @@ const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URL
 const route = useRoute();
 const phenocode = route.params.phenocode;
 
+
+const showExpanded = ref(false);
+const showExpandedClick = ref(false)
+const minFreq = ref(0);
+const maxFreq = ref(0.5);
+const selectedType = ref('SNP');
+const hiddenToggle = ref(null);
+
+const get_chrom_offsets_data = ref(null)
+const point_tooltip = ref(null)
+const plot_width = ref(null)
+const plot_height = ref(null)
+const x_scale = ref(null)
+const y_scale_data = ref(null)
+
+
+const toggleExpanded = () => {
+  showExpandedClick.value = !showExpandedClick.value;
+
+  if (showExpandedClick.value){
+    hiddenToggle.value.style.backgroundColor = 'darkblue'
+  } else {
+    hiddenToggle.value.style.backgroundColor = 'blue'
+  }
+};
+
+const selectType = (type) => {
+  selectedType.value = type;
+};
+
 const tooltip_underscoretemplate = `
 <% if(_.has(d, 'chrom')) { %><b><%= d.chrom %>:<%= d.pos.toLocaleString() %> <%= d.ref %> / <%= d.alt %></b><br><% } %>
 <% if(_.has(d, 'rsids')) { %><% _.each(_.filter((d.rsids||"").split(",")), function(rsid) { %>rsid: <b><%= rsid %></b><br><% }) %><% } %>
@@ -220,12 +250,12 @@ function create_manhattan_plot(variant_bins, unbinned_variants) {
     }
 
         var svg_width = manhattanPlotContainer.value.clientWidth;;
-        var svg_height = 400; // shorten plot for manhattan a little bit compared to miami
+        var svg_height = 350; // shorten plot for manhattan a little bit compared to miami
         var plot_margin = {
             'left': 70,
             'right': 30,
             'top': 20,
-            'bottom': 20,
+            'bottom': 30,
         };
         var plot_width = svg_width - plot_margin.left - plot_margin.right;
         var plot_height = svg_height - plot_margin.top - plot_margin.bottom; 
@@ -513,31 +543,143 @@ function create_manhattan_plot(variant_bins, unbinned_variants) {
 
 }
 
+function reset_for_manhattan_plot() {
+    if (manhattanPlotContainer.value) {
+        manhattanPlotContainer.value.innerHTML = '';
+    }
+    manhattanPlotContainer.value.innerHTML = `
+    <svg id="manhattan_svg">
+        <defs>
+        <pattern id="pattern-stripe" width="4" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+            <rect width="2" height="4" transform="translate(0,0)" fill="white"></rect>
+        </pattern>
+        <mask id="mask-stripe"><rect x="0" y="0" width="100%" height="100%" fill="url(#pattern-stripe)" /></mask>
+        </defs>
+
+        <g id="manhattan_plot">
+            <g id="genenames"></g>
+            <g id="variant_hover_rings"></g>
+            <g id="variant_points"></g>
+            <g id="variant_bins"></g>
+            <rect id="unchecked_variants_mask" style="fill:gray; mask:url(#mask-stripe)" transform="translate(-3,0)"/>
+            <g id="filtered_variant_hover_rings"></g>
+            <g id="filtered_variant_points"></g>
+            <g id="filtered_variant_bins"></g>
+            
+        </g>
+
+    </svg>
+    `
+}
+
 </script>
 
 
 <template>
-    <div class="shadow-sm border rounded mt-5 pb-3">
-        <span class="ml-3 mr-3" >
-            <router-link :to="`/pheno-filter/${phenocode}`" tag="a" class="btn btn-secondary">Filter Variants</router-link>
-        </span>
-        <div class="float-end">
-            <button type="button" class="btn btn-light border mt-2 mr-2 bg-body rounded " @click="downloadPNG">Download PNG</button>
-            <button type="button" class="btn btn-light border mt-2 mr-2 bg-body rounded " @click="downloadSVG">Download SVG</button>
+    <div class="shadow-sm border rounded mt-3 mb-3">
+      <div class="container-fluid mt-2 ml-1 mr-2">
+        <!-- Left: Filter Button and Filter Options -->
+        <div class="d-flex flex-grow-0 flex-shrink-0" style="width:75%; " @mouseleave="showExpanded = false"
+        >
+          <button 
+            class="btn btn-primary" 
+            @click="toggleExpanded" 
+            @mouseover="showExpanded = true" 
+            ref="hiddenToggle"
+          > 
+            Filter Variants 
+          </button>
+  
+          <transition name="slide-fade">
+            <div v-if="showExpanded || showExpandedClick" class="expanded-content rounded" style="">
+              <label class="mr-1 ml-2" ><b>Minor Allele Freq Range:</b></label>
+  
+              <input
+                type="number"
+                v-model="minFreq"
+                class="form-control form-control-sm mr-1"
+                style="width:70px; border: 1px solid black; color: black; font-size: 16px;"
+                :min="0"
+                :max="0.5"
+                :step="0.05"
+              />
+              <span class="mr-1">-</span>
+              <input
+                type="number"
+                v-model="maxFreq"
+                class="form-control form-control-sm mr-3"
+                style="width:70px; border: 1px solid black; color: black; font-size: 16px;"
+                :min="0"
+                :max="0.5"
+                :step="0.05"
+              />
+  
+              <div class="btn-group mr-2">
+                <button
+                  type="button"
+                  class="btn btn-primary"
+                  :class="{ active: selectedType === 'SNP' }"
+                  @click="selectType('SNP')"
+                >
+                  SNP
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-primary"
+                  :class="{ active: selectedType === 'Indel' }"
+                  @click="selectType('Indel')"
+                >
+                  Indel
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-primary"
+                  :class="{ active: selectedType === 'Both' }"
+                  @click="selectType('Both')"
+                >
+                  Both
+                </button>
+              </div>
+              <button class="btn btn-primary blue-button mr-2" @click="applyFilter">
+                Filter
+              </button>
+            </div>
+          </transition>
         </div>
-        <div class="manhattan" ref="manhattanPlotContainer"></div>
+
+        <div class="d-flex flex-grow-0 flex-shrink-0" style="width:25%">
+          <button 
+            type="button" 
+            class="btn btn-light border bg-body rounded"
+            style="width:150px" 
+            @click="downloadPNG"
+          >
+            Download PNG
+          </button>
+          <button 
+            type="button" 
+            class="btn btn-light border ml-2 bg-body rounded"
+            style="width:150px" 
+            @click="downloadSVG"
+          >
+            Download SVG
+          </button>
+        </div>
+      </div>
+  
+      <div class="manhattan" ref="manhattanPlotContainer"></div>
     </div>
 </template>
 
 <style lang="scss">
 
-.btn:hover {
-    background-color: #f0f0f0 !important;
+.btn-secondary:hover{
+    background-color : grey
 }
 
 .manhattan div {
     min-width: 100%;
-    max-width: 1rem;
+    max-height: 1rem;
 }
 
 .d3-tip {
@@ -551,28 +693,33 @@ function create_manhattan_plot(variant_bins, unbinned_variants) {
     pointer-events: none;
 }
 
+.container-fluid {
+    display: flex;
+    width: 100%; 
+    max-height:40px;
+}
+
 .expanded-content {
-    transition: opacity 0.3s ease, max-height 0.3s ease;
-    overflow: hidden;
-    max-height: 300px; /* Adjust height as needed */
-    opacity: 1;
+    display: flex;
+    align-items: center;
 }
 
-.expanded-content[style*="display: none;"] {
-    max-height: 0;
+
+.btn-light:hover {
+    background-color: #f0f0f0 !important;
+}
+
+.btn-primary:hover {
+    background-color: darkblue !important;
+}
+
+
+.slide-fade-enter-active, .slide-fade-leave-active {
+    transition: all 0.3s ease;
+}
+
+.slide-fade-enter-from, .slide-fade-leave-to {
+    transform: translateX(-10px);
     opacity: 0;
-}
-
-.d-flex{
-    width : 44%;
-    height: 45px
-}
-
-.d-flex label{
-    align-items: center !important;
-}
-
-.d-flex input {
-    width : 62px;
 }
 </style>
