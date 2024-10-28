@@ -1,38 +1,83 @@
 <template>
-  <div class="text-left; d-flex" style="width: 50%; gap: 20px;"> 
-      <v-select
-          v-model="selectedSex"
-          :items="sexOptions"
-          label="Sex Stratification"
-          prepend-icon="mdi-gender-male-female"
-          class="mb-4"
-          variant="underlined"
-      ></v-select>
-      <v-select
-          v-model="selectedAncestry"
-          :items="ancestryOptions"
-          label="Ancestry Stratification"
-          prepend-icon="mdi-account-group-outline"
-          class="mb-4"
-          variant="underlined"
-      ></v-select>
-  </div>  
+  <v-card class="d-flex ma-2 pa-2" variant="text">
+    <v-row dense>
+      <v-col cols="12" md="4">
+        <v-card
+          max-width="500"
+          subtitle="Stratification"
+          hover
+        >  
+          <v-row class="d-flex" dense>
+            <v-col cols="12" sm="6">
+              <v-select
+                  v-model="selectedSex"
+                  :items="sexOptions"
+                  label="Sex"
+                  prepend-icon="mdi-gender-male-female"
+                  class="ma-2 pa-2"
+                  variant="underlined"
+              ></v-select>
+            </v-col>
+            <v-col cols="12" sm="6">
+              <v-select
+                  v-model="selectedAncestry"
+                  :items="ancestryOptions"
+                  label="Ancestry"
+                  prepend-icon="mdi-account-group-outline"
+                  class="ma-2 pa-2"
+                  variant="underlined"
+              ></v-select>
+            </v-col>
+          </v-row>
+        </v-card>
+      </v-col>
+
+      <v-col cols="12" md="6">
+        <v-card
+          max-width="600"
+          subtitle="Phenotypes"
+          hover
+        >
+          <v-row class="d-flex" dense>
+            <v-col cols="12" sm="6">
+              <v-autocomplete
+                v-model="selectedCategory"
+                :items="categoryOptions"
+                label="Select/Type a category"
+                prepend-icon="mdi-shape-outline"
+                class="ma-2 pa-2"
+                variant="underlined"
+                auto-select-first  
+              ></v-autocomplete>
+            </v-col>
+            <v-col cols="12" sm="6">
+              <v-autocomplete
+                v-model="selectedPhenotype"
+                :items="phenotypeOptions"
+                label="Select/Type a phenotype"
+                prepend-icon="mdi-heart-pulse"
+                class="ma-2 pa-2"
+                variant="underlined"
+                auto-select-first  
+              ></v-autocomplete>
+            </v-col>
+          </v-row>
+        </v-card>
+      </v-col>
+
+    </v-row>
+  </v-card>
+  
+
   <div class="text-left; d-flex" style="width: 25%; gap: 20px; margin-top: 2%;"> 
-      <v-select
-          v-model="selectedCategory"
-          :items="categoryOptions"
-          label="Choose a category"
-          prepend-icon="mdi-shape-outline"
-          class="mb-4"
-          variant="underlined"
-      ></v-select>
+      
   </div>  
   <div class="text-right">
       <v-btn color="primary" @click="downloadCSV">Download CSV</v-btn>
   </div>
   <v-card elevation="5">
 
-    <template v-slot:text>
+    <!-- <template v-slot:text>
       <v-text-field 
         v-model="search" 
         label="Try 'Diseases', 'Type 2 Diabetes', '12: 121779004 A/G', etc."
@@ -42,7 +87,7 @@
         single-line
         autocomplete="on"
       ></v-text-field>
-    </template>
+    </template> -->
 
     <v-data-table 
       :items="filteredPhenotypes" 
@@ -172,7 +217,7 @@
 </template>
 
 <script setup>
-    import { ref, onMounted, computed } from 'vue';
+    import { ref, onMounted, computed, defineEmits, watch } from 'vue';
     import axios from 'axios';
 
     const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URL
@@ -228,7 +273,7 @@
       
     };
 
-    // stratification filter
+    // filters
     const selectedSex = ref('All');
     const sexOptions = ref(['All', 'Combined', 'Male', 'Female']);
 
@@ -238,20 +283,43 @@
       return ['All', ...new Set(ancestry)];
     });
 
-    const selectedCategory = ref('All');
+    const selectedCategory = ref();
     const categoryOptions = computed(() => {
       const categories = phenotypes.value.map(item => item.category);
-      return ['All', ...new Set(categories)];
+      return ['All', ...[...new Set(categories)].sort((a, b) => a.localeCompare(b))];
+    });
+
+    const selectedPhenotype = ref();
+    const phenotypeOptions = computed(() => {
+      const phenos = phenotypes.value.map(item => item.phenostring);
+      return ['All', ...[...new Set(phenos)].sort((a, b) => a.localeCompare(b))];
     });
 
     const filteredPhenotypes = computed(() => {
       return phenotypes.value.filter(item => {
         const sexMatches = selectedSex.value === 'All' || item.sex === selectedSex.value;
         const ancestryMatches = selectedAncestry.value === 'All' || item.ancestry === selectedAncestry.value;
-        const categoryMatches = selectedCategory.value === 'All' || item.category === selectedCategory.value;
-        return sexMatches && ancestryMatches && categoryMatches;
+        const categoryMatches = !selectedCategory.value || selectedCategory.value === 'All' || item.category === selectedCategory.value;
+        const phenotypeMatches = !selectedPhenotype.value || selectedPhenotype.value === 'All' || item.phenostring === selectedPhenotype.value;
+        return sexMatches && ancestryMatches && categoryMatches && phenotypeMatches;
       });
     });
+
+    // unique phenotype displayed
+    const displayedUniquePhenotypesCount = computed(() => {
+      const uniquePhenotypes = new Set(filteredPhenotypes.value.map(item => item.phenostring));
+      return uniquePhenotypes.size;
+    });
+
+    const displayedTotalPhenotypesCount = computed(() => {
+      const totalPhenotypes = new Set(phenotypes.value.map(item => item.phenostring));
+      return totalPhenotypes.size;
+    });
+
+
+
+    const emit = defineEmits(['updateUniquePhenotypesCount']) //emit('updateUniquePhenotypesCount', data) to parent
+
 
 
     // download
@@ -285,6 +353,10 @@
     onMounted(() => {
       fetchSampleData();
     });
+
+    watch([displayedUniquePhenotypesCount, displayedTotalPhenotypesCount], ([newUniqueCount, newTotalCount]) => {
+      emit('updateUniquePhenotypesCount', { uniqueCount: newUniqueCount, totalCount: newTotalCount });
+    })
 
 </script>
 
