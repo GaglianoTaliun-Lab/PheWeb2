@@ -6,6 +6,7 @@ import Random from '../pages/random/Random.vue';
 import Tophits from '../pages/tophits/TopHits.vue';
 import Variant from '../pages/variant/Variant.vue';
 import Pheno from '../pages/pheno/Pheno.vue';
+import Gene from '../pages/gene/Gene.vue';
 
 const routes = [
   {
@@ -62,6 +63,14 @@ const routes = [
     component: Pheno,
     meta: {
       title: 'CLSA-PheWeb: Pheno'
+    }
+  },
+  {
+    path: '/region/:phenocode/gene/:gene',
+    name: 'Gene',
+    component: Gene,
+    meta: {
+      title: 'CLSA-PheWeb: Gene'
     }
   }
 ];

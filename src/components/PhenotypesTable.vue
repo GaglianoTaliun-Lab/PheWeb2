@@ -110,9 +110,12 @@
 
       <template v-slot:item.nearest_genes="{ item }">
         <span v-for="(gene, index) in item.nearest_genes" :key="index">
-          <a :href="`https://www.ncbi.nlm.nih.gov/gene/?term=${gene.trim()}`" target="_blank">
-            <span style="font-style: italic;">{{ gene.trim() }}</span> <!-- Italic style applied -->
-          </a>
+          <router-link 
+            :to="`/region/${item.phenocode}/gene/${gene.trim()}?include=${item.chrom}-${item.pos}`" 
+            style="white-space: nowrap; font-style: italic;"
+          >
+            {{ gene.trim() }}
+          </router-link>
           <span v-if="index < item.nearest_genes.length - 1">, </span>
         </span>
       </template>
@@ -217,7 +220,7 @@
 </template>
 
 <script setup>
-    import { ref, onMounted, computed, defineEmits, watch } from 'vue';
+    import { ref, onMounted, computed, watch } from 'vue';
     import axios from 'axios';
     const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URL
     

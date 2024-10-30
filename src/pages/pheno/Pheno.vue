@@ -8,7 +8,6 @@ import '@fortawesome/fontawesome-free/css/all.css';
 import Navbar2 from '../../components/Navbar2.vue';
 import ManhattanPlot from '../../components/ManhattanPlot.vue';
 import MiamiPlot from '../../components/MiamiPlot.vue';
-import GwasTable from '../../components/GwasTable.vue';
 import QQPlot from '../../components/QQPlot.vue';
 import GWASTable from '../../components/GWASTable.vue';
 

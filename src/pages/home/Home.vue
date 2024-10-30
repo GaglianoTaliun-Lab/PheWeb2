@@ -11,8 +11,8 @@
         <v-container class="centered-content" style="margin-top: 2%;">
           <SearchBox />
           <HomeInfo />
-          
         </v-container>
+        
         <Citations />
 
         <v-card elevation="0" variant="plain" style="position: relative; bottom: 5%; margin-top: 10%;" >
