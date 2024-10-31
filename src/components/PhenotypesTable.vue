@@ -97,6 +97,7 @@
       fixed-header 
       :items-per-page="100"
       :sort-by="[{ key: 'pval', order: 'asc' }]"
+      :loading="isLoading"
       must-sort
       hover>
 
@@ -222,9 +223,9 @@
 <script setup>
     import { ref, onMounted, computed, watch } from 'vue';
     import axios from 'axios';
+
     const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URL
     
-
     // main table
     const headers = ref([
       { title: 'Category', key: 'category' },
@@ -249,9 +250,9 @@
       isLoading.value = true;
       errorMessage.value = '';
       try {
-        console.log(`${api}/phenotypes`)
+        // console.log(`${api}/phenotypes`)
         const response = await axios.get(`${api}/phenotypes`)
-        console.log(response);
+        // console.log(response);
         phenotypes.value = response.data.map(item => ({
           ...item,
           variantid: `${item.chrom}-${item.pos}-${item.ref}-${item.alt}`,
