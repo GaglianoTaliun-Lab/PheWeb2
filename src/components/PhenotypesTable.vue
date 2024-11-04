@@ -1,37 +1,6 @@
 <template>
-  <v-card class="d-flex ma-2 pa-2" variant="text">
+  <v-card class="d-flex mt-2 pa-2" variant="text">
     <v-row dense>
-      <v-col cols="12" md="4">
-        <v-card
-          max-width="500"
-          subtitle="Stratification"
-          hover
-        >  
-          <v-row class="d-flex" dense>
-            <v-col cols="12" sm="6">
-              <v-select
-                  v-model="selectedSex"
-                  :items="sexOptions"
-                  label="Sex"
-                  prepend-icon="mdi-gender-male-female"
-                  class="ma-2 pa-2"
-                  variant="underlined"
-              ></v-select>
-            </v-col>
-            <v-col cols="12" sm="6">
-              <v-select
-                  v-model="selectedAncestry"
-                  :items="ancestryOptions"
-                  label="Ancestry"
-                  prepend-icon="mdi-account-group-outline"
-                  class="ma-2 pa-2"
-                  variant="underlined"
-              ></v-select>
-            </v-col>
-          </v-row>
-        </v-card>
-      </v-col>
-
       <v-col cols="12" md="6">
         <v-card
           max-width="600"
@@ -64,6 +33,38 @@
           </v-row>
         </v-card>
       </v-col>
+      <v-col cols="12" md="4">
+        <v-card
+          max-width="500"
+          subtitle="Stratification"
+          hover
+        >  
+          <v-row class="d-flex" dense>
+            <v-col cols="12" sm="6">
+              <v-select
+                  v-model="selectedSex"
+                  :items="sexOptions"
+                  label="Sex"
+                  prepend-icon="mdi-gender-male-female"
+                  class="ma-2 pa-2"
+                  variant="underlined"
+              ></v-select>
+            </v-col>
+            <v-col cols="12" sm="6">
+              <v-select
+                  v-model="selectedAncestry"
+                  :items="ancestryOptions"
+                  label="Ancestry"
+                  prepend-icon="mdi-account-group-outline"
+                  class="ma-2 pa-2"
+                  variant="underlined"
+              ></v-select>
+            </v-col>
+          </v-row>
+        </v-card>
+      </v-col>
+
+
 
     </v-row>
   </v-card>
@@ -182,8 +183,43 @@
       <template v-slot:header.variantid="{ column, isSorted, getSortIcon }">
         <div style="display: flex; align-items: center;">
           <span style="white-space: nowrap;">{{ column.title }}</span>
+          <v-menu
+            open-on-hover
+            v-model="menu"
+            :close-on-content-click="false"
+            location="bottom"
+            
+          >
+            <template v-slot:activator="{ props }">
+                <v-icon small color="primary" v-bind="props" class="ml-2">mdi-feature-search-outline</v-icon>
+            </template>
+            <v-card class="pa-3">
+              <!-- <v-text-field
+              v-model="selectedVariant"
+              label="Try rs11553699 or 12-121779004-A-G"
+              :loading="variantSearchLoading"
+              clearable
+              style="width: 400px;"
+              variant="outlined"
+              append-inner-icon="mdi-magnify"
+              @click:append-inner="onClickVariantSearch"
+              density="compact"
+              elevation="2"
+            ></v-text-field> -->
+            <v-autocomplete
+              v-model="selectedVariant"
+              :items="variantOptions"
+              label="Try rs11553699 or 12-121779004-A-G"
+              clearable
+              style="width: 400px;"
+              variant="outlined"
+              prepend-inner-icon="mdi-magnify"      
+              density="compact"
+              elevation="2"
+            ></v-autocomplete>
+            </v-card>
+          </v-menu>
           <v-tooltip 
-
             location="top">
             <template v-slot:activator="{ props }">
               <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
@@ -196,9 +232,6 @@
               5) rsid (if applicable)
             </span>
           </v-tooltip>
-          <template v-if="isSorted(column)">
-              <v-icon :icon="getSortIcon(column)"></v-icon>
-          </template>
         </div>
       </template>
 
@@ -230,13 +263,13 @@
     const headers = ref([
       { title: 'Category', key: 'category' },
       { title: 'Phenotype', key: 'phenostring' },
+      { title: 'Sex', key: 'sex' },
+      { title: 'Ancestry', key: 'ancestry' },
       { title: '#Samples', key: 'num_samples' },
       { title: '#Loci < 5e-8', key: 'num_peaks' },
       { title: 'P-value', key: 'pval' },
-      { title: 'Top Variant', key: 'variantid' },
-      { title: 'Nearest Gene(s)', key: 'nearest_genes' },
-      { title: 'Sex', key: 'sex' },
-      { title: 'Ancestry', key: 'ancestry' },
+      { title: 'Top Variant', key: 'variantid', sortable: false },
+      { title: 'Nearest Gene(s)', key: 'nearest_genes', sortable: false },
     ]);
 
     const phenotypes = ref([]);
@@ -298,15 +331,34 @@
       return ['All', ...[...new Set(phenos)].sort((a, b) => a.localeCompare(b))];
     });
 
+    // in-table filters
+    const selectedVariant = ref('');
+    const menu = ref(false);
+    const variantOptions = computed(() => {
+      const variants = phenotypes.value
+        .flatMap(item => [item.rsids, item.variantid]) 
+        .filter(variant => variant !== undefined && variant !== '');
+      return ['All', ...[...new Set(variants)].sort((a, b) => a.localeCompare(b))];
+    });
+
+
+
     const filteredPhenotypes = computed(() => {
       return phenotypes.value.filter(item => {
         const sexMatches = selectedSex.value === 'All' || item.sex === selectedSex.value;
         const ancestryMatches = selectedAncestry.value === 'All' || item.ancestry === selectedAncestry.value;
         const categoryMatches = !selectedCategory.value || selectedCategory.value === 'All' || item.category === selectedCategory.value;
         const phenotypeMatches = !selectedPhenotype.value || selectedPhenotype.value === 'All' || item.phenostring === selectedPhenotype.value;
-        return sexMatches && ancestryMatches && categoryMatches && phenotypeMatches;
+        const rsidMatches = !selectedVariant.value || selectedVariant.value === 'All' ||  item.rsids === selectedVariant.value || item.variantid === selectedVariant.value;
+        return sexMatches && ancestryMatches && categoryMatches && phenotypeMatches && rsidMatches;
       });
     });
+
+    
+
+
+
+
 
     // unique phenotype displayed
     const displayedUniquePhenotypesCount = computed(() => {
