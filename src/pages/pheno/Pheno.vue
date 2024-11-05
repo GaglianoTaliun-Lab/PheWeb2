@@ -79,7 +79,7 @@ onMounted(async () => {
 const handleRadioChange = () => {
   if (selectedStratification2.value === "None"){
     miamiToggle.value = false;
-    manhattanData.value = plottingData.value[selectedStratification1.value];
+    manhattanData.value[selectedStratification1.value] = plottingData.value[selectedStratification1.value];
 
     qqSubset.value = {};
     qqSubset.value[selectedStratification1.value] = qqData.value[selectedStratification1.value];
@@ -104,13 +104,10 @@ const downloadAll = () => {
 
   // get all phenocodes api calls
   for (const pheno of info.value){
-    console.log(pheno)
     var phenocode = stratificationsToKey(pheno.phenocode, pheno.stratification)
     var api_link = `${api}/sumstats/${phenocode}`;
     downloads.push({url:api_link, filename : phenocode})
   };
-
-  console.log("downloads: ", downloads)
 
   //without slowing it down the website would jsut download the last of the list. maybe can use async await here
   downloads.forEach((file, index) => {
@@ -118,7 +115,6 @@ const downloadAll = () => {
       const a = document.createElement('a');
       a.href = file.url;
       a.download = file.filename;
-      console.log(a);
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -138,7 +134,6 @@ const downloadCurrent = () => {
       const a = document.createElement('a');
       a.href = file.url;
       a.download = file.filename;
-      console.log(a);
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -149,7 +144,6 @@ const downloadCurrent = () => {
 const populateDataPreview = () => {
   try {
     var link = "https://datapreview.clsa-elcv.ca/mica/variable/com%3A"+phenocode+"%3ACollected#/"
-    console.log(link)
     // just checking if it's working
     axios.get(link);
     linkUrl.value = link;

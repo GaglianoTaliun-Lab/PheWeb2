@@ -6,6 +6,8 @@ import * as d3 from 'd3';
 import d3Tip from 'd3-tip';
 import _ from 'underscore'
 
+import * as utils from '../pages/pheno/Pheno.js'
+
 const point_radius = 2.3;
 
 const props = defineProps({
@@ -54,26 +56,18 @@ const selectType = (type) => {
 const createMiamis = (option) => {
     var keys = Object.keys(info.value)
 
-    pheno1.value = keys[0]
-    pheno2.value = keys[1]
-
     // this means that the same object was passed (eurofemale and eurofemale, for example)
     // (don't know why a user would want this... but it's better than crashing)
-    if (keys.length < 2){
-        create_miami_plot(
-            info.value[keys[0]]['variant_bins'], info.value[keys[0]]['unbinned_variants'],
-            info.value[keys[0]]['variant_bins'], info.value[keys[0]]['unbinned_variants'],
-            keys[0], keys[0],
-            option
-        )
-    } else {
-        create_miami_plot( 
-            info.value[keys[0]]['variant_bins'], info.value[keys[0]]['unbinned_variants'],
-            info.value[keys[1]]['variant_bins'], info.value[keys[1]]['unbinned_variants'],
-            keys[0], keys[1],
-            option
-        )
-    }
+    pheno1.value = keys[0]
+    pheno2.value = keys[1] || keys[0]
+
+    create_miami_plot(
+        info.value[keys[0]]['variant_bins'], info.value[keys[0]]['unbinned_variants'],
+        info.value[keys[0]]['variant_bins'], info.value[keys[0]]['unbinned_variants'],
+        pheno1.value, pheno2.valu,
+        option
+    )
+
 }
 
 const cancelFilter = () => {
@@ -90,28 +84,6 @@ const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URL
 
 const route = useRoute();
 const phenocode = route.params.phenocode;
-
-// This is obviously a huge pain and mess but it works great with d3 so keep for now.
-// If someone wants to do me a favour and make it nicer, feel free.
-const tooltip_underscoretemplate = `
-<% if(_.has(d, 'chrom')) { %><b><%= d.chrom %>:<%= d.pos.toLocaleString() %> <%= d.ref %> / <%= d.alt %></b><br><% } %>
-<% if(_.has(d, 'rsids')) { %><% _.each(_.filter((d.rsids||"").split(",")), function(rsid) { %>rsid: <b><%= rsid %></b><br><% }) %><% } %>
-<% if(_.has(d, 'nearest_genes')) { %>nearest gene<%= _.contains(d.nearest_genes, ",")? "s":"" %>: <b><%= d.nearest_genes %></b><br><% } %>
-<% if(_.has(d, 'consequence')) { %>consequence: <b><%= d['consequence'] %></b><br><% } %>
-<% if(_.has(d, 'pval')) { %>P-value: <b><%= d['pval'] %></b><br><% } %>
-<% if(_.has(d, 'beta')) { %>Beta: <b><%= d.beta %></b><% if(_.has(d, "sebeta")){ %> (se:<b><%= d.sebeta %></b>)<% } %><br><% } %>
-<% if(_.has(d, 'or')) { %>Odds Ratio: <b><%= d['or'] %></b><br><% } %>
-<% if(_.has(d, 'maf')) { %>MAF: <b><%= d['maf'] %></b><br><% } %>
-<% if(_.has(d, 'af')) { %>AF: <b><%= d['af'] %></b><br><% } %>
-<% if(_.has(d, 'case_af')) { %>AF among cases: <b><%= d['case_af'] %></b><br><% } %>
-<% if(_.has(d, 'control_af')) { %>AF among controls: <b><%= d['control_af'] %></b><br><% } %>
-<% if(_.has(d, 'ac')) { %>AC: <b><%= d['ac'] %></b><br><% } %>
-<% if(_.has(d, 'r2')) { %>R2: <b><%= d['r2'] %></b><br><% } %>
-<% if(_.has(d, 'tstat')) { %>Tstat: <b><%= d['tstat'] %></b><br><% } %>
-<% if(_.has(d, 'num_cases')) { %>#cases: <b><%= d['num_cases'] %></b><br><% } %>
-<% if(_.has(d, 'num_controls')) { %>#controls: <b><%= d['num_controls'] %></b><br><% } %>
-<% if(_.has(d, 'num_samples')) { %>#samples: <b><%= d['num_samples'] %></b><br><% } %>
-`
 
 onMounted(() => {
     info.value = props.data
@@ -173,15 +145,8 @@ const downloadPNG = () => {
   img.src = url;
 };
 
-function fmt(format) {
-    var args = Array.prototype.slice.call(arguments, 1);
-    return format.replace(/{(\d+)}/g, function(match, number) {
-        return (typeof args[number] != 'undefined') ? args[number] : match;
-    });
-}
-
 function get_link_to_LZ_data1(variant) {
-    return fmt(`${api}` + 'region/{0}/{1}:{2}-{3}',
+    return utils.fmt(`${api}` + 'region/{0}/{1}:{2}-{3}',
                 phenocode,
                 variant.chrom,
                 Math.max(0, variant.pos - 200*1000),
@@ -189,7 +154,7 @@ function get_link_to_LZ_data1(variant) {
 }
 
 function get_link_to_LZ_data2(variant) {
-    return fmt(`${api}` + 'region/{0}/{1}:{2}-{3}',
+    return utils.fmt(`${api}` + 'region/{0}/{1}:{2}-{3}',
                 phenocode,
                 variant.chrom,
                 Math.max(0, variant.pos - 200*1000),
@@ -384,7 +349,7 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
             .style("display", "block")
             .style("margin", "auto");
         var miami_plot = d3.select('#miami_plot')
-            .attr("transform", fmt("translate({0},{1})", plot_margin.left, plot_margin.top));
+            .attr("transform", utils.fmt("translate({0},{1})", plot_margin.left, plot_margin.top));
 
         // Significance Threshold line
         var significance_threshold = 5e-8;
@@ -506,7 +471,7 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
         //side log10(p-value)
         miami_svg.append('text')
             .style('text-anchor', 'middle')
-            .attr('transform', fmt('translate({0},{1})rotate(-90)',
+            .attr('transform', utils.fmt('translate({0},{1})rotate(-90)',
                                     plot_margin.left*.4,
                                     plot_height.value/2 + plot_margin.top))
             .text('-log\u2081\u2080(p-value)'); // Unicode subscript "10"
@@ -520,7 +485,7 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
 
         miami_svg.append('text')
             .style('text-anchor', 'middle')
-            .attr('transform', fmt('translate({0},{1})rotate(-90)',
+            .attr('transform', utils.fmt('translate({0},{1})rotate(-90)',
                                     plot_margin.left*.4,
                                     plot_height.value / 4 + plot_margin.top))
             .text(stratification_label1.join(" ")); 
@@ -528,7 +493,7 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
         
         miami_svg.append('text')
             .style('text-anchor', 'middle')
-            .attr('transform', fmt('translate({0},{1})rotate(-90)',
+            .attr('transform', utils.fmt('translate({0},{1})rotate(-90)',
                                     plot_margin.left*.4,
                                     plot_height.value * 3 / 4 + plot_margin.top))
             .text(stratification_label2.join(" ")); 
@@ -544,7 +509,6 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
                 });
             })();
             if (variants === "filtered"){
-                console.log("HERE")
                 var color_by_chrom_dim = d3.scaleOrdinal()
                 .domain(get_chrom_offsets_data1.value().chroms)
                 .range(['rgb(221,221,237)', 'rgb(191,191,208)']);
@@ -584,7 +548,7 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
             .append('text')
             .style('text-anchor', 'middle')
             .attr('transform', function(d) {
-                return fmt('translate({0},{1})',
+                return utils.fmt('translate({0},{1})',
                             plot_margin.left + x_scale.value(d.midpoint),
                             svg_height/2 + 5); // divide by two to have it midway // TODO : why do I need to +5 here to have it perfectly centered??
             })
@@ -625,7 +589,7 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
 
         // Points & labels
         var tooltip_template = _.template(
-            tooltip_underscoretemplate +
+            utils.tooltip_underscoretemplate +
                 "<% if(_.has(d, 'num_significant_in_peak') && d.num_significant_in_peak>1) { %>#significant variants in peak: <%= d.num_significant_in_peak %><br><% } %>");
             point_tooltip.value = d3Tip()
                 .attr('class', 'd3-tip')
@@ -655,7 +619,7 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
             .style('font-style', 'italic')
             .attr('text-anchor', 'middle')
             .attr('transform', function(d) {
-                return fmt('translate({0},{1})',
+                return utils.fmt('translate({0},{1})',
                             x_scale.value(get_genomic_position_data1(d)),
                             y_scale_data1.value(-Math.log10(d.pval))-5);
             })
@@ -677,7 +641,7 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
             .style('font-style', 'italic')
             .attr('text-anchor', 'middle')
             .attr('transform', function(d) {
-                return fmt('translate({0},{1})',
+                return utils.fmt('translate({0},{1})',
                             x_scale.value(get_genomic_position_data2(d)),
                             y_scale_data2.value(-Math.log10(d.pval)) + 20);
             })
@@ -688,69 +652,6 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
                     return d.nearest_genes.split(',').slice(0,2).join(',')+',...';
                 }
             })
-        
-        // this isn't even used anymore.
-
-        // function pp1(flip) {
-        //         if(flip){
-        //             miami_plot.append('g')
-        //             .attr('class', 'variant_hover_rings')
-        //             .selectAll('a.variant_hover_ring')
-        //             .data(variant_unbinned2)
-        //             .enter()
-        //             .append('a')
-        //             .attr('class', 'variant_hover_ring')
-        //             .attr('xlink:href', get_link_to_LZ_data2)
-        //             .append('circle')
-        //             .attr('cx', function(d) {
-        //                 return x_scale.value(get_genomic_position_data2(d));
-        //             })
-        //             .attr('cy', function(d) {
-        //                 return y_scale_data2.value(-Math.log10(d.pval));
-        //             })
-        //             .attr('r', 7)
-        //             .style('opacity', 0)
-        //             .style('stroke-width', 1)
-        //             .on('mouseover', function(d) {
-        //                 //Note: once a tooltip has been explicitly placed once, it must be explicitly placed forever after.
-        //                 var target_node = document.getElementById(fmt('variant-point-{0}-{1}-{2}-{3}', d.chrom, d.pos, d.ref, d.alt));
-        //                 point_tooltip.value.show(d, target_node);
-        //             })
-        //             .on('mouseout', point_tooltip.value.hide)
-        //         } else if (!flip) {
-        //             miami_plot.append('g')
-        //             .attr('class', 'variant_hover_rings')
-        //             .selectAll('a.variant_hover_ring')
-        //             .data(variant_unbinned1)
-        //             .enter()
-        //             .append('a')
-        //             .attr('class', 'variant_hover_ring')
-        //             .attr('xlink:href', get_link_to_LZ_data1)
-        //             .append('circle')
-        //             .attr('cx', function(d) {
-        //                 return x_scale.value(get_genomic_position_data1(d));
-        //             })
-        //             .attr('cy', function(d) {
-        //                 return y_scale_data1.value(-Math.log10(d.pval));
-        //             })
-        //             .attr('r', 7)
-        //             .style('opacity', 0)
-        //             .style('stroke-width', 1)
-        //             .on('mouseover', function(d) {
-        //                 //Note: once a tooltip has been explicitly placed once, it must be explicitly placed forever after.
-        //                 var target_node = document.getElementById(fmt('variant-point-{0}-{1}-{2}-{3}', d.chrom, d.pos, d.ref, d.alt));
-        //                 point_tooltip.value.show(d, target_node);
-        //             })
-        //             .on('mouseout', point_tooltip.value.hide);
-        //         }
-        //     }
-
-        // if ( variant_bins1 != null){
-        //     pp1(false);
-        // }
-        // if (variant_bins2 != null){
-        //     pp1(true);
-        // }
 
         //these are where clickable points will be appended to the plot
         function pp2(flip) {
@@ -764,7 +665,7 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
                 .attr('xlink:href', get_link_to_LZ_data2)
                 .append('circle')
                 .attr('id', function(d) {
-                    return fmt('variant-point-{0}-{1}-{2}-{3}', d.chrom, d.pos, d.ref, d.alt);
+                    return utils.fmt('variant-point-{0}-{1}-{2}-{3}', d.chrom, d.pos, d.ref, d.alt);
                 })
                 .attr('cx', function(d) {
                     return x_scale.value(get_genomic_position_data2(d));
@@ -791,7 +692,7 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
                 .attr('xlink:href', get_link_to_LZ_data1)
                 .append('circle')
                 .attr('id', function(d) {
-                    return fmt('variant-point-{0}-{1}-{2}-{3}', d.chrom, d.pos, d.ref, d.alt);
+                    return utils.fmt('variant-point-{0}-{1}-{2}-{3}', d.chrom, d.pos, d.ref, d.alt);
                 })
                 .attr('cx', function(d) {
                     return x_scale.value(get_genomic_position_data1(d));
@@ -982,7 +883,7 @@ var miami_filter_view = {
             .attr('xlink:href', get_link_to_LZ_data1)
             .append('circle')
             .attr('id', function(d) {
-                return fmt('filtered-variant-point-{0}-{1}-{2}-{3}', d.chrom, d.pos, d.ref, d.alt);
+                return utils.fmt('filtered-variant-point-{0}-{1}-{2}-{3}', d.chrom, d.pos, d.ref, d.alt);
             })
             .attr('cx', function(d) {
                 return x_scale.value(get_genomic_position_data1(d));
@@ -1011,7 +912,7 @@ var miami_filter_view = {
             .attr('xlink:href', get_link_to_LZ_data2)
             .append('circle')
             .attr('id', function(d) {
-                return fmt('filtered-variant-point-{0}-{1}-{2}-{3}', d.chrom, d.pos, d.ref, d.alt);
+                return utils.fmt('filtered-variant-point-{0}-{1}-{2}-{3}', d.chrom, d.pos, d.ref, d.alt);
             })
             .attr('cx', function(d) {
                 return x_scale.value(get_genomic_position_data2(d));
@@ -1055,7 +956,7 @@ var miami_filter_view = {
             .style('stroke-width', 1) /* why? */
             .on('mouseover', function(d) {
                 //Note: once a tooltip has been explicitly placed once, it must be explicitly placed forever after.
-                var target_node = document.getElementById(fmt('filtered-variant-point-{0}-{1}-{2}-{3}', d.chrom, d.pos, d.ref, d.alt));
+                var target_node = document.getElementById(utils.fmt('filtered-variant-point-{0}-{1}-{2}-{3}', d.chrom, d.pos, d.ref, d.alt));
                 point_tooltip.value.show(d, target_node);
             })
             .on('mouseout', point_tooltip.value.hide);
@@ -1077,7 +978,7 @@ var miami_filter_view = {
             .style('stroke-width', 1) /* why? */
             .on('mouseover', function(d) {
                 //Note: once a tooltip has been explicitly placed once, it must be explicitly placed forever after.
-                var target_node = document.getElementById(fmt('filtered-variant-point-{0}-{1}-{2}-{3}', d.chrom, d.pos, d.ref, d.alt));
+                var target_node = document.getElementById(utils.fmt('filtered-variant-point-{0}-{1}-{2}-{3}', d.chrom, d.pos, d.ref, d.alt));
                 point_tooltip.value.show(d, target_node);
             })
             .on('mouseout', point_tooltip.value.hide);
@@ -1211,18 +1112,18 @@ async function refilter() {
     // get variants which pass the filters
     var url_base = `${api}/pheno-filter/${phenocode_with_stratifications1}/${phenocode_with_stratifications2}?`
     var get_params = [];
-    get_params.push(fmt("min_maf={0}", minFreq.value ));
-    get_params.push(fmt("max_maf={0}", maxFreq.value ));
+    get_params.push(utils.fmt("min_maf={0}", minFreq.value ));
+    get_params.push(utils.fmt("max_maf={0}", maxFreq.value ));
     var snp_indel_value = selectedType.value;
     if (snp_indel_value=='SNP' || snp_indel_value=='Indel') {
-        get_params.push(fmt("indel={0}", (snp_indel_value=='Indel')?'true':'false'));
+        get_params.push(utils.fmt("indel={0}", (snp_indel_value=='Indel')?'true':'false'));
     }
 
     // we don't have this fonctionality implemented... probably never will
 
     // var csq_value = $('#csq input:radio:checked').val();
     // if (csq_value=='lof' || csq_value=='nonsyn') {
-    //     get_params.push(fmt("csq={0}", csq_value));
+    //     get_params.push(utils.fmt("csq={0}", csq_value));
     // }
     
     var url = url_base + get_params.join('&');

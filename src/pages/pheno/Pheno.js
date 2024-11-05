@@ -1,6 +1,6 @@
 // This is obviously a huge pain and mess but it works great with d3 so keep for now.
 // If someone wants to do me a favour and make it nicer, feel free.
-const tooltip_underscoretemplate = `
+export const tooltip_underscoretemplate = `
 <% if(_.has(d, 'chrom')) { %><b><%= d.chrom %>:<%= d.pos.toLocaleString() %> <%= d.ref %> / <%= d.alt %></b><br><% } %>
 <% if(_.has(d, 'rsids')) { %><% _.each(_.filter((d.rsids||"").split(",")), function(rsid) { %>rsid: <b><%= rsid %></b><br><% }) %><% } %>
 <% if(_.has(d, 'nearest_genes')) { %>nearest gene<%= _.contains(d.nearest_genes, ",")? "s":"" %>: <b><%= d.nearest_genes %></b><br><% } %>
@@ -47,6 +47,13 @@ function capitalizeFirstLetter(str) {
     return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
+
+export function fmt(format) {
+    var args = Array.prototype.slice.call(arguments, 1);
+    return format.replace(/{(\d+)}/g, function(match, number) {
+        return (typeof args[number] != 'undefined') ? args[number] : match;
+    });
+}
 
 
 // If datapreview portal is reachable, then we will add a link to the phenotype's page.
