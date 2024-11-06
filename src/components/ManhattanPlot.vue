@@ -1,12 +1,19 @@
 <script setup>
+import axios from 'axios';
 import { onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import * as d3 from 'd3';
 import d3Tip from 'd3-tip';
 import _ from 'underscore'
 
+import * as utils from '../pages/pheno/Pheno.js'
+
+const point_radius = 2.3;
+
 const props = defineProps({
-    data: {String : Object, String : Object}
+    data: {
+        String: {String : Object, String : Object}
+    }
 });
 
 const info = ref(null);
@@ -17,20 +24,21 @@ const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URL
 const route = useRoute();
 const phenocode = route.params.phenocode;
 
-
 const showExpanded = ref(false);
 const showExpandedClick = ref(false)
 const minFreq = ref(0);
 const maxFreq = ref(0.5);
-const selectedType = ref('SNP');
+const selectedType = ref('Both');
 const hiddenToggle = ref(null);
 
-const get_chrom_offsets_data = ref(null)
+const get_chrom_offsets = ref(null)
 const point_tooltip = ref(null)
 const plot_width = ref(null)
 const plot_height = ref(null)
 const x_scale = ref(null)
 const y_scale_data = ref(null)
+
+const pheno = ref(null)
 
 
 const toggleExpanded = () => {
@@ -47,38 +55,34 @@ const selectType = (type) => {
   selectedType.value = type;
 };
 
-const tooltip_underscoretemplate = `
-<% if(_.has(d, 'chrom')) { %><b><%= d.chrom %>:<%= d.pos.toLocaleString() %> <%= d.ref %> / <%= d.alt %></b><br><% } %>
-<% if(_.has(d, 'rsids')) { %><% _.each(_.filter((d.rsids||"").split(",")), function(rsid) { %>rsid: <b><%= rsid %></b><br><% }) %><% } %>
-<% if(_.has(d, 'nearest_genes')) { %>nearest gene<%= _.contains(d.nearest_genes, ",")? "s":"" %>: <b><%= d.nearest_genes %></b><br><% } %>
-<% if(_.has(d, 'consequence')) { %>consequence: <b><%= d['consequence'] %></b><br><% } %>
-<% if(_.has(d, 'pval')) { %>P-value: <b><%= d['pval'] %></b><br><% } %>
-<% if(_.has(d, 'beta')) { %>Beta: <b><%= d.beta %></b><% if(_.has(d, "sebeta")){ %> (se:<b><%= d.sebeta %></b>)<% } %><br><% } %>
-<% if(_.has(d, 'or')) { %>Odds Ratio: <b><%= d['or'] %></b><br><% } %>
-<% if(_.has(d, 'maf')) { %>MAF: <b><%= d['maf'] %></b><br><% } %>
-<% if(_.has(d, 'af')) { %>AF: <b><%= d['af'] %></b><br><% } %>
-<% if(_.has(d, 'case_af')) { %>AF among cases: <b><%= d['case_af'] %></b><br><% } %>
-<% if(_.has(d, 'control_af')) { %>AF among controls: <b><%= d['control_af'] %></b><br><% } %>
-<% if(_.has(d, 'ac')) { %>AC: <b><%= d['ac'] %></b><br><% } %>
-<% if(_.has(d, 'r2')) { %>R2: <b><%= d['r2'] %></b><br><% } %>
-<% if(_.has(d, 'tstat')) { %>Tstat: <b><%= d['tstat'] %></b><br><% } %>
-<% if(_.has(d, 'num_cases')) { %>#cases: <b><%= d['num_cases'] %></b><br><% } %>
-<% if(_.has(d, 'num_controls')) { %>#controls: <b><%= d['num_controls'] %></b><br><% } %>
-<% if(_.has(d, 'num_samples')) { %>#samples: <b><%= d['num_samples'] %></b><br><% } %>
-`
-
-
 onMounted(() => {
+
     info.value = props.data
 
-    // TODO : change props format a bit so that we can pass labels instead of "test top" and "test bottom"
+    createManhattan('all')
 
-    console.log("creating manhattan plot")
-    console.log(info.value['variant_bins'], info.value['unbinned_variants'])
-    create_manhattan_plot( 
-        info.value['variant_bins'], info.value['unbinned_variants']
-    )
 });
+
+const cancelFilter = () => {
+    createManhattan('all')
+}
+
+const applyFilter = () => {
+
+  createManhattan('filtered');
+  refilter();
+};
+
+const createManhattan = (option) => {
+    var key = Object.keys(info.value)
+
+    pheno.value = key[0]
+
+    create_manhattan_plot(
+        info.value[pheno.value]['variant_bins'], info.value[pheno.value]['unbinned_variants'],
+        option
+    )
+}
 
 const downloadSVG = () => {
   // svg to string
@@ -133,14 +137,14 @@ const downloadPNG = () => {
   img.src = url;
 };
 
-function fmt(format) {
-    var args = Array.prototype.slice.call(arguments, 1);
-    return format.replace(/{(\d+)}/g, function(match, number) {
-        return (typeof args[number] != 'undefined') ? args[number] : match;
-    });
+function get_genomic_position(variant) {
+    var chrom_offsets = get_chrom_offsets.value().chrom_offsets;
+    return chrom_offsets[variant.chrom] + variant.pos;
 }
 
-function create_manhattan_plot(variant_bins, unbinned_variants) {
+function create_manhattan_plot(variant_bins, unbinned_variants, variants = "filtered") {
+
+    reset_for_manhattan_plot();
 
     // Order from weakest to strongest pvalue, so that the strongest variant will be on top (z-order) and easily hoverable
     // In the DOM, later siblings are displayed over top of (and occluding) earlier siblings.
@@ -154,7 +158,7 @@ function create_manhattan_plot(variant_bins, unbinned_variants) {
         });
     }
 
-    var get_chrom_offsets = _.memoize(function() {
+    get_chrom_offsets.value = _.memoize(function() {
         var chrom_padding = 2e7;
         var chrom_extents = {};
 
@@ -193,11 +197,6 @@ function create_manhattan_plot(variant_bins, unbinned_variants) {
             chrom_offsets: chrom_offsets,
         };
     });
-
-    function get_genomic_position(variant) {
-        var chrom_offsets = get_chrom_offsets().chrom_offsets;
-        return chrom_offsets[variant.chrom] + variant.pos;
-    }
 
     function get_y_axis_config(max_data_qval, plot_height, includes_pval0) {
 
@@ -257,18 +256,16 @@ function create_manhattan_plot(variant_bins, unbinned_variants) {
             'top': 20,
             'bottom': 30,
         };
-        var plot_width = svg_width - plot_margin.left - plot_margin.right;
-        var plot_height = svg_height - plot_margin.top - plot_margin.bottom; 
+        plot_width.value = svg_width - plot_margin.left - plot_margin.right;
+        plot_height.value = svg_height - plot_margin.top - plot_margin.bottom; 
 
-        var gwas_svg = d3.select(manhattanPlotContainer.value).append("svg")
-            .attr('id', 'gwas_svg')
+        var gwas_svg = d3.select("#gwas_svg")
             .attr("width", svg_width)
             .attr("height", svg_height)
             .style("display", "block")
             .style("margin", "auto");
-        var gwas_plot = gwas_svg.append("g")
-            .attr('id', 'gwas_plot')
-            .attr("transform", fmt("translate({0},{1})", plot_margin.left, plot_margin.top));
+        var gwas_plot = d3.select('#gwas_plot')
+            .attr("transform", utils.fmt("translate({0},{1})", plot_margin.left, plot_margin.top));
 
         // Significance Threshold line
         var significance_threshold = 5e-8;
@@ -284,9 +281,9 @@ function create_manhattan_plot(variant_bins, unbinned_variants) {
             return d3.extent(extent1.concat(extent2));
         })();
 
-        var x_scale = d3.scaleLinear()
+        x_scale.value = d3.scaleLinear()
             .domain(genomic_position_extent)
-            .range([0, plot_width]);
+            .range([0, plot_width.value]);
 
         var includes_pval0 = _.any(unbinned_variants, function(variant) { return variant.pval === 0; });
 
@@ -302,11 +299,11 @@ function create_manhattan_plot(variant_bins, unbinned_variants) {
                 });
             })());
 
-        var y_axis_config = get_y_axis_config(highest_plot_qval, plot_height, includes_pval0);
-        var y_scale = y_axis_config.scale;
+        var y_axis_config = get_y_axis_config(highest_plot_qval, plot_height.value, includes_pval0);
+        y_scale_data.value = y_axis_config.scale;
 
         // TODO: draw a small y-axis-break at 20 if `y_axis_config.draw_break_at_20`
-        var y_axis = d3.axisLeft(y_scale)
+        var y_axis = d3.axisLeft(y_scale_data.value)
             .tickFormat(d3.format("d"))
             .tickValues(y_axis_config.ticks)
         gwas_plot.append("g")
@@ -315,14 +312,14 @@ function create_manhattan_plot(variant_bins, unbinned_variants) {
             .call(y_axis);
 
         if (includes_pval0) {
-            var y_axis_break_inf_offset = y_scale(Infinity) + (y_scale(0)-y_scale(Infinity)) * 0.03
+            var y_axis_break_inf_offset = y_scale_data.value(Infinity) + (y_scale_data.value(0)-y_scale_data.value(Infinity)) * 0.03
             gwas_plot.append('line')
                 .attr('x1', -8-7).attr('x2', -8+7)
                 .attr('y1', y_axis_break_inf_offset+6).attr('y2', y_axis_break_inf_offset-6)
                 .attr('stroke', '#666').attr('stroke-width', '3px');
         }
         if (y_axis_config.draw_break_at_20) {
-            var y_axis_break_20_offset = y_scale(20);
+            var y_axis_break_20_offset = y_scale_data.value(20);
             gwas_plot.append('line')
                 .attr('x1', -8-7).attr('x2', -8+7)
                 .attr('y1', y_axis_break_20_offset+6).attr('y2', y_axis_break_20_offset-6)
@@ -331,13 +328,13 @@ function create_manhattan_plot(variant_bins, unbinned_variants) {
 
         gwas_svg.append('text')
             .style('text-anchor', 'middle')
-            .attr('transform', fmt('translate({0},{1})rotate(-90)',
+            .attr('transform', utils.fmt('translate({0},{1})rotate(-90)',
                                    plot_margin.left*.4,
-                                   plot_height/2 + plot_margin.top))
+                                   plot_height.value/2 + plot_margin.top))
             .text('-log\u2081\u2080(p-value)'); // Unicode subscript "10"
 
         var chroms_and_midpoints = (function() {
-            var v = get_chrom_offsets();
+            var v = get_chrom_offsets.value();
             return v.chroms.map(function(chrom) {
                 return {
                     chrom: chrom,
@@ -346,9 +343,16 @@ function create_manhattan_plot(variant_bins, unbinned_variants) {
             });
         })();
 
-        var color_by_chrom = d3.scaleOrdinal()
-            .domain(get_chrom_offsets().chroms)
+        if (variants === "filtered"){
+            var color_by_chrom_dim = d3.scaleOrdinal()
+            .domain(get_chrom_offsets.value().chroms)
+            .range(['rgb(221,221,237)', 'rgb(191,191,208)']);
+        } else {
+            var color_by_chrom_dim = d3.scaleOrdinal()
+            .domain(get_chrom_offsets.value().chroms)
             .range(['rgb(120,120,186)', 'rgb(0,0,66)']);
+        }
+
         //colors to maybe sample from later:
         //.range(['rgb(120,120,186)', 'rgb(0,0,66)', 'rgb(44,150,220)', 'rgb(40,60,80)', 'rgb(33,127,188)', 'rgb(143,76,176)']);
 
@@ -358,22 +362,22 @@ function create_manhattan_plot(variant_bins, unbinned_variants) {
             .append('text')
             .style('text-anchor', 'middle')
             .attr('transform', function(d) {
-                return fmt('translate({0},{1})',
-                           plot_margin.left + x_scale(d.midpoint),
-                           plot_height + plot_margin.top + 20);
+                return utils.fmt('translate({0},{1})',
+                           plot_margin.left + x_scale.value(d.midpoint),
+                           plot_height.value + plot_margin.top + 20);
             })
             .text(function(d) {
                 return d.chrom;
             })
             .style('fill', function(d) {
-                return color_by_chrom(d.chrom);
+                return color_by_chrom_dim(d.chrom);
             });
 
         gwas_plot.append('line')
             .attr('x1', 0)
-            .attr('x2', plot_width)
-            .attr('y1', y_scale(-Math.log10(significance_threshold)))
-            .attr('y2', y_scale(-Math.log10(significance_threshold)))
+            .attr('x2', plot_width.value)
+            .attr('y1', y_scale_data.value(-Math.log10(significance_threshold)))
+            .attr('y2', y_scale_data.value(-Math.log10(significance_threshold)))
             .attr('stroke-width', '5px')
             .attr('stroke', 'lightgray')
             .attr('stroke-dasharray', '10,10')
@@ -383,23 +387,15 @@ function create_manhattan_plot(variant_bins, unbinned_variants) {
 
         // Points & labels
         var tooltip_template = _.template(
-            tooltip_underscoretemplate +
+            utils.tooltip_underscoretemplate +
                 "<% if(_.has(d, 'num_significant_in_peak') && d.num_significant_in_peak>1) { %>#significant variants in peak: <%= d.num_significant_in_peak %><br><% } %>");
-        var point_tooltip = d3Tip()
+        point_tooltip.value = d3Tip()
             .attr('class', 'd3-tip')
             .html(function(d) {
                 return tooltip_template({d: d});
             })
             .offset([-6,0]);
-        gwas_svg.call(point_tooltip);
-
-        function get_link_to_LZ(variant) {
-            return fmt(`${api}` + '/region/{0}/{1}:{2}-{3}',
-                       window.phenocode,
-                       variant.chrom,
-                       Math.max(0, variant.pos - 200*1000),
-                       variant.pos + 200*1000);
-        }
+        gwas_svg.call(point_tooltip.value);
 
         // TODO: if the label touches any circles or labels, skip it?
         var variants_to_label = _.sortBy(_.where(unbinned_variants, {peak: true}), _.property('pval'))
@@ -416,9 +412,9 @@ function create_manhattan_plot(variant_bins, unbinned_variants) {
             .style('font-style', 'italic')
             .attr('text-anchor', 'middle')
             .attr('transform', function(d) {
-                return fmt('translate({0},{1})',
-                           x_scale(get_genomic_position(d)),
-                           y_scale(-Math.log10(d.pval))-5);
+                return utils.fmt('translate({0},{1})',
+                           x_scale.value(get_genomic_position(d)),
+                           y_scale_data.value(-Math.log10(d.pval))-5);
             })
             .text(function(d) {
                 if (d.nearest_genes.split(',').length <= 2) {
@@ -428,37 +424,8 @@ function create_manhattan_plot(variant_bins, unbinned_variants) {
                 }
             });
 
-        function pp1() {
-        gwas_plot.append('g')
-            .attr('class', 'variant_hover_rings')
-            .selectAll('a.variant_hover_ring')
-            .data(unbinned_variants)
-            .enter()
-            .append('a')
-            .attr('class', 'variant_hover_ring')
-            .attr('xlink:href', get_link_to_LZ)
-            .append('circle')
-            .attr('cx', function(d) {
-                return x_scale(get_genomic_position(d));
-            })
-            .attr('cy', function(d) {
-                return y_scale(-Math.log10(d.pval));
-            })
-            .attr('r', 7)
-            .style('opacity', 0)
-            .style('stroke-width', 1)
-            .on('mouseover', function(d) {
-                //Note: once a tooltip has been explicitly placed once, it must be explicitly placed forever after.
-                var target_node = document.getElementById(fmt('variant-point-{0}-{1}-{2}-{3}', d.chrom, d.pos, d.ref, d.alt));
-                point_tooltip.show(d, target_node);
-            })
-            .on('mouseout', point_tooltip.hide);
-        }
-        pp1();
-
         function pp2() {
-        gwas_plot.append('g')
-            .attr('class', 'variant_points')
+            d3.select('#variant_points')
             .selectAll('a.variant_point')
             .data(unbinned_variants)
             .enter()
@@ -467,29 +434,28 @@ function create_manhattan_plot(variant_bins, unbinned_variants) {
             .attr('xlink:href', get_link_to_LZ)
             .append('circle')
             .attr('id', function(d) {
-                return fmt('variant-point-{0}-{1}-{2}-{3}', d.chrom, d.pos, d.ref, d.alt);
+                return utils.fmt('variant-point-{0}-{1}-{2}-{3}', d.chrom, d.pos, d.ref, d.alt);
             })
             .attr('cx', function(d) {
-                return x_scale(get_genomic_position(d));
+                return x_scale.value(get_genomic_position(d));
             })
             .attr('cy', function(d) {
-                return y_scale(-Math.log10(d.pval));
+                return y_scale_data.value(-Math.log10(d.pval));
             })
             .attr('r', 2.3)
             .style('fill', function(d) {
-                return color_by_chrom(d.chrom);
+                return color_by_chrom_dim(d.chrom);
             })
             .on('mouseover', function(d) {
                 //Note: once a tooltip has been explicitly placed once, it must be explicitly placed forever after.
-                point_tooltip.show(d, this);
+                point_tooltip.value.show(d, this);
             })
-            .on('mouseout', point_tooltip.hide);
+            .on('mouseout', point_tooltip.value.hide);
         }
         pp2();
 
         function pp3() { // drawing the ~60k binned variant circles takes ~500ms.  The (far fewer) unbinned variants take much less time.
-        var bins = gwas_plot.append('g')
-            .attr('class', 'bins')
+        var bins = d3.select('#variant_bins')
             .selectAll('g.bin')
             .data(variant_bins)
             .enter()
@@ -497,8 +463,8 @@ function create_manhattan_plot(variant_bins, unbinned_variants) {
             .attr('class', 'bin')
             .attr('data-index', function(d, i) { return i; }) // make parent index available from DOM
             .each(function(d) { //todo: do this in a forEach
-                d.x = x_scale(get_genomic_position(d));
-                d.color = color_by_chrom(d.chrom);
+                d.x = x_scale.value(get_genomic_position(d));
+                d.color = color_by_chrom_dim(d.chrom);
             });
         bins.selectAll('circle.binned_variant_point')
             .data(_.property('qvals'))
@@ -510,7 +476,7 @@ function create_manhattan_plot(variant_bins, unbinned_variants) {
                 return variant_bins[parent_i].x;
             })
             .attr('cy', function(qval) {
-                return y_scale(qval);
+                return y_scale_data.value(qval);
             })
             .attr('r', 2.3)
             .style('fill', function(d, i) {
@@ -530,8 +496,8 @@ function create_manhattan_plot(variant_bins, unbinned_variants) {
                 const parent_i = +this.parentNode.getAttribute('data-index');
                 return variant_bins[parent_i].x;
             })
-            .attr('y1', function(d) { return y_scale(d[0]); })
-            .attr('y2', function(d) { return y_scale(d[1]); })
+            .attr('y1', function(d) { return y_scale_data.value(d[0]); })
+            .attr('y2', function(d) { return y_scale_data.value(d[1]); })
             .style('stroke', function(d, i) {
                 var parent_i = +this.parentNode.getAttribute('data-index');
                 return variant_bins[parent_i].color;
@@ -540,7 +506,186 @@ function create_manhattan_plot(variant_bins, unbinned_variants) {
             .style('stroke-linecap', 'round');
         }
         pp3();
+}
 
+var manhattan_filter_view = {
+
+// TODO: these javascript selects need to be changed I think, getting error about y_scale_data not defined.
+clear: function() {
+    d3.select('#filtered_variant_points').selectAll('a.variant_point').data([]).exit().remove();
+    d3.select('#filtered_variant_hover_rings').selectAll('a.variant_hover_ring').data([]).exit().remove();
+    d3.select('#filtered_variant_bins').selectAll('g.bin').data([]).exit().remove();
+    d3.select('#unchecked_variants_mask').attr('y', 0).attr('height', 0);
+
+},
+set_variants: function(variant_bins, unbinned_variants, weakest_pval) {
+    d3.select('#unchecked_variants_mask')
+        .attr('transform', `translate(${-point_radius},0)`) // move left by the radius of the variant points (3px)
+        .attr('width', plot_width.value+point_radius*2) // widen by 2x the radius of the variant points
+        .attr('y', y_scale_data.value(-Math.log10(weakest_pval))+point_radius)
+        .attr('height', Math.abs(y_scale_data.value(-Math.log10(weakest_pval))-y_scale_data.value(0)))
+        .raise();
+
+    // Order from weakest to strongest pvalue, so that the strongest variant will be on top (z-order) and easily hoverable
+    // In the DOM, later siblings are displayed over top of (and occluding) earlier siblings.
+    unbinned_variants = _.sortBy(unbinned_variants, function(d){return -d.pval});
+
+    var gwas_plot = d3.select("#gwas_plot");
+    var color_by_chrom = d3.scaleOrdinal()
+        .domain(get_chrom_offsets.value().chroms)
+        .range(['rgb(120,120,186)', 'rgb(0,0,66)']);
+
+    var point_selection = d3.select('#filtered_variant_points')
+        .selectAll('a.variant_point')
+        .data(unbinned_variants);
+        
+    point_selection.exit().remove();
+    point_selection.enter()
+        .append('a')
+        .attr('class', 'variant_point')
+        .attr('xlink:href', get_link_to_LZ)
+        .append('circle')
+        .attr('id', function(d) {
+            return utils.fmt('filtered-variant-point-{0}-{1}-{2}-{3}', d.chrom, d.pos, d.ref, d.alt);
+        })
+        .attr('cx', function(d) {
+            return x_scale.value(get_genomic_position(d));
+        })
+        .attr('cy', function(d) {
+            return y_scale_data.value(-Math.log10(d.pval));
+        })
+        .attr('r', point_radius)
+        .style('fill', function(d) {
+            return color_by_chrom(d.chrom);
+        })
+        .on('mouseover', function(d) {
+            //Note: once a tooltip has been explicitly placed once, it must be explicitly placed forever after.
+            point_tooltip.value.show(d, this);
+        })
+        .on('mouseout', point_tooltip.value.hide);
+
+    var hover_ring_selection = d3.select('#filtered_variant_hover_rings')
+        .selectAll('a.variant_hover_ring')
+        .data(unbinned_variants);
+
+    hover_ring_selection.exit().remove();
+    hover_ring_selection.enter()
+        .append('a')
+        .attr('class', 'variant_hover_ring')
+        .attr('xlink:href', get_link_to_LZ)
+        .append('circle')
+        .attr('cx', function(d) {
+            return x_scale.value(get_genomic_position(d));
+        })
+        .attr('cy', function(d) {
+            return y_scale_data.value(-Math.log10(d.pval));
+        })
+        .attr('r', 7)
+        .style('opacity', 0)
+        .style('stroke-width', 1) /* why? */
+        .on('mouseover', function(d) {
+            //Note: once a tooltip has been explicitly placed once, it must be explicitly placed forever after.
+            var target_node = document.getElementById(utils.fmt('filtered-variant-point-{0}-{1}-{2}-{3}', d.chrom, d.pos, d.ref, d.alt));
+            point_tooltip.value.show(d, target_node);
+        })
+        .on('mouseout', point_tooltip.value.hide);
+
+    var bin_selection = d3.select('#filtered_variant_bins')
+        .selectAll('g.bin')
+        .data(variant_bins);
+    bin_selection.exit().remove();
+    var bins = bin_selection.enter()
+        .append('g')
+        .attr('class', 'bin')
+        .attr('data-index', function(d, i) { return i; }) // make parent index available from DOM
+        .each(function(d) { //todo: do this in a forEach
+            d.x = x_scale.value(get_genomic_position(d));
+            d.color = color_by_chrom(d.chrom);
+        });
+    bins.selectAll('circle.binned_variant_point')
+        .data(_.property('qvals'))
+        .enter()
+        .append('circle')
+        .attr('class', 'binned_variant_point')
+        .attr('cx', function(d, i) {
+            var parent_i = +this.parentNode.getAttribute('data-index');
+            return variant_bins[parent_i].x;
+        })
+        .attr('cy', function(qval) {
+            return y_scale_data.value(qval);
+        })
+        .attr('r', point_radius)
+        .style('fill', function(d, i) {
+            var parent_i = +this.parentNode.getAttribute('data-index');
+            return variant_bins[parent_i].color;
+        });
+    bins.selectAll('line.binned_variant_line')
+        .data(_.property('qval_extents'))
+        .enter()
+        .append('line')
+        .attr('class', 'binned_variant_line')
+        .attr('x1', function(d, i) {
+            var parent_i = +this.parentNode.getAttribute('data-index');
+            return variant_bins[parent_i].x;
+        })
+        .attr('x2', function(d, i) {
+            var parent_i = +this.parentNode.getAttribute('data-index');
+            return variant_bins[parent_i].x;
+        })
+        .attr('y1', function(d) { return y_scale_data.value(d[0]); })
+        .attr('y2', function(d) { return y_scale_data.value(d[1]); })
+        .style('stroke', function(d, i) {
+            var parent_i = +this.parentNode.getAttribute('data-index');
+            return variant_bins[parent_i].color;
+        })
+        .style('stroke-width', 4.6)
+        .style('stroke-linecap', 'round');
+
+}
+};
+
+function get_link_to_LZ(variant) {
+    return utils.fmt(`${api}` + '/phenotypes/{0}/region/{1}:{2}-{3}',
+                       window.phenocode,
+                       variant.chrom,
+                       Math.max(0, variant.pos - 200*1000),
+                       variant.pos + 200*1000);
+}
+
+async function refilter() {
+    //variant_table.clear();
+
+    var phenocode_with_stratifications = pheno.value
+    //remove any past filters
+    manhattan_filter_view.clear();
+
+    // get variants which pass the filters
+    var url_base = `${api}/phenotypes/pheno-filter/${phenocode_with_stratifications}?`
+    var get_params = [];
+    get_params.push(utils.fmt("min_maf={0}", minFreq.value ));
+    get_params.push(utils.fmt("max_maf={0}", maxFreq.value ));
+    var snp_indel_value = selectedType.value;
+    if (snp_indel_value=='SNP' || snp_indel_value=='Indel') {
+        get_params.push(utils.fmt("indel={0}", (snp_indel_value=='Indel')?'true':'false'));
+    }
+
+    // we don't have this fonctionality implemented... probably never will
+
+    // var csq_value = $('#csq input:radio:checked').val();
+    // if (csq_value=='lof' || csq_value=='nonsyn') {
+    //     get_params.push(utils.fmt("csq={0}", csq_value));
+    // }
+    
+    var url = url_base + get_params.join('&');
+
+    try {
+        const response = await axios.get(url);
+        var data = response.data ;
+        manhattan_filter_view.set_variants(data[0].variant_bins , data[0].unbinned_variants, data[0].weakest_pval );
+
+    } catch (error) {
+        console.log(`Error fetching plotting with url ${url}:`, error);
+    }
 }
 
 function reset_for_manhattan_plot() {
@@ -548,7 +693,7 @@ function reset_for_manhattan_plot() {
         manhattanPlotContainer.value.innerHTML = '';
     }
     manhattanPlotContainer.value.innerHTML = `
-    <svg id="manhattan_svg">
+    <svg id="gwas_svg">
         <defs>
         <pattern id="pattern-stripe" width="4" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
             <rect width="2" height="4" transform="translate(0,0)" fill="white"></rect>
@@ -556,7 +701,7 @@ function reset_for_manhattan_plot() {
         <mask id="mask-stripe"><rect x="0" y="0" width="100%" height="100%" fill="url(#pattern-stripe)" /></mask>
         </defs>
 
-        <g id="manhattan_plot">
+        <g id="gwas_plot">
             <g id="genenames"></g>
             <g id="variant_hover_rings"></g>
             <g id="variant_points"></g>
@@ -642,6 +787,9 @@ function reset_for_manhattan_plot() {
               </div>
               <button class="btn btn-primary blue-button mr-2" @click="applyFilter">
                 Filter
+              </button>
+              <button class="btn btn-secondary" @click="cancelFilter()">
+                Cancel
               </button>
             </div>
           </transition>

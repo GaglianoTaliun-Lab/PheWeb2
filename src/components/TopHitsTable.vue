@@ -19,7 +19,7 @@
         hover>
   
         <template v-slot:item.phenostring="{ item }">
-          <router-link :to="`/pheno/${item.phenocode}`">{{ item.phenostring }}</router-link>
+          <router-link :to="`/phenotypes/${item.phenocode}`">{{ item.phenostring }}</router-link>
         </template>
         <template v-slot:item.variantid="{ item }">
           <router-link :to="`/variant/${item.variantid}`" style="white-space: nowrap;">{{ item.variantName }}</router-link>
@@ -111,7 +111,7 @@
         isLoading.value = true;
         errorMessage.value = '';
         try {
-          const response = await axios.get(`${api}/tophits`)
+          const response = await axios.get(`${api}/phenotypes/tophits`)
           console.log(response);
           phenotypes.value = response.data.map(item => ({
             ...item,

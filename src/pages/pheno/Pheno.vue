@@ -44,8 +44,10 @@ const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URL
 
 onMounted(async () => {
     try {
-      const response = await axios.get(`${api}/phenolist/` + phenocode);
+      const response = await axios.get(`${api}/phenotypes/phenotypes_list/` + phenocode);
+
       info.value = response.data;
+
       phenostring.value = info.value[0].phenostring
       await generateQQs(info.value.map(pheno => pheno.phenocode+"."+Object.values(pheno.stratification).join('.') ));
       await fetchPlottingData(info.value.map(pheno => pheno.phenocode+"."+Object.values(pheno.stratification).join('.') ));
@@ -53,8 +55,12 @@ onMounted(async () => {
       populateDataPreview(phenocode)
       // is this appropriate to do here?
       // again, needs to be male or female here, not 2 or 1
-      selectedStratification1.value = stratificationsToKey(info.value[1].phenocode, info.value[1].stratification)
-      selectedStratification2.value = stratificationsToKey(info.value[1].phenocode, info.value[2].stratification)
+      
+      //logic for choosing first two 
+      var strats = chooseDefaultStratifications(info.value)
+
+      selectedStratification1.value = stratificationsToKey(info.value[0].phenocode, strats[0])
+      selectedStratification2.value = strats[1] ? stratificationsToKey(info.value[0].phenocode, strats[1]): "None"
 
       // set sample size labels (case controls, etc.) for future use
       info.value.forEach(pheno => {
@@ -74,19 +80,78 @@ onMounted(async () => {
     }
 });
 
+function chooseDefaultStratifications(data){
+
+  if (!data[0].stratification){
+      return ['', null]  
+  }
+
+  var all_stratifications = data.map(pheno => {
+    return pheno.stratification
+  })
+
+  if (all_stratifications.length == 1){
+    return [all_stratifications[0], null];
+  }
+
+  if (!all_stratifications[0].sex){
+    return [all_stratifications[0], all_stratifications[1]];
+  }
+
+  var chosen_stratifications = [];
+  var male = null;
+  var female = null;
+  var both = null;
+
+  for (var item of all_stratifications){
+
+    if (chosen_stratifications.length < 2){
+      chosen_stratifications.push(item)
+    }
+
+    if ('Female' === item.sex){
+      female = item;
+    }
+    else if ('Male' === item.sex){
+      male = item;
+    }
+    else if ('Both' === item.sex){
+      both = item;
+    }
+  }
+
+  if (female != null){
+    chosen_stratifications[0] = female;
+  }
+  if (male != null){
+    chosen_stratifications[1] = male;
+  }
+
+  if (!male && both != null){
+    chosen_stratifications[1] = both;
+  }
+  if (!female && both != null){
+    chosen_stratifications[0] = both;
+  }
+
+  return chosen_stratifications
+
+}
+
 // this function will just change a value that determins if a manhattan or miami plot is generated
 const handleRadioChange = () => {
   if (selectedStratification2.value === "None"){
     miamiToggle.value = false;
-    manhattanData.value = plottingData.value[selectedStratification1.value];
+    manhattanData.value[selectedStratification1.value] = allPlottingData.value[selectedStratification1.value];
 
     qqSubset.value = {};
     qqSubset.value[selectedStratification1.value] = qqData.value[selectedStratification1.value];
   } else {
     miamiToggle.value = true;
     miamiData.value = {}
-    miamiData.value[selectedStratification1.value] = plottingData.value[selectedStratification1.value];
-    miamiData.value[selectedStratification2.value] = plottingData.value[selectedStratification2.value];
+
+    miamiData.value[selectedStratification1.value] = allPlottingData.value[selectedStratification1.value];
+    miamiData.value[selectedStratification2.value] = allPlottingData.value[selectedStratification2.value];
 
     qqSubset.value = {};
     qqSubset.value[selectedStratification1.value] = qqData.value[selectedStratification1.value];
@@ -103,13 +168,10 @@ const downloadAll = () => {
 
   // get all phenocodes api calls
   for (const pheno of info.value){
-    console.log(pheno)
     var phenocode = stratificationsToKey(pheno.phenocode, pheno.stratification)
     var api_link = `${api}/sumstats/${phenocode}`;
     downloads.push({url:api_link, filename : phenocode})
   };
-
-  console.log("downloads: ", downloads)
 
   //without slowing it down the website would jsut download the last of the list. maybe can use async await here
   downloads.forEach((file, index) => {
@@ -117,7 +179,6 @@ const downloadAll = () => {
       const a = document.createElement('a');
       a.href = file.url;
       a.download = file.filename;
-      console.log(a);
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -137,7 +198,6 @@ const downloadCurrent = () => {
       const a = document.createElement('a');
       a.href = file.url;
       a.download = file.filename;
-      console.log(a);
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -148,7 +208,6 @@ const downloadCurrent = () => {
 const populateDataPreview = () => {
   try {
     var link = "https://datapreview.clsa-elcv.ca/mica/variable/com%3A"+phenocode+"%3ACollected#/"
-    console.log(link)
     // just checking if it's working
     axios.get(link);
     linkUrl.value = link;
@@ -201,7 +260,7 @@ async function generateQQs(phenocodes){
 
     for (const phenocode of phenocodes) {
         try {
-            const response = await axios.get(`${api}/qq/` + phenocode);
+            const response = await axios.get(`${api}/phenotypes/qq/` + phenocode);
             qqDataTemp.push(response.data); 
             qqData.value[phenocode] = response.data;
         } catch (error) {
@@ -216,7 +275,7 @@ async function fetchPlottingData(phenocodes){
 
     for (const phenocode of phenocodes) {
         try {
-            const response = await axios.get(`${api}/pheno/` + phenocode);
+            const response = await axios.get(`${api}/phenotypes/` + phenocode);
             pheno_data_temp[phenocode] = response.data ; 
         } catch (error) {
             console.log(`Error fetching plotting data for ${phenocode}:`, error);
