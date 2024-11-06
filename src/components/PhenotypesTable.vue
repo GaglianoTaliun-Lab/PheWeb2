@@ -342,7 +342,8 @@
     });
 
 
-
+    // maybe consider receiving the filtering options through API
+    // since there will be a lot of data for the final table
     const filteredPhenotypes = computed(() => {
       return phenotypes.value.filter(item => {
         const sexMatches = selectedSex.value === 'All' || item.sex === selectedSex.value;
