@@ -7,6 +7,7 @@ import Tophits from '../pages/tophits/TopHits.vue';
 import Variant from '../pages/variant/Variant.vue';
 import Pheno from '../pages/pheno/Pheno.vue';
 import Gene from '../pages/gene/Gene.vue';
+import Region from '../pages/region/Region.vue';
 
 const routes = [
   {
@@ -58,7 +59,7 @@ const routes = [
     }
   },
   {
-    path: '/pheno/:phenocode',
+    path: '/phenotypes/:phenocode',
     name: 'Pheno',
     component: Pheno,
     meta: {
@@ -66,7 +67,15 @@ const routes = [
     }
   },
   {
-    path: '/region/:phenocode/gene/:gene',
+    path: '/phenotypes/:phenocode/region/:region',
+    name: 'Region',
+    component: Region,
+    meta: {
+      title: 'CLSA-PheWeb: Region'
+    }
+  },
+  {
+    path: '/gene/:gene',
     name: 'Gene',
     component: Gene,
     meta: {

@@ -46,6 +46,9 @@
   });
   const currentPhenocode = ref(props.phenocode) ;
 
+
+  const region = ref(null);
+
   const headers = ref([
     { title: 'Top p value in gene', value: 'pval' },
     { title: 'Phenotype', value: 'phenocode' },
@@ -58,6 +61,13 @@
     isLoading.value = true;
     try{
       const response = await axios.get(`${api}/gene/${props.geneName}`);
+
+      // The response should have the phenocode, and region so we 
+      region.value = response.data.data.region
+
+      // TODO: drop region so it doesn't appear in the table?
+
+
       phenotypes.value = response.data.data.map(item => ({
         ...item,
         phenocode: item.phenocode.split('.').slice(0, 1).join('.') ,
@@ -73,13 +83,13 @@
   };
 
   function navigateToRegion(item) {
-    router.push(`/region/${item.phenocode}/gene/${props.geneName}`);
+    //TODO: fix item.region
+    router.push(`/phenotypes/${item.phenocode}/region/${region.value}`);
   };
 
   onMounted( () => {
     fetchData();
-  }
-  );
+  });
 
   watch(
     () => props.phenocode,

@@ -103,7 +103,7 @@
       hover>
 
       <template v-slot:item.phenostring="{ item }">
-        <router-link :to="`/pheno/${item.phenocode}`">{{ item.phenostring }}</router-link>
+        <router-link :to="`/phenotypes/${item.phenocode}`">{{ item.phenostring }}</router-link>
       </template>
 
       <template v-slot:item.variantid="{ item }">
@@ -113,7 +113,7 @@
       <template v-slot:item.nearest_genes="{ item }">
         <span v-for="(gene, index) in item.nearest_genes" :key="index">
           <router-link 
-            :to="`/region/${item.phenocode}/gene/${gene.trim()}?include=${item.chrom}-${item.pos}`" 
+            :to="`/gene/${gene.trim()}?include=${item.chrom}-${item.pos}`" 
             style="white-space: nowrap; font-style: italic;"
           >
             {{ gene.trim() }}

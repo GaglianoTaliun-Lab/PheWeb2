@@ -129,7 +129,7 @@
 
       const buildApiUrl = () => {
         const formattedSelected = selected.value.replace(', ', '.');
-        return `${api}/pheno/${phenocode}.${formattedSelected}`;
+        return `${api}/phenotypes/${phenocode}.${formattedSelected}`;
       };
   
       // data

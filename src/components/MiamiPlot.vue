@@ -62,9 +62,9 @@ const createMiamis = (option) => {
     pheno2.value = keys[1] || keys[0]
 
     create_miami_plot(
-        info.value[keys[0]]['variant_bins'], info.value[keys[0]]['unbinned_variants'],
-        info.value[keys[0]]['variant_bins'], info.value[keys[0]]['unbinned_variants'],
-        pheno1.value, pheno2.valu,
+        info.value[pheno1.value]['variant_bins'], info.value[pheno1.value]['unbinned_variants'],
+        info.value[pheno2.value]['variant_bins'], info.value[pheno2.value]['unbinned_variants'],
+        pheno1.value, pheno2.value,
         option
     )
 
@@ -146,7 +146,7 @@ const downloadPNG = () => {
 };
 
 function get_link_to_LZ_data1(variant) {
-    return utils.fmt(`${api}` + 'region/{0}/{1}:{2}-{3}',
+    return utils.fmt(`${api}` + '/phenotypes/{0}/region/{1}:{2}-{3}',
                 phenocode,
                 variant.chrom,
                 Math.max(0, variant.pos - 200*1000),
@@ -154,7 +154,7 @@ function get_link_to_LZ_data1(variant) {
 }
 
 function get_link_to_LZ_data2(variant) {
-    return utils.fmt(`${api}` + 'region/{0}/{1}:{2}-{3}',
+    return utils.fmt(`${api}` + '/phenotypes/{0}/region/{1}:{2}-{3}',
                 phenocode,
                 variant.chrom,
                 Math.max(0, variant.pos - 200*1000),
@@ -1110,7 +1110,7 @@ async function refilter() {
     miami_filter_view.clear();
 
     // get variants which pass the filters
-    var url_base = `${api}/pheno-filter/${phenocode_with_stratifications1}/${phenocode_with_stratifications2}?`
+    var url_base = `${api}/phenotypes/pheno-filter/${phenocode_with_stratifications1}/${phenocode_with_stratifications2}?`
     var get_params = [];
     get_params.push(utils.fmt("min_maf={0}", minFreq.value ));
     get_params.push(utils.fmt("max_maf={0}", maxFreq.value ));

@@ -74,15 +74,12 @@ const applyFilter = () => {
 };
 
 const createManhattan = (option) => {
-    console.log(info.value)
     var key = Object.keys(info.value)
 
     pheno.value = key[0]
 
-    console.log(info.value)
-
     create_manhattan_plot(
-        info.value[key]['variant_bins'], info.value[key]['unbinned_variants'],
+        info.value[pheno.value]['variant_bins'], info.value[pheno.value]['unbinned_variants'],
         option
     )
 }
@@ -457,8 +454,6 @@ function create_manhattan_plot(variant_bins, unbinned_variants, variants = "filt
         }
         pp2();
 
-        console.log(variant_bins);
-
         function pp3() { // drawing the ~60k binned variant circles takes ~500ms.  The (far fewer) unbinned variants take much less time.
         var bins = d3.select('#variant_bins')
             .selectAll('g.bin')
@@ -650,7 +645,7 @@ set_variants: function(variant_bins, unbinned_variants, weakest_pval) {
 };
 
 function get_link_to_LZ(variant) {
-            return utils.fmt(`${api}` + '/region/{0}/{1}:{2}-{3}',
+    return utils.fmt(`${api}` + '/phenotypes/{0}/region/{1}:{2}-{3}',
                        window.phenocode,
                        variant.chrom,
                        Math.max(0, variant.pos - 200*1000),
@@ -665,7 +660,7 @@ async function refilter() {
     manhattan_filter_view.clear();
 
     // get variants which pass the filters
-    var url_base = `${api}/pheno-filter/${phenocode_with_stratifications}?`
+    var url_base = `${api}/phenotypes/pheno-filter/${phenocode_with_stratifications}?`
     var get_params = [];
     get_params.push(utils.fmt("min_maf={0}", minFreq.value ));
     get_params.push(utils.fmt("max_maf={0}", maxFreq.value ));
@@ -686,7 +681,6 @@ async function refilter() {
     try {
         const response = await axios.get(url);
         var data = response.data ;
-        console.log(data)
         manhattan_filter_view.set_variants(data[0].variant_bins , data[0].unbinned_variants, data[0].weakest_pval );
 
     } catch (error) {
