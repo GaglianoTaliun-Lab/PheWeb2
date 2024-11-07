@@ -6,8 +6,9 @@
           max-width="600"
           subtitle="Phenotypes"
           hover
+          density="compact"
         >
-          <v-row class="d-flex" dense>
+          <v-row class="d-flex">
             <v-col cols="12" sm="6">
               <v-autocomplete
                 v-model="selectedCategory"
@@ -38,6 +39,7 @@
           max-width="500"
           subtitle="Stratification"
           hover
+          density="compact"
         >  
           <v-row class="d-flex" dense>
             <v-col cols="12" sm="6">
@@ -69,13 +71,17 @@
     </v-row>
   </v-card>
   
-
-  <div class="text-left; d-flex" style="width: 25%; gap: 20px; margin-top: 2%;"> 
-      
+  <div class="text-left; d-flex; pa-2"> 
+    <v-row align="center" justify="space-between">
+      <v-col cols="auto">
+        <p>{{ displayedUniquePhenotypesCount }} of {{ displayedTotalPhenotypesCount }} phenotype(s) displayed</p>
+      </v-col>
+      <v-col cols="auto">
+        <v-btn color="primary" @click="downloadCSV">Download CSV</v-btn>
+      </v-col>
+    </v-row>
   </div>  
-  <div class="text-right">
-      <v-btn color="primary" @click="downloadCSV">Download CSV</v-btn>
-  </div>
+
   <v-card elevation="5">
 
     <!-- <template v-slot:text>
@@ -183,6 +189,19 @@
       <template v-slot:header.variantid="{ column, isSorted, getSortIcon }">
         <div style="display: flex; align-items: center;">
           <span style="white-space: nowrap;">{{ column.title }}</span>
+          <v-tooltip 
+            location="top">
+            <template v-slot:activator="{ props }">
+              <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
+            </template>
+            <span style="white-space: normal;">
+              1) Chromosome <br>
+              2) Position <br>
+              3) Reference allele <br>
+              4) Alternate allele <br> 
+              5) rsid (if applicable)
+            </span>
+          </v-tooltip>
           <v-menu
             open-on-hover
             v-model="menu"
@@ -191,14 +210,14 @@
             
           >
             <template v-slot:activator="{ props }">
-                <v-icon small color="primary" v-bind="props" class="ml-2">mdi-feature-search-outline</v-icon>
+                <v-icon small color="primary" v-bind="props" class="ml-2" 
+                :icon="filteredVariant === 'All' ? 'mdi-feature-search-outline' : 'mdi-feature-search'"></v-icon>
             </template>
             <v-card class="pa-3">
               <v-text-field
                 v-model="selectedVariant"
                 label="Enter vairantID or rsID"
                 hint="Try rs11553699 or 12-121779004-A-G"
-                clearable
                 style="width: 400px;"
                 variant="outlined"
                 density="compact"
@@ -249,19 +268,6 @@
               </v-row>
             </v-card>
           </v-menu>
-          <v-tooltip 
-            location="top">
-            <template v-slot:activator="{ props }">
-              <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
-            </template>
-            <span style="white-space: normal;">
-              1) Chromosome <br>
-              2) Position <br>
-              3) Reference allele <br>
-              4) Alternate allele <br> 
-              5) rsid (if applicable)
-            </span>
-          </v-tooltip>
         </div>
       </template>
 
