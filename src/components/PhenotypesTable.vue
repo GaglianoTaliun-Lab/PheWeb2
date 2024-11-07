@@ -194,29 +194,59 @@
                 <v-icon small color="primary" v-bind="props" class="ml-2">mdi-feature-search-outline</v-icon>
             </template>
             <v-card class="pa-3">
-              <!-- <v-text-field
-              v-model="selectedVariant"
-              label="Try rs11553699 or 12-121779004-A-G"
-              :loading="variantSearchLoading"
-              clearable
-              style="width: 400px;"
-              variant="outlined"
-              append-inner-icon="mdi-magnify"
-              @click:append-inner="onClickVariantSearch"
-              density="compact"
-              elevation="2"
-            ></v-text-field> -->
-            <v-autocomplete
-              v-model="selectedVariant"
-              :items="variantOptions"
-              label="Try rs11553699 or 12-121779004-A-G"
-              clearable
-              style="width: 400px;"
-              variant="outlined"
-              prepend-inner-icon="mdi-magnify"      
-              density="compact"
-              elevation="2"
-            ></v-autocomplete>
+              <v-text-field
+                v-model="selectedVariant"
+                label="Enter vairantID or rsID"
+                hint="Try rs11553699 or 12-121779004-A-G"
+                clearable
+                style="width: 400px;"
+                variant="outlined"
+                density="compact"
+                elevation="2"
+                rounded
+                prepend-inner-icon="mdi-magnify"
+                @keydown.enter="filterVariants"
+              ></v-text-field>
+              <!-- <v-autocomplete
+                v-model="selectedVariant"
+                :loading="variantSearchLoading"
+                :items="variantOptions"
+                label="Enter vairantID or rsID"
+                placeholder="Try rs11553699 or 12-121779004-A-G"
+                clearable
+                style="width: 400px;"
+                variant="outlined"
+                prepend-inner-icon="mdi-magnify"      
+                density="compact"
+                elevation="2"
+                rounded
+                item-props
+                menu-icon=""
+                auto-select-first
+                filter-mode="some"
+              ></v-autocomplete> -->
+              <v-row justify="end">
+                <v-col cols="auto">
+                  <v-btn 
+                    @click="clearVariants" 
+                    color="primary" 
+                    class="mt-3"
+                    variant="outlined"
+                  >
+                    Clear
+                  </v-btn>
+                </v-col>
+                <v-col cols="auto">
+                  <v-btn 
+                    @click="filterVariants" 
+                    color="primary" 
+                    class="mt-3"
+                    variant="outlined"
+                  >
+                    Save
+                  </v-btn>
+                </v-col>
+              </v-row>
             </v-card>
           </v-menu>
           <v-tooltip 
@@ -334,12 +364,30 @@
     // in-table filters
     const selectedVariant = ref('');
     const menu = ref(false);
+    // const variantSearchLoading = ref(true);
+    const variantSearchLoading = computed(() => {
+      if (selectedVariant.value != ''){
+        return true;
+      } else {
+        return false;
+      }
+    });
     const variantOptions = computed(() => {
       const variants = phenotypes.value
         .flatMap(item => [item.rsids, item.variantid]) 
         .filter(variant => variant !== undefined && variant !== '');
       return ['All', ...[...new Set(variants)].sort((a, b) => a.localeCompare(b))];
     });
+    const filteredVariant = ref('All');
+    const filterVariants = () => {
+      variantSearchLoading.value = false;
+      filteredVariant.value = selectedVariant.value;
+    };
+    const clearVariants = () => {
+      selectedVariant.value = '';
+      variantSearchLoading.value = false;
+      filteredVariant.value = 'All';
+    };
 
 
     // maybe consider receiving the filtering options through API
@@ -350,8 +398,8 @@
         const ancestryMatches = selectedAncestry.value === 'All' || item.ancestry === selectedAncestry.value;
         const categoryMatches = !selectedCategory.value || selectedCategory.value === 'All' || item.category === selectedCategory.value;
         const phenotypeMatches = !selectedPhenotype.value || selectedPhenotype.value === 'All' || item.phenostring === selectedPhenotype.value;
-        const rsidMatches = !selectedVariant.value || selectedVariant.value === 'All' ||  item.rsids === selectedVariant.value || item.variantid === selectedVariant.value;
-        return sexMatches && ancestryMatches && categoryMatches && phenotypeMatches && rsidMatches;
+        const variantMatches = !filteredVariant.value || filteredVariant.value === 'All' ||  item.rsids === filteredVariant.value || item.variantid === filteredVariant.value;
+        return sexMatches && ancestryMatches && categoryMatches && phenotypeMatches && variantMatches;
       });
     });
 
