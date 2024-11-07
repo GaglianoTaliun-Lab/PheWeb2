@@ -1,6 +1,6 @@
 <template>
-  <v-card class="d-flex mt-2 pa-2" variant="text">
-    <v-row dense>
+  <v-card class="d-flex pa-2" variant="text">
+    <v-row dense style="max-width: 1210px;">
       <v-col cols="12" md="6">
         <v-card
           max-width="600"
