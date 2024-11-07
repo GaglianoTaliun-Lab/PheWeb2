@@ -186,6 +186,7 @@ const downloadAll = () => {
   });
 };
 
+// TODO: change to streaming instead of backend call
 const downloadCurrent = () => {
   var downloads = []
   
@@ -297,7 +298,6 @@ async function fetchPlottingData(phenocodes){
             <h1 v-else>{{phenocode}}</h1>
             <a class="p-1" v-if="linkUrl" :href="linkUrl" target="_blank" rel="noopener noreferrer"><u><b>Data Preview Portal</b></u> <i class="fas fa-external-link-alt"></i></a>
             <div class="pheno-info col-12 mt-3">
-                <!-- TODO: needs to start on female male, not indices 2 and 1 -->
                 <div class="dropdown p-1" id="dropdown-data1">
                     <button class="btn btn-primary btn-drop" id="button-data1">{{keyToLabel(selectedStratification1) + " (" + sampleSizeLabel[selectedStratification1] + ")"}}<span class="arrow-container"><span class="arrow-down"></span></span></button>
                     <div class="dropdown-menu" id="dropdown-content-data1">

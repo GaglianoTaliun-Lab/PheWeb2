@@ -88,6 +88,7 @@ const phenocode = route.params.phenocode;
 onMounted(() => {
     info.value = props.data
 
+
     createMiamis('all');
 });
 
@@ -146,7 +147,7 @@ const downloadPNG = () => {
 };
 
 function get_link_to_LZ_data1(variant) {
-    return utils.fmt(`${api}` + '/phenotypes/{0}/region/{1}:{2}-{3}',
+    return utils.fmt(`${window.location.origin}` + '/phenotypes/{0}/region/{1}:{2}-{3}',
                 phenocode,
                 variant.chrom,
                 Math.max(0, variant.pos - 200*1000),
@@ -154,7 +155,7 @@ function get_link_to_LZ_data1(variant) {
 }
 
 function get_link_to_LZ_data2(variant) {
-    return utils.fmt(`${api}` + '/phenotypes/{0}/region/{1}:{2}-{3}',
+    return utils.fmt(`${window.location.origin}` + '/phenotypes/{0}/region/{1}:{2}-{3}',
                 phenocode,
                 variant.chrom,
                 Math.max(0, variant.pos - 200*1000),
