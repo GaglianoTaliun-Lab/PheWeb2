@@ -108,5 +108,13 @@
     font-size: 1.2rem; /* Increase font size slightly */
     color: #333; /* Optionally, set a darker color for contrast */
   }
+
+  /* Target the table rows */
+  .v-data-table tbody tr:nth-child(odd) {
+    background-color: #f9f9f9; /* Light grey for odd rows */
+  }
+  .v-data-table tbody tr:nth-child(even) {
+    background-color: #ffffff; /* White for even rows */
+  }
 </style>
 
