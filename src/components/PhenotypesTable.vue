@@ -1,13 +1,14 @@
 <template>
-  <v-card class="d-flex mt-2 pa-2" variant="text">
-    <v-row dense>
+  <v-card class="d-flex pa-2" variant="text">
+    <v-row dense style="max-width: 1210px;">
       <v-col cols="12" md="6">
         <v-card
           max-width="600"
           subtitle="Phenotypes"
           hover
+          density="compact"
         >
-          <v-row class="d-flex" dense>
+          <v-row class="d-flex">
             <v-col cols="12" sm="6">
               <v-autocomplete
                 v-model="selectedCategory"
@@ -38,6 +39,7 @@
           max-width="500"
           subtitle="Stratification"
           hover
+          density="compact"
         >  
           <v-row class="d-flex" dense>
             <v-col cols="12" sm="6">
@@ -69,13 +71,17 @@
     </v-row>
   </v-card>
   
-
-  <div class="text-left; d-flex" style="width: 25%; gap: 20px; margin-top: 2%;"> 
-      
+  <div class="text-left; d-flex; pa-2"> 
+    <v-row align="center" justify="space-between">
+      <v-col cols="auto">
+        <p>{{ displayedUniquePhenotypesCount }} of {{ displayedTotalPhenotypesCount }} phenotype(s) displayed</p>
+      </v-col>
+      <v-col cols="auto">
+        <v-btn color="primary" @click="downloadCSV">Download CSV</v-btn>
+      </v-col>
+    </v-row>
   </div>  
-  <div class="text-right">
-      <v-btn color="primary" @click="downloadCSV">Download CSV</v-btn>
-  </div>
+
   <v-card elevation="5">
 
     <!-- <template v-slot:text>
@@ -169,7 +175,7 @@
       <template v-slot:header.nearest_genes="{ column, isSorted, getSortIcon }">
         <div style="display: flex; align-items: center;">
           <span style="white-space: nowrap;">{{ column.title }}</span>
-          <v-tooltip text="Head to external links" location="top">
+          <v-tooltip text="Head to internal page" location="top">
             <template v-slot:activator="{ props }">
               <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
             </template>
@@ -183,42 +189,6 @@
       <template v-slot:header.variantid="{ column, isSorted, getSortIcon }">
         <div style="display: flex; align-items: center;">
           <span style="white-space: nowrap;">{{ column.title }}</span>
-          <v-menu
-            open-on-hover
-            v-model="menu"
-            :close-on-content-click="false"
-            location="bottom"
-            
-          >
-            <template v-slot:activator="{ props }">
-                <v-icon small color="primary" v-bind="props" class="ml-2">mdi-feature-search-outline</v-icon>
-            </template>
-            <v-card class="pa-3">
-              <!-- <v-text-field
-              v-model="selectedVariant"
-              label="Try rs11553699 or 12-121779004-A-G"
-              :loading="variantSearchLoading"
-              clearable
-              style="width: 400px;"
-              variant="outlined"
-              append-inner-icon="mdi-magnify"
-              @click:append-inner="onClickVariantSearch"
-              density="compact"
-              elevation="2"
-            ></v-text-field> -->
-            <v-autocomplete
-              v-model="selectedVariant"
-              :items="variantOptions"
-              label="Try rs11553699 or 12-121779004-A-G"
-              clearable
-              style="width: 400px;"
-              variant="outlined"
-              prepend-inner-icon="mdi-magnify"      
-              density="compact"
-              elevation="2"
-            ></v-autocomplete>
-            </v-card>
-          </v-menu>
           <v-tooltip 
             location="top">
             <template v-slot:activator="{ props }">
@@ -232,6 +202,72 @@
               5) rsid (if applicable)
             </span>
           </v-tooltip>
+          <v-menu
+            open-on-hover
+            v-model="menu"
+            :close-on-content-click="false"
+            location="bottom"
+            
+          >
+            <template v-slot:activator="{ props }">
+                <v-icon small color="primary" v-bind="props" class="ml-2" 
+                :icon="filteredVariant === 'All' ? 'mdi-feature-search-outline' : 'mdi-feature-search'"></v-icon>
+            </template>
+            <v-card class="pa-3">
+              <v-text-field
+                v-model="selectedVariant"
+                label="Enter vairantID or rsID"
+                hint="Try rs11553699 or 12-121779004-A-G"
+                style="width: 400px;"
+                variant="outlined"
+                density="compact"
+                elevation="2"
+                rounded
+                prepend-inner-icon="mdi-magnify"
+                @keydown.enter="filterVariants"
+              ></v-text-field>
+              <!-- <v-autocomplete
+                v-model="selectedVariant"
+                :loading="variantSearchLoading"
+                :items="variantOptions"
+                label="Enter vairantID or rsID"
+                placeholder="Try rs11553699 or 12-121779004-A-G"
+                clearable
+                style="width: 400px;"
+                variant="outlined"
+                prepend-inner-icon="mdi-magnify"      
+                density="compact"
+                elevation="2"
+                rounded
+                item-props
+                menu-icon=""
+                auto-select-first
+                filter-mode="some"
+              ></v-autocomplete> -->
+              <v-row justify="end">
+                <v-col cols="auto">
+                  <v-btn 
+                    @click="clearVariants" 
+                    color="primary" 
+                    class="mt-3"
+                    variant="outlined"
+                  >
+                    Clear
+                  </v-btn>
+                </v-col>
+                <v-col cols="auto">
+                  <v-btn 
+                    @click="filterVariants" 
+                    color="primary" 
+                    class="mt-3"
+                    variant="outlined"
+                  >
+                    Save
+                  </v-btn>
+                </v-col>
+              </v-row>
+            </v-card>
+          </v-menu>
         </div>
       </template>
 
@@ -334,23 +370,42 @@
     // in-table filters
     const selectedVariant = ref('');
     const menu = ref(false);
+    // const variantSearchLoading = ref(true);
+    const variantSearchLoading = computed(() => {
+      if (selectedVariant.value != ''){
+        return true;
+      } else {
+        return false;
+      }
+    });
     const variantOptions = computed(() => {
       const variants = phenotypes.value
         .flatMap(item => [item.rsids, item.variantid]) 
         .filter(variant => variant !== undefined && variant !== '');
       return ['All', ...[...new Set(variants)].sort((a, b) => a.localeCompare(b))];
     });
+    const filteredVariant = ref('All');
+    const filterVariants = () => {
+      variantSearchLoading.value = false;
+      filteredVariant.value = selectedVariant.value;
+    };
+    const clearVariants = () => {
+      selectedVariant.value = '';
+      variantSearchLoading.value = false;
+      filteredVariant.value = 'All';
+    };
 
 
-
+    // maybe consider receiving the filtering options through API
+    // since there will be a lot of data for the final table
     const filteredPhenotypes = computed(() => {
       return phenotypes.value.filter(item => {
         const sexMatches = selectedSex.value === 'All' || item.sex === selectedSex.value;
         const ancestryMatches = selectedAncestry.value === 'All' || item.ancestry === selectedAncestry.value;
         const categoryMatches = !selectedCategory.value || selectedCategory.value === 'All' || item.category === selectedCategory.value;
         const phenotypeMatches = !selectedPhenotype.value || selectedPhenotype.value === 'All' || item.phenostring === selectedPhenotype.value;
-        const rsidMatches = !selectedVariant.value || selectedVariant.value === 'All' ||  item.rsids === selectedVariant.value || item.variantid === selectedVariant.value;
-        return sexMatches && ancestryMatches && categoryMatches && phenotypeMatches && rsidMatches;
+        const variantMatches = !filteredVariant.value || filteredVariant.value === 'All' ||  item.rsids === filteredVariant.value || item.variantid === filteredVariant.value;
+        return sexMatches && ancestryMatches && categoryMatches && phenotypeMatches && variantMatches;
       });
     });
 

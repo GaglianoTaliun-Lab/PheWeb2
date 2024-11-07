@@ -471,7 +471,7 @@ async function fetchPlottingData(phenocodes){
   }
 
   .btn-primary:hover {
-    background-color:grey;
+    background-color: darkgrey !important;
     color: black;
   }
 
