@@ -14,7 +14,7 @@
       <template v-slot:item="{ item, index }">
         <tr 
           :class="currentPhenocode === item.phenocode ? 'bg-info' : '' "
-          @click="navigateToRegion(item)"
+          @click="navigateToPhenotypes(item)"
         >
           <td>{{ item.pval }}</td>
           <td>{{ item.phenocode }}</td>
@@ -82,9 +82,10 @@
     }
   };
 
-  function navigateToRegion(item) {
+  function navigateToPhenotypes(item) {
     //TODO: fix item.region
-    router.push(`/phenotypes/${item.phenocode}/region/${region.value}`);
+    router.push(`/gene/${props.geneName}/${item.phenocode}`);
+    // router.push(`/phenotypes/${item.phenocode}/region/${region.value}`);
   };
 
   onMounted( () => {
