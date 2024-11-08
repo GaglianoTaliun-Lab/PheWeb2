@@ -1,89 +1,84 @@
 <template>
-    <div class="text-right">
-        <v-btn color="primary" @click="downloadCSV">Download CSV</v-btn>
-    </div>
-    <v-card elevation="5">
-  
-      <template v-slot:text>
-        <v-text-field v-model="search" label="Try 'Diseases', 'Type 2 Diabetes', '12-121779004-A-G', etc."
-          prepend-inner-icon="mdi-magnify" variant="outlined" hide-details single-line></v-text-field>
+  <div class="text-right">
+    <v-btn color="primary" @click="downloadCSV">Download CSV</v-btn>
+  </div>
+  <v-card elevation="5">
+
+    <template v-slot:text>
+      <v-text-field v-model="search" label="Try 'Diseases', 'Type 2 Diabetes', '12-121779004-A-G', etc."
+        prepend-inner-icon="mdi-magnify" variant="outlined" hide-details single-line></v-text-field>
+    </template>
+
+    <v-data-table :items="phenotypes" :headers="headers" :search="search" height=700 fixed-header :items-per-page="100"
+      hover>
+
+      <template v-slot:item.phenostring="{ item }">
+        <router-link :to="`/phenotypes/${item.phenocode}`">{{ item.phenostring }}</router-link>
       </template>
-  
-      <v-data-table 
-        :items="phenotypes" 
-        :headers="headers" 
-        :search="search" 
-        height=700 
-        fixed-header 
-        :items-per-page="100"
-        hover>
-  
-        <template v-slot:item.phenostring="{ item }">
-          <router-link :to="`/phenotypes/${item.phenocode}`">{{ item.phenostring }}</router-link>
-        </template>
-        <template v-slot:item.variantid="{ item }">
-          <router-link :to="`/variant/${item.variantid}`" style="white-space: nowrap;">{{ item.variantName }}</router-link>
-        </template>
-  
-        <template v-slot:item.nearest_genes="{ item }">
-          <span v-for="(gene, index) in item.nearest_genes" :key="index">
-            <a :href="`https://www.ncbi.nlm.nih.gov/gene/?term=${gene.trim()}`" target="_blank">
-              <span style="font-style: italic;">{{ gene.trim() }}</span> <!-- Italic style applied -->
-            </a>
-            <span v-if="index < item.nearest_genes.length - 1">, </span>
-          </span>
-        </template>
-  
-        <template v-slot:item.num_samples="{ item }">
-          <span>
-            {{
-              item.num_controls !== "" && item.num_cases !== ""
-                ? `${item.num_controls} + ${item.num_cases}`
-                : item.num_samples
-            }}
-          </span>
-        </template>
-  
-        <template v-slot:header.num_samples="{ column }">
-          <div style="display: flex; align-items: center;">
-            <span style="white-space: nowrap;">{{ column.title }}</span>
-            <v-tooltip text="# Control + # Cases" location="top">
-              <template v-slot:activator="{ props }">
-                <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
-              </template>
-            </v-tooltip>
-          </div>
-        </template>
-  
-        <template v-slot:header.num_peaks="{ column }">
-          <div style="display: flex; align-items: center;">
-            <span style="white-space: nowrap;">{{ column.title }}</span>
-            <v-tooltip text="#peaks" location="top">
-              <template v-slot:activator="{ props }">
-                <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
-              </template>
-            </v-tooltip>
-          </div>
-        </template>
-  
-        <template v-slot:header.nearest_genes="{ column }">
-          <div style="display: flex; align-items: center;">
-            <span style="white-space: nowrap;">{{ column.title }}</span>
-            <v-tooltip text="Head to external links" location="top">
-              <template v-slot:activator="{ props }">
-                <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
-              </template>
-            </v-tooltip>
-          </div>
-        </template>
-  
-        <template v-slot:item.rsids="{ item }">
-          <a :href="`https://www.ncbi.nlm.nih.gov/snp/${item.rsids}`" target="_blank">{{ item.rsids }}</a>
-        </template>
-      </v-data-table>
-    </v-card>
-  
-  </template>
+      <template v-slot:item.variantid="{ item }">
+        <router-link :to="`/variant/${item.variantid}`" style="white-space: nowrap;">{{ item.variantName
+          }}</router-link>
+      </template>
+
+      <template v-slot:item.nearest_genes="{ item }">
+        <span v-for="(gene, index) in item.nearest_genes" :key="index">
+          <router-link :to="`/gene/${gene.trim()}?include=${item.chrom}-${item.pos}`"
+            style="white-space: nowrap; font-style: italic;">
+            {{ gene.trim() }}
+          </router-link> <span v-if="index < item.nearest_genes.length - 1">, </span>
+        </span>
+      </template>
+
+      <template v-slot:item.num_samples="{ item }">
+        <span>
+          {{
+          item.num_controls !== "" && item.num_cases !== ""
+          ? `${item.num_controls} + ${item.num_cases}`
+          : item.num_samples
+          }}
+        </span>
+      </template>
+
+      <template v-slot:header.num_samples="{ column }">
+        <div style="display: flex; align-items: center;">
+          <span style="white-space: nowrap;">{{ column.title }}</span>
+          <v-tooltip text="# Control + # Cases" location="top">
+            <template v-slot:activator="{ props }">
+              <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
+            </template>
+          </v-tooltip>
+        </div>
+      </template>
+
+      <template v-slot:header.num_peaks="{ column }">
+        <div style="display: flex; align-items: center;">
+          <span style="white-space: nowrap;">{{ column.title }}</span>
+          <v-tooltip text="#peaks" location="top">
+            <template v-slot:activator="{ props }">
+              <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
+            </template>
+          </v-tooltip>
+        </div>
+      </template>
+
+      <template v-slot:header.nearest_genes="{ column }">
+        <div style="display: flex; align-items: center;">
+          <span style="white-space: nowrap;">{{ column.title }}</span>
+          <v-tooltip text="Head to internal page" location="top">
+            <template v-slot:activator="{ props }">
+              <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
+            </template>
+          </v-tooltip>
+        </div>
+      </template>
+
+      <template v-slot:item.rsids="{ item }">
+        <a :href="`https://www.ncbi.nlm.nih.gov/snp/${item.rsids}`" target="_blank">{{ item.rsids }}</a>
+      </template>
+    </v-data-table>
+  </v-card>
+
+</template>
   
   <script setup>
       import { ref, onMounted } from 'vue';

@@ -645,7 +645,7 @@ set_variants: function(variant_bins, unbinned_variants, weakest_pval) {
 };
 
 function get_link_to_LZ(variant) {
-    return utils.fmt(`${api}` + '/phenotypes/{0}/region/{1}:{2}-{3}',
+    return utils.fmt(`${window.location.origin}` + '/phenotypes/{0}/region/{1}:{2}-{3}',
                        window.phenocode,
                        variant.chrom,
                        Math.max(0, variant.pos - 200*1000),
