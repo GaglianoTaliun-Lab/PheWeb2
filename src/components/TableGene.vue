@@ -50,10 +50,10 @@
   const region = ref(null);
 
   const headers = ref([
-    { title: 'Top p value in gene', value: 'pval' },
+    { title: 'Top p-value in gene', value: 'pval' },
     { title: 'Phenotype', value: 'phenocode' },
     { title: 'Ancestry', value: 'ancestry' },
-    { title: 'Sex', value: 'sex' },
+    { title: 'Sex', value: 'sex' }
     // { title: 'test', value: 'phenocodeFull'}
   ]);
 
@@ -101,3 +101,13 @@
   );
 
 </script>
+
+<style scoped>
+  .v-data-table-header th {
+    font-weight: 800; /* Use 700 or 800 for extra bold */
+    font-size: 1.2rem; /* Increase font size slightly */
+    color: #333; /* Optionally, set a darker color for contrast */
+  }
+
+</style>
+
