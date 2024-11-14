@@ -1,6 +1,6 @@
 <script setup>
 import axios from 'axios';
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, onBeforeUnmount } from 'vue';
 import { useRoute } from 'vue-router';
 import * as d3 from 'd3';
 import d3Tip from 'd3-tip';
@@ -28,6 +28,15 @@ const selectedType = ref('Both');
 const hiddenToggle = ref(null);
 const tooltip_showing = ref(false)
 const tooltip_showing = ref(false)
+
+// Close tooltip function
+const hideTooltip = () => {
+    if (tooltip_showing.value) {
+        point_tooltip.value.hide();
+        tooltip_showing.value = false;
+    }
+};
+
 
 const get_chrom_offsets_data1 = ref(null)
 const get_chrom_offsets_data2 = ref(null)
@@ -88,9 +97,14 @@ const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URL
 
 const route = useRoute();
 const phenocode = route.params.phenocode;
-
+// Add event listener to document to close tooltip when clicking outside
 onMounted(() => {
-    info.value = props.data
+    info.value = props.data;
+    document.addEventListener('click', hideTooltip);
+    // Clean up listener on component unmount
+    onBeforeUnmount(() => {
+        document.removeEventListener('click', hideTooltip);
+    });
 
 
     createMiamis('all');
@@ -699,22 +713,34 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
                 //     console.log(point_tooltip.value)
                 // })
                 // .on('mouseout', point_tooltip.value.hide)
-                .on('click', function(d) {
-                    //Note: once a tooltip has been explicitly placed once, it must be explicitly placed forever after.
-                    console.log(d)
-                    console.log(tooltip_showing.value)
+                // .on('click', function(d) {
+                //     //Note: once a tooltip has been explicitly placed once, it must be explicitly placed forever after.
+                //     console.log(d)
+                //     console.log(tooltip_showing.value)
 
-                    if (tooltip_showing.value){
-                        point_tooltip.value.hide;
-                        tooltip_showing.value = false;
-                    } else {
-                        point_tooltip.value.show(d, this);
-                        tooltip_showing.value = true;
-                    }
+                //     if (tooltip_showing.value){
+                //         point_tooltip.value.hide;
+                //         tooltip_showing.value = false;
+                //     } else {
+                //         point_tooltip.value.show(d, this);
+                //         tooltip_showing.value = true;
+                //     }
 
-                    d3.event.stopPropagation();
+                //     d3.event.stopPropagation();
 
-                });
+                // });
+                .on('click', function (d) {
+                // Prevent event propagation to document
+                d3.event.stopPropagation();
+
+                if (tooltip_showing.value) {
+                    point_tooltip.value.hide(d, this);
+                    tooltip_showing.value = false;
+                } else {
+                    point_tooltip.value.show(d, this);
+                    tooltip_showing.value = true;
+                }
+            });
             } else if (!flip ) {
                 d3.select('#variant_points_upper')
                 .selectAll('a.variant_point')
@@ -741,22 +767,33 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
                 //     point_tooltip.value.show(d, this);
                 // })
                 // .on('mouseout', point_tooltip.value.hide)
-                .on('click', function( d) {
-                    //Note: once a tooltip has been explicitly placed once, it must be explicitly placed forever after.
-                    console.log(d)
-                    console.log(tooltip_showing.value)
+                .on('click', function (d) {
+                d3.event.stopPropagation();
 
-                    if (tooltip_showing.value){
-                        point_tooltip.value.hide;
-                        tooltip_showing.value = false;
-                    } else {
-                        point_tooltip.value.show(d, this);
-                        tooltip_showing.value = true;
-                    }
+                if (tooltip_showing.value) {
+                    point_tooltip.value.hide(d, this);
+                    tooltip_showing.value = false;
+                } else {
+                    point_tooltip.value.show(d, this);
+                    tooltip_showing.value = true;
+                }
+            });
+                // .on('click', function( d) {
+                //     //Note: once a tooltip has been explicitly placed once, it must be explicitly placed forever after.
+                //     console.log(d)
+                //     console.log(tooltip_showing.value)
 
-                    d3.event.stopPropagation();
+                //     if (tooltip_showing.value){
+                //         point_tooltip.value.hide;
+                //         tooltip_showing.value = false;
+                //     } else {
+                //         point_tooltip.value.show(d, this);
+                //         tooltip_showing.value = true;
+                //     }
 
-                });
+                //     d3.event.stopPropagation();
+
+                // });
             }
         }
         if ( variant_bins1 != null){
