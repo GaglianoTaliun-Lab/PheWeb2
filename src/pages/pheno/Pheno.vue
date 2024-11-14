@@ -360,7 +360,15 @@ async function fetchPlottingData(phenocodes){
                 <ManhattanPlot :key="refreshKey" :data="manhattanData"  @updateFilteringParams="updateFilteringParameters"/>
             </div>
             <br>
-            <GWASTable />
+            <GWASTable 
+              :selectedStratification1= "selectedStratification1"
+              :selectedStratification2= "selectedStratification2"
+              :phenocode= "phenocode"
+              :minFreq="minFreq"
+              :maxFreq="maxFreq"
+              :selectedType= "selectedType"
+              :miamiData="miamiData"
+            />
             <br>
             <div v-if="qqData && dimension"> 
                 <h2> QQ Plot(s): </h2>

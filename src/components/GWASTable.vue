@@ -1,55 +1,192 @@
 <template>
   <h3>GWAS Table: </h3>
-  <div class="text-left" style="width: 20%">
-    <v-select v-model="selected" :items="options" label="Stratification" class="mb-4" variant="underlined"></v-select>
-  </div>
-  <!-- <div class="text-right">
-        <v-btn color="primary" @click="downloadCSV">Download CSV</v-btn>
-    </div> -->
-  <v-card elevation="5">
+  <v-card elevation="5" class="pa-2">
+    <v-row>
+    <v-col :cols="selectedStratification2 !== 'None' ? 6 : 12">
+      <h5>{{ props.selectedStratification1.split('.').slice(-2).join(', ') }}</h5>
+      <h5>{{ pheno1 }}</h5>
+      <v-data-table 
+        :items="variants1" 
+        :headers="headers" 
+        :search="search" 
+        height=500 
+        fixed-header 
+        :items-per-page="itemsPerPage"
+        :sort-by="[{ key: 'pval', order: 'des' }]" 
+        hover
+        :loading="isTableLoading"
+        :model-value="selectedVariantId"
+        @click:row="onRowSelect"
+        item-value="variantid"
+        :page="currentPage1"
+        @update:page="(page) => currentPage1 = page"
+        >
 
-    <template v-slot:text>
-      <v-text-field v-model="search" label="TCF7L2', '12-121779004-A-G', etc." prepend-inner-icon="mdi-magnify"
-        variant="outlined" hide-details single-line></v-text-field>
-    </template>
+        <template v-slot:item="{ item }">
+          <tr
+          :class="{ 'selected-row': item.variantid === selectedVariantId }"
+          @click="onRowSelect(item)"
+          >
+            <td>
+              <router-link :to="`/variant/${item.variantid}`" style="white-space: nowrap;">
+                {{ item.variantName }}
+              </router-link>
+            </td>
+            <td>
+              <span v-for="(gene, index) in item.nearest_genes" :key="index">
+                <router-link :to="`/gene/${gene.trim()}/${props.phenocode}`"
+                  style="white-space: nowrap; font-style: italic;">
+                  {{ gene.trim() }}
+                </router-link>
+                <span v-if="index < item.nearest_genes.length - 1">, </span>
+              </span>
+            </td>
+            <td>
+              {{ Number(item.af).toFixed(3) }}
+            </td>
+            <td>
+              <span style="white-space: nowrap;">
+                {{ item.pval }}
+              </span>
+            </td>
+            <td>
+              {{ item.effect_size }}
+            </td>
 
-    <v-data-table :items="variants" :headers="headers" :search="search" height=500 fixed-header :items-per-page="8"
-      :sort-by="[{ key: 'pval', order: 'des' }]" hover>
+          </tr>
+        </template>
 
-      <template v-slot:item.variantid="{ item }">
-        <router-link :to="`/variant/${item.variantid}`" style="white-space: nowrap;">{{ item.variantName
-          }}</router-link>
+        <!-- <template v-slot:item.variantid="{ item }">
+          <router-link :to="`/variant/${item.variantid}`" style="white-space: nowrap;">{{ item.variantName
+            }}</router-link>
+        </template>
+
+        <template v-slot:item.nearest_genes="{ item }">
+          <span v-for="(gene, index) in item.nearest_genes" :key="index">
+            <router-link :to="`/gene/${gene.trim()}/${props.phenocode}`"
+              style="white-space: nowrap; font-style: italic;">
+              {{ gene.trim() }}
+            </router-link>
+            <span v-if="index < item.nearest_genes.length - 1">, </span>
+          </span>
+        </template>
+
+        <template v-slot:item.pval="{ item }">
+          <span style="white-space: nowrap;">
+            {{ item.pval }}
+          </span>
+        </template> -->
+
+
+
+        <template v-slot:header.variantid="{ column, isSorted, getSortIcon }">
+          <div style="display: flex; align-items: center;">
+            <span style="white-space: nowrap;">{{ column.title }}</span>
+            <v-tooltip location="top">
+              <template v-slot:activator="{ props }">
+                <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
+              </template>
+              <span style="white-space: normal;">
+                1) Chromosome <br>
+                2) Position <br>
+                3) Reference allele <br>
+                4) Alternate allele <br>
+                5) rsid (if applicable)
+              </span>
+            </v-tooltip>
+            <template v-if="isSorted(column)">
+              <v-icon :icon="getSortIcon(column)"></v-icon>
+            </template>
+          </div>
+        </template>
+
+        <template v-slot:header.pval="{ column, isSorted, getSortIcon }">
+          <div style="display: flex; align-items: center;">
+            <span style="white-space: nowrap;">{{ column.title }}</span>
+            <template v-if="isSorted(column)">
+              <v-icon :icon="getSortIcon(column)"></v-icon>
+            </template>
+          </div>
+        </template>
+
+      </v-data-table>
+    </v-col>
+
+    <v-divider vertical></v-divider>
+
+    <v-col v-if="selectedStratification2 !== 'None'" cols="6">
+      <h5>{{ props.selectedStratification2.split('.').slice(-2).join(', ') }}</h5>
+      <h5>{{ pheno2 }}</h5>
+
+      <v-data-table
+      :items="variants2" 
+      :headers="headers" 
+      :search="search" 
+      height=500 
+      fixed-header 
+      :items-per-page="itemsPerPage"
+      :sort-by="[{ key: 'pval', order: 'des' }]" 
+      hover
+      :loading="isTableLoading"
+      item-value="variantid"
+      v-model:page="currentPage2"
+      :page.sync="currentPage2"
+      >
+
+      <template v-slot:item="{ item }">
+        <tr
+         :class="{ 'selected-row': item.variantid === selectedVariantId }"
+         @click="onRowSelect(item)"
+         >
+          <td>
+            <router-link :to="`/variant/${item.variantid}`" style="white-space: nowrap;">
+              {{ item.variantName }}
+            </router-link>
+          </td>
+          <td>
+            <span v-for="(gene, index) in item.nearest_genes" :key="index">
+              <router-link :to="`/gene/${gene.trim()}/${props.phenocode}`"
+                style="white-space: nowrap; font-style: italic;">
+                {{ gene.trim() }}
+              </router-link>
+              <span v-if="index < item.nearest_genes.length - 1">, </span>
+            </span>
+          </td>
+          <td>
+            {{ Number(item.af).toFixed(3) }}
+          </td>
+          <td>
+            <span style="white-space: nowrap;">
+              {{ item.pval }}
+            </span>
+          </td>
+          <td>
+            {{ item.effect_size }}
+          </td>
+
+        </tr>
       </template>
 
-      <template v-slot:item.nearest_genes="{ item }">
+      <!-- <template v-slot:item.variantid="{ item }">
+        <router-link :to="`/variant/${item.variantid}`" style="white-space: nowrap;">{{ item.variantName
+          }}</router-link>
+      </template> -->
+
+      <!-- <template v-slot:item.nearest_genes="{ item }">
         <span v-for="(gene, index) in item.nearest_genes" :key="index">
-          <router-link :to="`/gene/${gene.trim()}?include=${item.chrom}-${item.pos}`"
+          <router-link :to="`/gene/${gene.trim()}/${props.phenocode}`"
             style="white-space: nowrap; font-style: italic;">
             {{ gene.trim() }}
           </router-link>
           <span v-if="index < item.nearest_genes.length - 1">, </span>
         </span>
-      </template>
+      </template> -->
 
-      <template v-slot:item.pval="{ item }">
+      <!-- <template v-slot:item.pval="{ item }">
         <span style="white-space: nowrap;">
           {{ item.pval }}
         </span>
-      </template>
-
-      <template v-slot:header.nearest_genes="{ column, isSorted, getSortIcon }">
-        <div style="display: flex; align-items: center;">
-          <span style="white-space: nowrap;">{{ column.title }}</span>
-          <v-tooltip text="Head to internal page" location="top">
-            <template v-slot:activator="{ props }">
-              <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
-            </template>
-          </v-tooltip>
-          <template v-if="isSorted(column)">
-            <v-icon :icon="getSortIcon(column)"></v-icon>
-          </template>
-        </div>
-      </template>
+      </template> -->
 
       <template v-slot:header.variantid="{ column, isSorted, getSortIcon }">
         <div style="display: flex; align-items: center;">
@@ -81,7 +218,13 @@
         </div>
       </template>
 
-    </v-data-table>
+      </v-data-table>
+      <v-pagination
+        v-model="currentPage2"
+        :length="pageCount2"
+      ></v-pagination>
+    </v-col>
+    </v-row>
   </v-card>
 
 </template>
@@ -93,42 +236,77 @@
   
       const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URL
       const route = useRoute();
-      const phenocode = route.params.phenocode;
+      // const phenocode = route.params.phenocode;
+
+      const props = defineProps({
+        selectedStratification1: String,
+        selectedStratification2: String,
+        phenocode: String,
+        minFreq: Number,
+        maxFreq: Number,
+        selectedType: String,
+        miamiData: Object
+      });
+      console.log(props.selectedStratification1, props.selectedStratification2);
+      const tableInfo = ref(null);
+      
   
       // main table
       const headers = ref([
         { title: 'Top Variant', key: 'variantid' },
         { title: 'Nearest Gene(s)', key: 'nearest_genes' },
-        { title: 'MAF', key: 'af' },
+        { title: 'AF', key: 'af' },
         { title: 'P-value', key: 'pval' },
         { title: 'Effect Size (se)', key: 'effect_size' },
       ]);
   
-      const variants = ref([]);
-      const isLoading = ref(false);
+      const variants1 = ref([]);
+      const variants2 = ref([]);
+      const pheno1 = ref(null);
+      const pheno2 = ref(null);
       const errorMessage = ref('');
-  
       const search = ref('');
-
-      const selected = ref('European, Combined');
-
-      const options = ref(['European, Combined', 'European, Male', 'European, Female']);
-
-      const buildApiUrl = () => {
-        const formattedSelected = selected.value.replace(', ', '.');
-        return `${api}/phenotypes/${phenocode}.${formattedSelected}`;
-      };
+      const isTableLoading = ref(true);
+      const currentPage1 = ref(1);
+      const currentPage2 = ref(1);
+      const itemsPerPage = 8; 
+      
   
       // data
       const fetchSampleData = async () => {
-        isLoading.value = true;
+        isTableLoading.value = true;
         errorMessage.value = '';
         try {
-          const apiUrl = buildApiUrl();
-          const response = await axios.get(apiUrl);
-          console.log(apiUrl);
-          console.log(response);
-          variants.value = response.data.unbinned_variants.map(item => ({
+          // const apiUrl = `${api}/phenotypes/${props.selectedStratification1}`;
+          // const response = await axios.get(apiUrl);
+          // console.log(apiUrl);
+          // console.log(response);
+
+          // variants.value = response.data.unbinned_variants.map(item => ({
+          //   ...item,
+          //   variantid: `${item.chrom}-${item.pos}-${item.ref}-${item.alt}`,
+          //   variantName: item.rsids 
+          //     ? `${item.chrom}: ${item.pos} ${item.ref} / ${item.alt} (${item.rsids})`
+          //     : `${item.chrom}: ${item.pos} ${item.ref} / ${item.alt}`,
+          //   nearest_genes: item.nearest_genes ? item.nearest_genes.split(',') : [], 
+          //   effect_size: `${item.beta} (${item.sebeta})`
+          // }));
+          tableInfo.value = props.miamiData;
+          var keys = Object.keys(tableInfo.value)
+          pheno1.value = keys[0]
+          pheno2.value = keys[1] || keys[0]
+          console.log("pheno1&2", pheno1.value, pheno2.value);
+
+          variants1.value = tableInfo.value[pheno1.value]?.unbinned_variants.map(item => ({
+            ...item,
+            variantid: `${item.chrom}-${item.pos}-${item.ref}-${item.alt}`,
+            variantName: item.rsids 
+              ? `${item.chrom}: ${item.pos} ${item.ref} / ${item.alt} (${item.rsids})`
+              : `${item.chrom}: ${item.pos} ${item.ref} / ${item.alt}`,
+            nearest_genes: item.nearest_genes ? item.nearest_genes.split(',') : [], 
+            effect_size: `${item.beta} (${item.sebeta})`
+          }));
+          variants2.value = tableInfo.value[pheno2.value]?.unbinned_variants.map(item => ({
             ...item,
             variantid: `${item.chrom}-${item.pos}-${item.ref}-${item.alt}`,
             variantName: item.rsids 
@@ -141,10 +319,21 @@
           console.error("There was an error fetching the sample data:", error);
           errorMessage.value = "Failed to load data. Please try again later.";
         } finally {
-          isLoading.value = false;
+          isTableLoading.value = false;
         }
         
       };
+
+      const selectedVariantId = ref(null);
+      function calculatePageIndex(data, variantId) {
+        const index = data.findIndex(item => item.variantid === variantId);
+        return index === -1 ? 1 : Math.floor(index / itemsPerPage) + 1;
+      }
+      function onRowSelect(item) {
+        selectedVariantId.value = item.variantid;
+        currentPage1.value = calculatePageIndex(variants1, item.variantid);  
+        currentPage2.value = calculatePageIndex(variants2, item.variantid);
+      }
 
       // download
       const coverToCSV = (data) => {
@@ -175,17 +364,29 @@
       };
   
       onMounted(() => {
+        
         fetchSampleData();
+        // console.log("here",props.miamiData[props.selectedStratification1]);
+        
+        // console.log("here", tableInfo.value);
       });
 
-      watch(selected, (newSelected) => {
-        console.log(`Selected value changed to: ${newSelected}`);
+      watch(() => [props.selectedStratification1, props.selectedStratification2, props.miamiData], (newSelectedStratification1, newSelectedStratification2, newData) => {
+        console.log(`Selected value changed to: ${newSelectedStratification1}, ${newSelectedStratification2}`);
+        // tableInfo.value = newData
         fetchSampleData();
+        // const unbinnedVariants = props.miamiData[props.selectedStratification1]["unbinned_variants"];
+        // console.log("Unbinned Variants:", unbinnedVariants);
+
       });
   
   </script>
   
-  
+<style scoped>
+.selected-row {
+  background-color: #fab9d4; 
+}
+</style>
   
   
   
