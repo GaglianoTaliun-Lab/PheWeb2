@@ -100,12 +100,13 @@ const phenocode = route.params.phenocode;
 // Add event listener to document to close tooltip when clicking outside
 onMounted(() => {
     info.value = props.data;
-    document.addEventListener('click', hideTooltip);
-    // Clean up listener on component unmount
-    onBeforeUnmount(() => {
-        document.removeEventListener('click', hideTooltip);
+    document.addEventListener('click', function(event) {
+        if (tooltip_showing.value && !d3.select(event.target).classed('variant_point')) {
+            // Hide the tooltip if clicking outside a variant point
+            point_tooltip.value.hide();
+            tooltip_showing.value = false;
+        }
     });
-
 
     createMiamis('all');
 });
@@ -684,118 +685,101 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
             })
 
         //these are where clickable points will be appended to the plot
-        function pp2(flip) {
-            if(flip ){
-                d3.select('#variant_points_lower')
+    function pp2(flip) {
+        if (flip) {
+            d3.select('#variant_points_lower')
                 .selectAll('a.variant_point')
                 .data(variant_unbinned2)
                 .enter()
                 .append('a')
                 .attr('class', 'variant_point') //.attr('xlink:href', get_link_to_LZ_data2)
                 .append('circle')
-                .attr('id', function(d) {
+                .attr('id', function (d) {
                     return utils.fmt('variant-point-{0}-{1}-{2}-{3}', d.chrom, d.pos, d.ref, d.alt);
                 })
-                .attr('cx', function(d) {
+                .attr('cx', function (d) {
                     return x_scale.value(get_genomic_position_data2(d));
                 })
-                .attr('cy', function(d) {
+                .attr('cy', function (d) {
                     return y_scale_data2.value(-Math.log10(d.pval));
                 })
                 .attr('r', 2.3)
-                .style('fill', function(d) {
+                .style('fill', function (d) {
                     return color_by_chrom_dim(d.chrom);
                 })
-                // .on('mouseover', function(d) {
-                //     //Note: once a tooltip has been explicitly placed once, it must be explicitly placed forever after.
-                //     console.log(point_tooltip.value)
-                //     point_tooltip.value.show(d, this);
-                //     console.log(point_tooltip.value)
-                // })
-                // .on('mouseout', point_tooltip.value.hide)
-                // .on('click', function(d) {
-                //     //Note: once a tooltip has been explicitly placed once, it must be explicitly placed forever after.
-                //     console.log(d)
-                //     console.log(tooltip_showing.value)
-
-                //     if (tooltip_showing.value){
-                //         point_tooltip.value.hide;
-                //         tooltip_showing.value = false;
-                //     } else {
-                //         point_tooltip.value.show(d, this);
-                //         tooltip_showing.value = true;
-                //     }
-
-                //     d3.event.stopPropagation();
-
-                // });
+                .on('mouseover', function (d) {
+                    // Show the tooltip on hover
+                    if (!tooltip_showing.value) {
+                        point_tooltip.value.show(d, this);
+                    }
+                })
+                .on('mouseout', function (d) {
+                    // Only hide the tooltip on mouseout if it wasn't clicked to stay open
+                    if (!tooltip_showing.value) {
+                        point_tooltip.value.hide(d, this);
+                    }
+                })
                 .on('click', function (d) {
-                // Prevent event propagation to document
-                d3.event.stopPropagation();
+                    d3.event.stopPropagation();
+                    if (tooltip_showing.value) {
+                        // Hide the tooltip if it’s already showing and was clicked again
+                        point_tooltip.value.hide(d, this);
+                        tooltip_showing.value = false;
+                    } else {
+                        // Show the tooltip and make it stay open
+                        point_tooltip.value.show(d, this);
+                        tooltip_showing.value = true;
+                    }
+                });
 
-                if (tooltip_showing.value) {
-                    point_tooltip.value.hide(d, this);
-                    tooltip_showing.value = false;
-                } else {
-                    point_tooltip.value.show(d, this);
-                    tooltip_showing.value = true;
-                }
-            });
-            } else if (!flip ) {
-                d3.select('#variant_points_upper')
+        } else if (!flip) {
+            d3.select('#variant_points_upper')
                 .selectAll('a.variant_point')
                 .data(variant_unbinned1)
                 .enter()
                 .append('a')
                 .attr('class', 'variant_point')//.attr('xlink:href', get_link_to_LZ_data1)
                 .append('circle')
-                .attr('id', function(d) {
+                .attr('id', function (d) {
                     return utils.fmt('variant-point-{0}-{1}-{2}-{3}', d.chrom, d.pos, d.ref, d.alt);
                 })
-                .attr('cx', function(d) {
+                .attr('cx', function (d) {
                     return x_scale.value(get_genomic_position_data1(d));
                 })
-                .attr('cy', function(d) {
+                .attr('cy', function (d) {
                     return y_scale_data1.value(-Math.log10(d.pval));
                 })
                 .attr('r', 2.3)
-                .style('fill', function(d) {
+                .style('fill', function (d) {
                     return color_by_chrom_dim(d.chrom);
                 })
-                // .on('mouseover', function(d) {
-                //     //Note: once a tooltip has been explicitly placed once, it must be explicitly placed forever after.
-                //     point_tooltip.value.show(d, this);
-                // })
-                // .on('mouseout', point_tooltip.value.hide)
+                .on('mouseover', function (d) {
+                    // Show the tooltip on hover
+                    if (!tooltip_showing.value) {
+                        point_tooltip.value.show(d, this);
+                    }
+                })
+                .on('mouseout', function (d) {
+                    // Only hide the tooltip on mouseout if it wasn't clicked to stay open
+                    if (!tooltip_showing.value) {
+                        point_tooltip.value.hide(d, this);
+                    }
+                })
                 .on('click', function (d) {
-                d3.event.stopPropagation();
+                    d3.event.stopPropagation();
+                    if (tooltip_showing.value) {
+                        // Hide the tooltip if it’s already showing and was clicked again
+                        point_tooltip.value.hide(d, this);
+                        tooltip_showing.value = false;
+                    } else {
+                        // Show the tooltip and make it stay open
+                        point_tooltip.value.show(d, this);
+                        tooltip_showing.value = true;
+                    }
+                });
 
-                if (tooltip_showing.value) {
-                    point_tooltip.value.hide(d, this);
-                    tooltip_showing.value = false;
-                } else {
-                    point_tooltip.value.show(d, this);
-                    tooltip_showing.value = true;
-                }
-            });
-                // .on('click', function( d) {
-                //     //Note: once a tooltip has been explicitly placed once, it must be explicitly placed forever after.
-                //     console.log(d)
-                //     console.log(tooltip_showing.value)
-
-                //     if (tooltip_showing.value){
-                //         point_tooltip.value.hide;
-                //         tooltip_showing.value = false;
-                //     } else {
-                //         point_tooltip.value.show(d, this);
-                //         tooltip_showing.value = true;
-                //     }
-
-                //     d3.event.stopPropagation();
-
-                // });
-            }
         }
+    }
         if ( variant_bins1 != null){
             pp2(false);
         }
