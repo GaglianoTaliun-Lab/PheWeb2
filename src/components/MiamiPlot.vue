@@ -670,7 +670,8 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
                 .data(variant_unbinned2)
                 .enter()
                 .append('a')
-                .attr('class', 'variant_point') //.attr('xlink:href', get_link_to_LZ_data2)
+                .attr('class', 'variant_point')
+                .attr('xlink:href', get_link_to_LZ_data2)
                 .append('circle')
                 .attr('id', function(d) {
                     return utils.fmt('variant-point-{0}-{1}-{2}-{3}', d.chrom, d.pos, d.ref, d.alt);
@@ -712,7 +713,8 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
                 .data(variant_unbinned1)
                 .enter()
                 .append('a')
-                .attr('class', 'variant_point')//.attr('xlink:href', get_link_to_LZ_data1)
+                .attr('class', 'variant_point')
+                .attr('xlink:href', get_link_to_LZ_data1)
                 .append('circle')
                 .attr('id', function(d) {
                     return utils.fmt('variant-point-{0}-{1}-{2}-{3}', d.chrom, d.pos, d.ref, d.alt);
@@ -922,7 +924,8 @@ var miami_filter_view = {
         point_selection_upper.exit().remove();
         point_selection_upper.enter()
             .append('a')
-            .attr('class', 'variant_point')//.attr('xlink:href', get_link_to_LZ_data1)
+            .attr('class', 'variant_point')
+            .attr('xlink:href', get_link_to_LZ_data1)
             .append('circle')
             .attr('id', function(d) {
                 return utils.fmt('filtered-variant-point-{0}-{1}-{2}-{3}', d.chrom, d.pos, d.ref, d.alt);
@@ -966,7 +969,8 @@ var miami_filter_view = {
         point_selection_lower.exit().remove();
         point_selection_lower.enter()
             .append('a')
-            .attr('class', 'variant_point')//.attr('xlink:href', get_link_to_LZ_data2)
+            .attr('class', 'variant_point')
+            .attr('xlink:href', get_link_to_LZ_data2)
             .append('circle')
             .attr('id', function(d) {
                 return utils.fmt('filtered-variant-point-{0}-{1}-{2}-{3}', d.chrom, d.pos, d.ref, d.alt);
@@ -1015,7 +1019,8 @@ var miami_filter_view = {
         hover_ring_selection_upper.exit().remove();
         hover_ring_selection_upper.enter()
             .append('a')
-            .attr('class', 'variant_hover_ring_lower')//.attr('xlink:href', get_link_to_LZ_data1)
+            .attr('class', 'variant_hover_ring_lower')
+            .attr('xlink:href', get_link_to_LZ_data1)
             .append('circle')
             .attr('cx', function(d) {
                 return x_scale.value(get_genomic_position_data1(d));
@@ -1043,7 +1048,8 @@ var miami_filter_view = {
         hover_ring_selection_lower.exit().remove();
         hover_ring_selection_lower.enter()
             .append('a')
-            .attr('class', 'variant_hover_ring_lower')//.attr('xlink:href', get_link_to_LZ_data2)
+            .attr('class', 'variant_hover_ring_lower')
+            .attr('xlink:href', get_link_to_LZ_data2)
             .append('circle')
             .attr('cx', function(d) {
                 return x_scale.value(get_genomic_position_data2(d));
