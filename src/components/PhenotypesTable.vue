@@ -409,11 +409,6 @@
       });
     });
 
-    
-
-
-
-
 
     // unique phenotype displayed
     const displayedUniquePhenotypesCount = computed(() => {
@@ -426,11 +421,7 @@
       return totalPhenotypes.size;
     });
 
-
-
     const emit = defineEmits(['updateUniquePhenotypesCount']) //emit('updateUniquePhenotypesCount', data) to parent
-
-
 
     // download
     const coverToCSV = (data) => {

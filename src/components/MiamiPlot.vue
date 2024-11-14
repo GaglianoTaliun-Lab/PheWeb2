@@ -40,6 +40,8 @@ const y_scale_data2 = ref(null)
 const pheno1 = ref(null);
 const pheno2 = ref(null);
 
+const emit = defineEmits(['updateFilteringParams']) 
+
 const toggleExpanded = () => {
   showExpandedClick.value = !showExpandedClick.value;
 
@@ -1185,8 +1187,13 @@ function get_genomic_position_data2(variant) {
     return chrom_offsets[variant.chrom] + variant.pos;
 }
 
+//  emit variables to parent component if it changes
+// not using this right now, because we want it to only change when the user presses 'filter' 
+// watch([minFreq, maxFreq, selectedType], ([newMinFreq, newMaxFreq, newSelectedType]) => {
+//     emit('updateFilteringParams', { min: newMinFreq, max: newMaxFreq, type : newSelectedType });
+// })
+
 async function refilter() {
-    //variant_table.clear();
 
     var phenocode_with_stratifications1 = pheno1.value
     var phenocode_with_stratifications2 = pheno2.value
@@ -1217,6 +1224,8 @@ async function refilter() {
         const response = await axios.get(url);
         var data = response.data ; 
         miami_filter_view.set_variants(data[0].variant_bins , data[0].unbinned_variants, data[0].weakest_pval , data[1].variant_bins , data[1].unbinned_variants , data[1].weakest_pval );
+
+        emit('updateFilteringParams', { min: minFreq.value, max: maxFreq.value, type : selectedType.value });
 
     } catch (error) {
         console.log(`Error fetching plotting with url ${url}:`, error);

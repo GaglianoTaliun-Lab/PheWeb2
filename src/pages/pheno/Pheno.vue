@@ -36,6 +36,11 @@ const manhattanData = ref({});
 const selectedStratification1 = ref('');
 const selectedStratification2 = ref('');
 
+// Filtering information from child components
+const minFreq = ref(0);
+const maxFreq = ref(0.5);
+const selectedType = ref('Both');
+
 const sampleSizeLabel = ref({})
 
 const miamiToggle = ref(true);
@@ -79,6 +84,13 @@ onMounted(async () => {
       console.log(error);
     }
 });
+
+function updateFilteringParameters({ min, max, type}) {
+      minFreq.value = min;
+      maxFreq.value = max;
+      selectedType.value = type;
+
+}
 
 function chooseDefaultStratifications(data){
 
@@ -342,10 +354,10 @@ async function fetchPlottingData(phenocodes){
                   </div>
             </div> 
             <div v-if="miamiToggle && Object.keys(miamiData).length > 0">
-                <MiamiPlot :key="refreshKey" :data="miamiData"/>
+                <MiamiPlot :key="refreshKey" :data="miamiData" @updateFilteringParams="updateFilteringParameters"/>
             </div>
             <div v-else-if="!miamiToggle && Object.keys(manhattanData).length > 0">
-                <ManhattanPlot :key="refreshKey" :data="manhattanData"/>
+                <ManhattanPlot :key="refreshKey" :data="manhattanData"  @updateFilteringParams="updateFilteringParameters"/>
             </div>
             <br>
             <GWASTable />
