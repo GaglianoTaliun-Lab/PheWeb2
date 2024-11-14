@@ -23,6 +23,10 @@
 
   onMounted(async () => {
     try {
+      // get ALL POSSIBLE stratifications (need backend work)
+      // then loop over them to get the variant data for that stratification
+      // then pass in a big list to PheWAS plot.
+
       const response = await axios.get(`${api}/variant/` + variantCode);
       info.value = response;
       variantList = info.val.data;

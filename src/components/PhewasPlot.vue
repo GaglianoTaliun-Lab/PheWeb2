@@ -337,6 +337,7 @@ function generatePlot(variant_list){
 }
 
 onMounted(() => {
+    
     generatePlot(props.variantList)
 });
 
