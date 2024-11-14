@@ -40,6 +40,7 @@ const y_scale_data = ref(null)
 
 const pheno = ref(null)
 
+const emit = defineEmits(['updateFilteringParams']) 
 
 const toggleExpanded = () => {
   showExpandedClick.value = !showExpandedClick.value;
@@ -652,6 +653,11 @@ function get_link_to_LZ(variant) {
                        variant.pos + 200*1000);
 }
 
+// emit variables to parent component (Pheno.vue, probably)
+// watch([minFreq, maxFreq, selectedType], ([newMinFreq, newMaxFreq, newSelectedType]) => {
+//     emit('updateFilteringParams', { min: newMinFreq, max: newMaxFreq, type : newSelectedType });
+// })
+
 async function refilter() {
     //variant_table.clear();
 
@@ -682,6 +688,8 @@ async function refilter() {
         const response = await axios.get(url);
         var data = response.data ;
         manhattan_filter_view.set_variants(data[0].variant_bins , data[0].unbinned_variants, data[0].weakest_pval );
+        
+        emit('updateFilteringParams', { min: minFreq.value, max: maxFreq.value, type : selectedType.value });
 
     } catch (error) {
         console.log(`Error fetching plotting with url ${url}:`, error);
