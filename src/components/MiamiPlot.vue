@@ -685,29 +685,27 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
                 .style('fill', function(d) {
                     return color_by_chrom_dim(d.chrom);
                 })
-                // .on('mouseover', function(d) {
-                //     //Note: once a tooltip has been explicitly placed once, it must be explicitly placed forever after.
-                //     console.log(point_tooltip.value)
-                //     point_tooltip.value.show(d, this);
-                //     console.log(point_tooltip.value)
-                // })
-                // .on('mouseout', point_tooltip.value.hide)
-                .on('click', function(d) {
+                .on('mouseover', function(d) {
                     //Note: once a tooltip has been explicitly placed once, it must be explicitly placed forever after.
-                    console.log(d)
-                    console.log(tooltip_showing.value)
+                    point_tooltip.value.show(d, this);
+                })
+                .on('mouseout', point_tooltip.value.hide)
+                // .on('click', function(d) {
+                //     //Note: once a tooltip has been explicitly placed once, it must be explicitly placed forever after.
+                //     console.log(d)
+                //     console.log(tooltip_showing.value)
 
-                    if (tooltip_showing.value){
-                        point_tooltip.value.hide;
-                        tooltip_showing.value = false;
-                    } else {
-                        point_tooltip.value.show(d, this);
-                        tooltip_showing.value = true;
-                    }
+                //     if (tooltip_showing.value){
+                //         point_tooltip.value.hide;
+                //         tooltip_showing.value = false;
+                //     } else {
+                //         point_tooltip.value.show(d, this);
+                //         tooltip_showing.value = true;
+                //     }
 
-                    d3.event.stopPropagation();
+                //     d3.event.stopPropagation();
 
-                });
+                // });
             } else if (!flip ) {
                 d3.select('#variant_points_upper')
                 .selectAll('a.variant_point')
@@ -729,27 +727,27 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
                 .style('fill', function(d) {
                     return color_by_chrom_dim(d.chrom);
                 })
-                // .on('mouseover', function(d) {
-                //     //Note: once a tooltip has been explicitly placed once, it must be explicitly placed forever after.
-                //     point_tooltip.value.show(d, this);
-                // })
-                // .on('mouseout', point_tooltip.value.hide)
-                .on('click', function( d) {
+                .on('mouseover', function(d) {
                     //Note: once a tooltip has been explicitly placed once, it must be explicitly placed forever after.
-                    console.log(d)
-                    console.log(tooltip_showing.value)
+                    point_tooltip.value.show(d, this);
+                })
+                .on('mouseout', point_tooltip.value.hide)
+                // .on('click', function( d) {
+                //     //Note: once a tooltip has been explicitly placed once, it must be explicitly placed forever after.
+                //     console.log(d)
+                //     console.log(tooltip_showing.value)
 
-                    if (tooltip_showing.value){
-                        point_tooltip.value.hide;
-                        tooltip_showing.value = false;
-                    } else {
-                        point_tooltip.value.show(d, this);
-                        tooltip_showing.value = true;
-                    }
+                //     if (tooltip_showing.value){
+                //         point_tooltip.value.hide;
+                //         tooltip_showing.value = false;
+                //     } else {
+                //         point_tooltip.value.show(d, this);
+                //         tooltip_showing.value = true;
+                //     }
 
-                    d3.event.stopPropagation();
+                //     d3.event.stopPropagation();
 
-                });
+                // });
             }
         }
         if ( variant_bins1 != null){
@@ -939,27 +937,27 @@ var miami_filter_view = {
             .style('fill', function(d) {
                 return color_by_chrom(d.chrom);
             })
-            // .on('mouseover', function(d) {
-            //     //Note: once a tooltip has been explicitly placed once, it must be explicitly placed forever after.
-            //     point_tooltip.value.show(d, this);
-            // })
-            // .on('mouseout', point_tooltip.value.hide)
-            .on('click', function(d) {
+            .on('mouseover', function(d) {
                 //Note: once a tooltip has been explicitly placed once, it must be explicitly placed forever after.
-                console.log(d)
-                console.log(tooltip_showing.value)
+                point_tooltip.value.show(d, this);
+            })
+            .on('mouseout', point_tooltip.value.hide)
+            // .on('click', function(d) {
+            //     //Note: once a tooltip has been explicitly placed once, it must be explicitly placed forever after.
+            //     console.log(d)
+            //     console.log(tooltip_showing.value)
 
-                if (tooltip_showing.value){
-                    point_tooltip.value.hide;
-                    tooltip_showing.value = false;
-                } else {
-                    point_tooltip.value.show(d, this);
-                    tooltip_showing.value = true;
-                }
+            //     if (tooltip_showing.value){
+            //         point_tooltip.value.hide;
+            //         tooltip_showing.value = false;
+            //     } else {
+            //         point_tooltip.value.show(d, this);
+            //         tooltip_showing.value = true;
+            //     }
 
-                d3.event.stopPropagation()
+            //     d3.event.stopPropagation()
                 
-            });
+            // });
 
         var point_selection_lower = d3.select('#filtered_variant_points_lower')
             .selectAll('a.variant_point_lower')
@@ -983,27 +981,27 @@ var miami_filter_view = {
             .style('fill', function(d) {
                 return color_by_chrom(d.chrom);
             })
-            // .on('mouseover', function(d) {
-            //     //Note: once a tooltip has been explicitly placed once, it must be explicitly placed forever after.
-            //     point_tooltip.value.show(d, this);
-            // })
-            // .on('mouseout', point_tooltip.value.hide)
-            .on('click', function(d) {
+            .on('mouseover', function(d) {
                 //Note: once a tooltip has been explicitly placed once, it must be explicitly placed forever after.
-                console.log(d)
-                console.log(tooltip_showing.value)
+                point_tooltip.value.show(d, this);
+            })
+            .on('mouseout', point_tooltip.value.hide)
+            // .on('click', function(d) {
+            //     //Note: once a tooltip has been explicitly placed once, it must be explicitly placed forever after.
+            //     console.log(d)
+            //     console.log(tooltip_showing.value)
 
-                if (tooltip_showing.value){
-                    point_tooltip.value.hide;
-                    tooltip_showing.value = false;
-                } else {
-                    point_tooltip.value.show(d, this);
-                    tooltip_showing.value = true;
-                }
+            //     if (tooltip_showing.value){
+            //         point_tooltip.value.hide;
+            //         tooltip_showing.value = false;
+            //     } else {
+            //         point_tooltip.value.show(d, this);
+            //         tooltip_showing.value = true;
+            //     }
 
-                d3.event.stopPropagation();
+            //     d3.event.stopPropagation();
 
-            });
+            // });
 
         var hover_ring_selection_upper = d3.select('#filtered_variant_hover_rings_upper')
             .selectAll('a.variant_hover_ring_upper')
