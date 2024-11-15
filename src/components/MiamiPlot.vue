@@ -27,7 +27,6 @@ const maxFreq = ref(0.5);
 const selectedType = ref('Both');
 const hiddenToggle = ref(null);
 const tooltip_showing = ref(false)
-const tooltip_showing = ref(false)
 
 // Close tooltip function
 const hideTooltip = () => {
@@ -49,8 +48,6 @@ const y_scale_data2 = ref(null)
 
 const pheno1 = ref(null);
 const pheno2 = ref(null);
-
-const emit = defineEmits(['updateFilteringParams']) 
 
 const toggleExpanded = () => {
   showExpandedClick.value = !showExpandedClick.value;
@@ -616,12 +613,6 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
             "<br>Region Plot: <a href='<%= `${window.location}/region/${d.chrom}:${Math.max(0, d.pos - 200 * 1000)}-${d.pos + 200 * 1000}` %>' target='_blank'>View</a>"
         );
 
-            "<% if(_.has(d, 'num_significant_in_peak') && d.num_significant_in_peak>1) { %>#significant variants in peak: <%= d.num_significant_in_peak %><br><% } %>" +
-    
-            // add link
-            "<br>Region Plot: <a href='<%= `${window.location}/region/${d.chrom}:${Math.max(0, d.pos - 200 * 1000)}-${d.pos + 200 * 1000}` %>' target='_blank'>View</a>"
-        );
-
             point_tooltip.value = d3Tip()
                 .attr('class', 'd3-tip')
                 .style('background-color', 'black')
@@ -902,10 +893,6 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
             return this == d3.event.target;
         }
 
-        function equalToEventTarget() {
-            return this == d3.event.target;
-        }
-
 }
 
 var miami_filter_view = {
@@ -1073,14 +1060,6 @@ var miami_filter_view = {
 
                 
             });
-            .on('mouseout', point_tooltip.value.hide)
-            .on('click', function(d) {
-                //Note: once a tooltip has been explicitly placed once, it must be explicitly placed forever after.
-                var target_node = document.getElementById(utils.fmt('filtered-variant-point-{0}-{1}-{2}-{3}', d.chrom, d.pos, d.ref, d.alt));
-                point_tooltip.value.show(d, target_node);
-
-                
-            });
         
         hover_ring_selection_lower.exit().remove();
         hover_ring_selection_lower.enter()
@@ -1101,14 +1080,6 @@ var miami_filter_view = {
                 var target_node = document.getElementById(utils.fmt('filtered-variant-point-{0}-{1}-{2}-{3}', d.chrom, d.pos, d.ref, d.alt));
                 point_tooltip.value.show(d, target_node);
             })
-            .on('mouseout', point_tooltip.value.hide)
-            .on('click', function(d) {
-                //Note: once a tooltip has been explicitly placed once, it must be explicitly placed forever after.
-                var target_node = document.getElementById(utils.fmt('filtered-variant-point-{0}-{1}-{2}-{3}', d.chrom, d.pos, d.ref, d.alt));
-                point_tooltip.value.show(d, target_node);
-
-                
-            });
             .on('mouseout', point_tooltip.value.hide)
             .on('click', function(d) {
                 //Note: once a tooltip has been explicitly placed once, it must be explicitly placed forever after.
@@ -1235,13 +1206,8 @@ function get_genomic_position_data2(variant) {
     return chrom_offsets[variant.chrom] + variant.pos;
 }
 
-//  emit variables to parent component if it changes
-// not using this right now, because we want it to only change when the user presses 'filter' 
-// watch([minFreq, maxFreq, selectedType], ([newMinFreq, newMaxFreq, newSelectedType]) => {
-//     emit('updateFilteringParams', { min: newMinFreq, max: newMaxFreq, type : newSelectedType });
-// })
-
 async function refilter() {
+    //variant_table.clear();
 
     var phenocode_with_stratifications1 = pheno1.value
     var phenocode_with_stratifications2 = pheno2.value
@@ -1272,8 +1238,6 @@ async function refilter() {
         const response = await axios.get(url);
         var data = response.data ; 
         miami_filter_view.set_variants(data[0].variant_bins , data[0].unbinned_variants, data[0].weakest_pval , data[1].variant_bins , data[1].unbinned_variants , data[1].weakest_pval );
-
-        emit('updateFilteringParams', { min: minFreq.value, max: maxFreq.value, type : selectedType.value });
 
     } catch (error) {
         console.log(`Error fetching plotting with url ${url}:`, error);
