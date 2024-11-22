@@ -1,28 +1,26 @@
 <template>
-  <h3>GWAS Table: </h3>
+  <h3>GWAS Table (Top vs. Bottom): </h3>
   <v-card elevation="5" class="pa-2">
     <v-row>
-    <v-col :cols="selectedStratification2 !== 'None' ? 6 : 12">
-      <h5>{{ props.selectedStratification1.split('.').slice(-2).join(', ') }}</h5>
-      <h5>{{ pheno1 }}</h5>
+    <v-col :cols="selectedStratification2 !== 'None' ? 12 : 12">
+      <!-- <h5>{{ props.selectedStratification1.split('.').slice(-2).join(', ') }}</h5>
+      <h5>{{ pheno1 }}</h5> -->
       <v-data-table 
-        :items="variants1" 
+        :items="mergedVariants" 
         :headers="headers" 
+        :header-props="headerProps"
         :search="search" 
         height=500 
         fixed-header 
         :items-per-page="itemsPerPage"
-        :sort-by="[{ key: 'pval', order: 'des' }]" 
+        :sort-by.sync="sortBy"
+        must-sort
         hover
         :loading="isTableLoading"
-        :model-value="selectedVariantId"
-        @click:row="onRowSelect"
-        item-value="variantid"
-        :page="currentPage1"
-        @update:page="(page) => currentPage1 = page"
+        @update:sort-by="updateSortBy"
         >
 
-        <template v-slot:item="{ item }">
+        <!-- <template v-slot:item="{ item }">
           <tr
           :class="{ 'selected-row': item.variantid === selectedVariantId }"
           @click="onRowSelect(item)"
@@ -54,9 +52,9 @@
             </td>
 
           </tr>
-        </template>
+        </template> -->
 
-        <!-- <template v-slot:item.variantid="{ item }">
+        <template v-slot:item.variantid="{ item }">
           <router-link :to="`/variant/${item.variantid}`" style="white-space: nowrap;">{{ item.variantName
             }}</router-link>
         </template>
@@ -71,13 +69,11 @@
           </span>
         </template>
 
-        <template v-slot:item.pval="{ item }">
+        <!-- <template v-slot:item.pval="{ item }">
           <span style="white-space: nowrap;">
             {{ item.pval }}
           </span>
         </template> -->
-
-
 
         <template v-slot:header.variantid="{ column, isSorted, getSortIcon }">
           <div style="display: flex; align-items: center;">
@@ -111,7 +107,7 @@
 
       </v-data-table>
     </v-col>
-
+<!-- 
     <v-divider vertical></v-divider>
 
     <v-col v-if="selectedStratification2 !== 'None'" cols="6">
@@ -167,27 +163,6 @@
         </tr>
       </template>
 
-      <!-- <template v-slot:item.variantid="{ item }">
-        <router-link :to="`/variant/${item.variantid}`" style="white-space: nowrap;">{{ item.variantName
-          }}</router-link>
-      </template> -->
-
-      <!-- <template v-slot:item.nearest_genes="{ item }">
-        <span v-for="(gene, index) in item.nearest_genes" :key="index">
-          <router-link :to="`/gene/${gene.trim()}/${props.phenocode}`"
-            style="white-space: nowrap; font-style: italic;">
-            {{ gene.trim() }}
-          </router-link>
-          <span v-if="index < item.nearest_genes.length - 1">, </span>
-        </span>
-      </template> -->
-
-      <!-- <template v-slot:item.pval="{ item }">
-        <span style="white-space: nowrap;">
-          {{ item.pval }}
-        </span>
-      </template> -->
-
       <template v-slot:header.variantid="{ column, isSorted, getSortIcon }">
         <div style="display: flex; align-items: center;">
           <span style="white-space: nowrap;">{{ column.title }}</span>
@@ -223,7 +198,7 @@
         v-model="currentPage2"
         :length="pageCount2"
       ></v-pagination>
-    </v-col>
+    </v-col> -->
     </v-row>
   </v-card>
 
@@ -248,28 +223,70 @@
         miamiData: Object
       });
       console.log(props.selectedStratification1, props.selectedStratification2);
-      const tableInfo = ref(null);
+      const tableInfo = ref([]);
       
   
       // main table
-      const headers = ref([
-        { title: 'Top Variant', key: 'variantid' },
-        { title: 'Nearest Gene(s)', key: 'nearest_genes' },
-        { title: 'AF', key: 'af' },
-        { title: 'P-value', key: 'pval' },
-        { title: 'Effect Size (se)', key: 'effect_size' },
-      ]);
+
   
       const variants1 = ref([]);
       const variants2 = ref([]);
-      const pheno1 = ref(null);
-      const pheno2 = ref(null);
+      const mergedVariants = ref([]);
+      const pheno1 = ref('');
+      const pheno2 = ref('');
       const errorMessage = ref('');
       const search = ref('');
       const isTableLoading = ref(true);
       const currentPage1 = ref(1);
       const currentPage2 = ref(1);
-      const itemsPerPage = 8; 
+      const itemsPerPage = 7; 
+      const sortBy = ref([{ key: 'pval_pheno1', order: 'asc' }]);
+      const updateSortBy = (newSort) => {
+        // console.log("SortBy updated:", newSort); // 打印更新的排序状态
+        sortBy.value = newSort; // 更新 sortBy
+      };
+
+      const headers = computed(() => [
+        { title: 'Top Variant', key: 'variantid', sortable: false },
+        { title: 'Nearest Gene(s)', key: 'nearest_genes', sortable: false },
+        { 
+          title: 'AF', 
+          children: [
+            { title: pheno1.value.split('.').slice(-2).join(', '), key: 'af_pheno1' }, 
+            { title: pheno2.value.split('.').slice(-2).join(', '), key: 'af_pheno2' }, 
+          ],
+        },
+        { 
+          title: 'P-value', 
+          children: [
+            { title: pheno1.value.split('.').slice(-2).join(', '), 
+            key: 'pval_pheno1',
+            sort: (a, b) => { 
+                const isDescending = sortBy.value.find((rule) => rule.key === 'pval_pheno1').order == "desc"
+                // console.log(sortBy.value.find((rule) => rule.key === 'pval_pheno1').order);
+                console.log(isDescending);
+                if (a === null && b === null) return 0;
+                if (a === null) return 1;  
+                if (b === null) return -1; 
+                return isDescending ? b - a : a - b; // 正常排序
+              } 
+            }, 
+            { title: pheno2.value.split('.').slice(-2).join(', '), key: 'pval_pheno2' }, 
+          ],
+        },
+        { 
+          title: 'Effect Size (se)', 
+          children: [
+            { title: pheno1.value.split('.').slice(-2).join(', '), key: 'effect_size_pheno1' }, 
+            { title: pheno2.value.split('.').slice(-2).join(', '), key: 'effect_size_pheno2' }, 
+          ],
+        },
+      ]);
+      
+      const headerProps = {
+        align: 'center', 
+      };
+
       
   
       // data
@@ -291,7 +308,9 @@
           //   nearest_genes: item.nearest_genes ? item.nearest_genes.split(',') : [], 
           //   effect_size: `${item.beta} (${item.sebeta})`
           // }));
-          tableInfo.value = props.miamiData;
+
+          // instead of using API call, directly use plot data from parent page
+          tableInfo.value = await props.miamiData;
           var keys = Object.keys(tableInfo.value)
           pheno1.value = keys[0]
           pheno2.value = keys[1] || keys[0]
@@ -306,6 +325,7 @@
             nearest_genes: item.nearest_genes ? item.nearest_genes.split(',') : [], 
             effect_size: `${item.beta} (${item.sebeta})`
           }));
+          
           variants2.value = tableInfo.value[pheno2.value]?.unbinned_variants.map(item => ({
             ...item,
             variantid: `${item.chrom}-${item.pos}-${item.ref}-${item.alt}`,
@@ -315,6 +335,45 @@
             nearest_genes: item.nearest_genes ? item.nearest_genes.split(',') : [], 
             effect_size: `${item.beta} (${item.sebeta})`
           }));
+
+          // console.log("Variants 1:", variants1);
+          // console.log("Variants 2:", variants2);
+          // console.log("Type of variants2:", typeof variants2.value);
+          // console.log("Is Array:", Array.isArray(variants2.value));
+
+          // merge two datasets using map
+          const variants2Map = new Map(variants2.value.map(variant => [variant.variantid, variant]));
+
+          mergedVariants.value = variants1.value.map(variant1 => {
+            const variant2 = variants2Map.get(variant1.variantid);
+            return {
+              variantid: variant1.variantid,
+              variantName: variant1.variantName,
+              nearest_genes: variant1.nearest_genes,
+              af_pheno1: variant1.af || null,
+              pval_pheno1: variant1.pval || null,
+              effect_size_pheno1: variant1.effect_size || null,
+              af_pheno2: variant2?.af || null,
+              pval_pheno2: variant2?.pval || null,
+              effect_size_pheno2: variant2?.effect_size || null,
+              source: variant2 ? 'both' : 'pheno1',
+            };
+          }).concat(
+            variants2.value.filter(variant2 => !variants1.value.some(variant1 => variant1.variantid === variant2.variantid))
+              .map(variant2 => ({
+                variantid: variant2.variantid,
+                variantName: variant2.variantName,
+                nearest_genes: variant2.nearest_genes,
+                af_pheno1: null,
+                pval_pheno1: null,
+                effect_size_pheno1: null,
+                af_pheno2: variant2.af || null,
+                pval_pheno2: variant2.pval || null,
+                effect_size_pheno2: variant2.effect_size || null,
+                source: 'pheno2',
+              }))
+          );
+          // console.log("Merged Variants:", mergedVariants.value);
         } catch (error) {
           console.error("There was an error fetching the sample data:", error);
           errorMessage.value = "Failed to load data. Please try again later.";
@@ -323,6 +382,7 @@
         }
         
       };
+
 
       const selectedVariantId = ref(null);
       function calculatePageIndex(data, variantId) {
