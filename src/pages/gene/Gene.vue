@@ -34,6 +34,14 @@
         >
           Open Targets
         </a>
+        <a 
+          :href="geneCardsUrl" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          class="gene-link"
+        >
+          GeneCards
+        </a>
       </div>
 
       <!-- Gene table component -->
@@ -77,6 +85,8 @@ const region = ref(null);
 const ncbiGeneUrl = computed(() => `https://www.ncbi.nlm.nih.gov/gene/?term=${geneName}`);
 const ensemblGeneUrl = computed(() => `https://www.ensembl.org/Homo_sapiens/Gene/Summary?g=${geneName}`);
 const opentargetGeneUrl = computed(() => `https://platform.opentargets.org/search?q=${geneName}&page=1`);
+const geneCardsUrl = computed(() => `https://www.genecards.org/cgi-bin/carddisp.pl?gene=${geneName}`);
+
 
 onMounted(async () => {
 

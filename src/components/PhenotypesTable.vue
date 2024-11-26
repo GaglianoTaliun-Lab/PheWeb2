@@ -113,13 +113,13 @@
       </template>
 
       <template v-slot:item.variantid="{ item }">
-        <router-link :to="`/variant/${item.variantid}`" style="white-space: nowrap;">{{ item.variantName }}</router-link>
+        <router-link :to="`/variant/${item.variantid}`" style="white-space: pre-line;">{{ item.variantName }}</router-link>
       </template>
 
       <template v-slot:item.nearest_genes="{ item }">
         <span v-for="(gene, index) in item.nearest_genes" :key="index">
           <router-link 
-            :to="`/gene/${gene.trim()}?include=${item.chrom}-${item.pos}`" 
+            :to="`/gene/${gene.trim()}/${item.phenocode}`" 
             style="white-space: nowrap; font-style: italic;"
           >
             {{ gene.trim() }}
@@ -180,9 +180,54 @@
               <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
             </template>
           </v-tooltip>
-          <template v-if="isSorted(column)">
-              <v-icon :icon="getSortIcon(column)"></v-icon>
-          </template>
+          <v-menu
+            open-on-hover
+            v-model="menu2"
+            :close-on-content-click="false"
+            location="bottom"
+            
+          >
+            <template v-slot:activator="{ props }">
+                <v-icon small color="primary" v-bind="props" class="ml-2" 
+                :icon="filteredVariant === 'All' ? 'mdi-feature-search-outline' : 'mdi-feature-search'"></v-icon>
+            </template>
+            <v-card class="pa-3">
+              <v-text-field
+                v-model="selectedGene"
+                label="Enter gene name"
+                hint="Try RHOF"
+                style="width: 400px;"
+                variant="outlined"
+                density="compact"
+                elevation="2"
+                rounded
+                prepend-inner-icon="mdi-magnify"
+                @keydown.enter="filterGene"
+              ></v-text-field>
+              <v-row justify="end">
+                <v-col cols="auto">
+                  <v-btn 
+                    @click="clearGene" 
+                    color="primary" 
+                    class="mt-3"
+                    variant="outlined"
+                  >
+                    Clear
+                  </v-btn>
+                </v-col>
+                <v-col cols="auto">
+                  <v-btn 
+                    @click="filterGene" 
+                    color="primary" 
+                    class="mt-3"
+                    variant="outlined"
+                  >
+                    Save
+                  </v-btn>
+                </v-col>
+              </v-row>
+            </v-card>
+          </v-menu>
         </div>
       </template>
 
@@ -280,10 +325,6 @@
         </div>
       </template>
 
-
-      <template v-slot:item.rsids="{ item }">
-        <a :href="`https://www.ncbi.nlm.nih.gov/snp/${item.rsids}`" target="_blank">{{ item.rsids }}</a>
-      </template>
     </v-data-table>
   </v-card>
 
@@ -326,7 +367,7 @@
           ...item,
           variantid: `${item.chrom}-${item.pos}-${item.ref}-${item.alt}`,
           variantName: item.rsids 
-            ? `${item.chrom}: ${item.pos} ${item.ref} / ${item.alt} (${item.rsids})`
+            ? `${item.chrom}: ${item.pos} ${item.ref} / ${item.alt}\n(${item.rsids})`
             : `${item.chrom}: ${item.pos} ${item.ref} / ${item.alt}`,
           ancestry: `${item.stratification.ancestry}`,
           sex: `${item.stratification.sex}`,
@@ -369,7 +410,9 @@
 
     // in-table filters
     const selectedVariant = ref('');
+    const selectedGene = ref('');
     const menu = ref(false);
+    const menu2 = ref(false);
     // const variantSearchLoading = ref(true);
     const variantSearchLoading = computed(() => {
       if (selectedVariant.value != ''){
@@ -384,15 +427,23 @@
         .filter(variant => variant !== undefined && variant !== '');
       return ['All', ...[...new Set(variants)].sort((a, b) => a.localeCompare(b))];
     });
+
     const filteredVariant = ref('All');
+    const filteredGene = ref('All');
     const filterVariants = () => {
       variantSearchLoading.value = false;
       filteredVariant.value = selectedVariant.value;
     };
+    const filterGene = () => {
+      filteredGene.value = selectedGene.value;
+    };
     const clearVariants = () => {
       selectedVariant.value = '';
-      variantSearchLoading.value = false;
       filteredVariant.value = 'All';
+    };
+    const clearGene = () => {
+      selectedGene.value = '';
+      filteredGene.value = 'All';
     };
 
 
@@ -405,7 +456,8 @@
         const categoryMatches = !selectedCategory.value || selectedCategory.value === 'All' || item.category === selectedCategory.value;
         const phenotypeMatches = !selectedPhenotype.value || selectedPhenotype.value === 'All' || item.phenostring === selectedPhenotype.value;
         const variantMatches = !filteredVariant.value || filteredVariant.value === 'All' ||  item.rsids === filteredVariant.value || item.variantid === filteredVariant.value;
-        return sexMatches && ancestryMatches && categoryMatches && phenotypeMatches && variantMatches;
+        const geneMatches = !filteredGene.value || filteredGene.value === 'All' ||   item.nearest_genes.includes(filteredGene.value.toUpperCase());
+        return sexMatches && ancestryMatches && categoryMatches && phenotypeMatches && variantMatches && geneMatches;
       });
     });
 
@@ -460,6 +512,7 @@
     })
 
 </script>
+
 
 
 

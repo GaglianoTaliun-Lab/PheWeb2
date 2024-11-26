@@ -225,7 +225,9 @@
                         <h2 class="text-center">Update History</h2>
                         <hr>
                         <ul>
-                            <li>Added support for Miamiplot filtering (10/23/2024);</li>
+                            <li>Added external links for gene page: link to NCBI, Emsemble and Open Targets (11/07/2024); </li>
+                            <li>Added filtering in phenotypes page (11/01/2024);</li>
+                            <li>Added support for Miami plot and Manhattan plot filtering (10/23/2024);</li>
                             <li>Enabled selecting sex from the GWAS table (10/23/2024);</li>
                             <li>Enabled filtering functionality by sex (10/22/2024);</li>
                             <li>Enabled displaying tophits table & download functionality for the phenotypes table (10/22/2024);</li>

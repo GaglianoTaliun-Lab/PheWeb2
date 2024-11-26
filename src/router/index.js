@@ -75,7 +75,7 @@ const routes = [
     }
   },
   {
-    path: '/gene/:gene',
+    path: '/gene/:gene/:phenocode',
     name: 'Gene',
     component: Gene,
     meta: {
