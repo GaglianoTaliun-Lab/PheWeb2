@@ -683,7 +683,8 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
                 .data(variant_unbinned2)
                 .enter()
                 .append('a')
-                .attr('class', 'variant_point') //.attr('xlink:href', get_link_to_LZ_data2)
+                .attr('class', 'variant_point')
+                .attr('xlink:href', get_link_to_LZ_data2)
                 .append('circle')
                 .attr('id', function (d) {
                     return utils.fmt('variant-point-{0}-{1}-{2}-{3}', d.chrom, d.pos, d.ref, d.alt);
@@ -729,7 +730,8 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
                 .data(variant_unbinned1)
                 .enter()
                 .append('a')
-                .attr('class', 'variant_point')//.attr('xlink:href', get_link_to_LZ_data1)
+                .attr('class', 'variant_point')
+                .attr('xlink:href', get_link_to_LZ_data1)
                 .append('circle')
                 .attr('id', function (d) {
                     return utils.fmt('variant-point-{0}-{1}-{2}-{3}', d.chrom, d.pos, d.ref, d.alt);
@@ -774,7 +776,7 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
         if ( variant_bins1 != null){
             pp2(false);
         }
-        if ( variant_bins2 != null){
+        if ( variant_unbinned2 != null){
             pp2(true);
         }
 
@@ -943,7 +945,8 @@ var miami_filter_view = {
         point_selection_upper.exit().remove();
         point_selection_upper.enter()
             .append('a')
-            .attr('class', 'variant_point')//.attr('xlink:href', get_link_to_LZ_data1)
+            .attr('class', 'variant_point')
+            .attr('xlink:href', get_link_to_LZ_data1)
             .append('circle')
             .attr('id', function(d) {
                 return utils.fmt('filtered-variant-point-{0}-{1}-{2}-{3}', d.chrom, d.pos, d.ref, d.alt);
@@ -958,27 +961,27 @@ var miami_filter_view = {
             .style('fill', function(d) {
                 return color_by_chrom(d.chrom);
             })
-            // .on('mouseover', function(d) {
-            //     //Note: once a tooltip has been explicitly placed once, it must be explicitly placed forever after.
-            //     point_tooltip.value.show(d, this);
-            // })
-            // .on('mouseout', point_tooltip.value.hide)
-            .on('click', function(d) {
+            .on('mouseover', function(d) {
                 //Note: once a tooltip has been explicitly placed once, it must be explicitly placed forever after.
-                console.log(d)
-                console.log(tooltip_showing.value)
+                point_tooltip.value.show(d, this);
+            })
+            .on('mouseout', point_tooltip.value.hide)
+            // .on('click', function(d) {
+            //     //Note: once a tooltip has been explicitly placed once, it must be explicitly placed forever after.
+            //     console.log(d)
+            //     console.log(tooltip_showing.value)
 
-                if (tooltip_showing.value){
-                    point_tooltip.value.hide;
-                    tooltip_showing.value = false;
-                } else {
-                    point_tooltip.value.show(d, this);
-                    tooltip_showing.value = true;
-                }
+            //     if (tooltip_showing.value){
+            //         point_tooltip.value.hide;
+            //         tooltip_showing.value = false;
+            //     } else {
+            //         point_tooltip.value.show(d, this);
+            //         tooltip_showing.value = true;
+            //     }
 
-                d3.event.stopPropagation()
+            //     d3.event.stopPropagation()
                 
-            });
+            // });
 
         var point_selection_lower = d3.select('#filtered_variant_points_lower')
             .selectAll('a.variant_point_lower')
@@ -987,7 +990,8 @@ var miami_filter_view = {
         point_selection_lower.exit().remove();
         point_selection_lower.enter()
             .append('a')
-            .attr('class', 'variant_point')//.attr('xlink:href', get_link_to_LZ_data2)
+            .attr('class', 'variant_point')
+            .attr('xlink:href', get_link_to_LZ_data2)
             .append('circle')
             .attr('id', function(d) {
                 return utils.fmt('filtered-variant-point-{0}-{1}-{2}-{3}', d.chrom, d.pos, d.ref, d.alt);
@@ -1002,27 +1006,27 @@ var miami_filter_view = {
             .style('fill', function(d) {
                 return color_by_chrom(d.chrom);
             })
-            // .on('mouseover', function(d) {
-            //     //Note: once a tooltip has been explicitly placed once, it must be explicitly placed forever after.
-            //     point_tooltip.value.show(d, this);
-            // })
-            // .on('mouseout', point_tooltip.value.hide)
-            .on('click', function(d) {
+            .on('mouseover', function(d) {
                 //Note: once a tooltip has been explicitly placed once, it must be explicitly placed forever after.
-                console.log(d)
-                console.log(tooltip_showing.value)
+                point_tooltip.value.show(d, this);
+            })
+            .on('mouseout', point_tooltip.value.hide)
+            // .on('click', function(d) {
+            //     //Note: once a tooltip has been explicitly placed once, it must be explicitly placed forever after.
+            //     console.log(d)
+            //     console.log(tooltip_showing.value)
 
-                if (tooltip_showing.value){
-                    point_tooltip.value.hide;
-                    tooltip_showing.value = false;
-                } else {
-                    point_tooltip.value.show(d, this);
-                    tooltip_showing.value = true;
-                }
+            //     if (tooltip_showing.value){
+            //         point_tooltip.value.hide;
+            //         tooltip_showing.value = false;
+            //     } else {
+            //         point_tooltip.value.show(d, this);
+            //         tooltip_showing.value = true;
+            //     }
 
-                d3.event.stopPropagation();
+            //     d3.event.stopPropagation();
 
-            });
+            // });
 
         var hover_ring_selection_upper = d3.select('#filtered_variant_hover_rings_upper')
             .selectAll('a.variant_hover_ring_upper')
@@ -1036,7 +1040,8 @@ var miami_filter_view = {
         hover_ring_selection_upper.exit().remove();
         hover_ring_selection_upper.enter()
             .append('a')
-            .attr('class', 'variant_hover_ring_lower')//.attr('xlink:href', get_link_to_LZ_data1)
+            .attr('class', 'variant_hover_ring_lower')
+            .attr('xlink:href', get_link_to_LZ_data1)
             .append('circle')
             .attr('cx', function(d) {
                 return x_scale.value(get_genomic_position_data1(d));
@@ -1053,18 +1058,19 @@ var miami_filter_view = {
                 point_tooltip.value.show(d, target_node);
             })
             .on('mouseout', point_tooltip.value.hide)
-            .on('click', function(d) {
-                //Note: once a tooltip has been explicitly placed once, it must be explicitly placed forever after.
-                var target_node = document.getElementById(utils.fmt('filtered-variant-point-{0}-{1}-{2}-{3}', d.chrom, d.pos, d.ref, d.alt));
-                point_tooltip.value.show(d, target_node);
+            // .on('click', function(d) {
+            //     //Note: once a tooltip has been explicitly placed once, it must be explicitly placed forever after.
+            //     var target_node = document.getElementById(utils.fmt('filtered-variant-point-{0}-{1}-{2}-{3}', d.chrom, d.pos, d.ref, d.alt));
+            //     point_tooltip.value.show(d, target_node);
 
                 
-            });
+            // });
         
         hover_ring_selection_lower.exit().remove();
         hover_ring_selection_lower.enter()
             .append('a')
-            .attr('class', 'variant_hover_ring_lower')//.attr('xlink:href', get_link_to_LZ_data2)
+            .attr('class', 'variant_hover_ring_lower')
+            .attr('xlink:href', get_link_to_LZ_data2)
             .append('circle')
             .attr('cx', function(d) {
                 return x_scale.value(get_genomic_position_data2(d));
@@ -1081,13 +1087,13 @@ var miami_filter_view = {
                 point_tooltip.value.show(d, target_node);
             })
             .on('mouseout', point_tooltip.value.hide)
-            .on('click', function(d) {
-                //Note: once a tooltip has been explicitly placed once, it must be explicitly placed forever after.
-                var target_node = document.getElementById(utils.fmt('filtered-variant-point-{0}-{1}-{2}-{3}', d.chrom, d.pos, d.ref, d.alt));
-                point_tooltip.value.show(d, target_node);
+            // .on('click', function(d) {
+            //     //Note: once a tooltip has been explicitly placed once, it must be explicitly placed forever after.
+            //     var target_node = document.getElementById(utils.fmt('filtered-variant-point-{0}-{1}-{2}-{3}', d.chrom, d.pos, d.ref, d.alt));
+            //     point_tooltip.value.show(d, target_node);
 
                 
-            });
+            // });
 
         var bin_selection_upper = d3.select('#filtered_variant_bins_upper')
             .selectAll('g.bin')

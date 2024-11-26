@@ -8,34 +8,55 @@
   import Navbar2 from '../../components/Navbar2.vue';
   import PhewasPlot from '../../components/PhewasPlot.vue';
 
-  // TODO: remove this eventually, should be global
+  // TODO: remove this eventually, should be global or only 38 allowed, or something.
   var HG_BUILD_NUMBER = "38";
 
   const route = useRoute();
 
   const variantCode = route.params.variant_id;
-  const info = ref(null);
-  var maf_text = ref(null);
-  var variant = ref(null);
-  var rsids = ref(null);
-  var variantList = ref(null);
+  const stratification_list = ref(null)
+  const variantList = ref([]); // TODO: fix this (self-made) mess... why are there two variantLists??
+  const maf_text = ref(null);
+  const variant = ref(null);
+  const rsids = ref(null);
+  const variant_list = ref([]);
   const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URL;
 
   onMounted(async () => {
     try {
-      const response = await axios.get(`${api}/variant/` + variantCode);
-      info.value = response;
-      variantList = info.val.data;
+      const response = await axios.get(`${api}/variant/stratification_list`)
 
-      maf_text = maf_range(info.value.data);
-      variant = info.value.data[0];
-      rsids = variant.rsids ? variant.rsids.split(',') : [];
+      stratification_list.value = JSON.parse(JSON.stringify(response.data));
+
+      // we need to map here to get rid of the proxy
+      variantList.value = await fetchPhewasPlottingData(stratification_list.value.map(stratification => stratification))
+
+      maf_text.value = maf_range(variantList.value); // TODO only taking the first one here, should be some kind of combination of all stratifications
+      variant.value = variantList.value[0];
+      rsids.value = variant.value.rsids ? variant.value.rsids.split(',') : [];
     }
     catch (error) {
       console.log(error);
     }
   });
-
+  
+  async function fetchPhewasPlottingData(stratification_list){
+    var temp_variant_list = []
+    for (var stratification of stratification_list){
+      var result;
+      try {
+          const response = await axios.get(`${api}/variant/${variantCode}/${stratification}`)
+          result = response.data
+          result.stratification = "." + stratification;
+          temp_variant_list.push(result)
+      } catch (error) {
+        console.log(`Error fetching plotting data with stratification ${stratification}:`, error);
+      }
+    }
+    variant_list.value = temp_variant_list;
+    return(variant_list.value)
+  }
+  
 </script>
 
 <template>
@@ -44,7 +65,8 @@
     <v-main>
       <div  class="ml-4 mt-2">   
         <h1 class="mb-0">{{variantCode}}</h1>
-        <div v-if="info">
+        <!-- why does variant_list here work but not variantList ???-->
+        <div v-if="variant">
           <p class="mb-0"> Nearest genes: {{variant.nearest_genes}}</p>
           <p class="mb-0"> {{maf_text}} </p>
           <p class="mb-0">
@@ -64,8 +86,8 @@
             <span style="font-weight:bold" id="clinvar-link"></span>
           </p>
         </div>
-        <div v-if="variantList">
-          <PhewasPlot :variantList=variantList />
+        <div v-if="variant_list.length > 0">
+          <PhewasPlot :variantList="variant_list" />
         </div>
       </div>
       </v-main>

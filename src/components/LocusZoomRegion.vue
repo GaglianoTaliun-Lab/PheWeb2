@@ -8,9 +8,11 @@ import * as utils from '../pages/region/Region.js'
 
 const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URL
 
-// gotta defined better props here...
 const props = defineProps({
-    data: {}
+    data: {},
+    region:{
+        type : String
+    }
 });
 
 const plot = ref(null)
@@ -18,9 +20,16 @@ const info = ref(null)
 
 const route = useRoute();
 const phenocode = route.params.phenocode;
-const region = route.params.region;
 
-LocusZoom.Adapters.extend("AssociationLZ", "AssociationPheWeb", {
+var region = route.params.region;
+
+if (!route.params.region){
+    region = props.region;
+}
+
+//need to check if it already exists incase user presses the back arrow
+if (!LocusZoom.Adapters._items.has('AssociationPheWeb')){
+    LocusZoom.Adapters.extend("AssociationLZ", "AssociationPheWeb", {
     getURL: function (state, chain, fields) {
         return this.url + state.chr + ":" + state.start + "-" + state.end;
     },
@@ -61,21 +70,27 @@ LocusZoom.Adapters.extend("AssociationLZ", "AssociationPheWeb", {
         return LocusZoom.Adapters.get('AssociationLZ').prototype.normalizeResponse.call(this, data);
     }
 });
+}
 
-LocusZoom.TransformationFunctions.add("percent", function(x) {
-    if (x === 1) { return "100%"; }
-    x = (x * 100).toPrecision(2);
-    if (x.indexOf('.') !== -1) { x = x.replace(/0+$/, ''); }
-    if (x.endsWith('.')) { x = x.substr(0, x.length-1); }
-    return x + '%';
-});
-
+if (!LocusZoom.TransformationFunctions._items.has('percent')){
+    LocusZoom.TransformationFunctions.add("percent", function(x) {
+        if (x === 1) { return "100%"; }
+        x = (x * 100).toPrecision(2);
+        if (x.indexOf('.') !== -1) { x = x.replace(/0+$/, ''); }
+        if (x.endsWith('.')) { x = x.substr(0, x.length-1); }
+        return x + '%';
+    });
+}
 
 onMounted(() => {
 
     info.value = props.data
 
-    var phenocode_list = info.value.map((pheno) => {return pheno.phenocode + "." + Object.values(pheno.stratification).join('.')})
+    if (info.value[0].stratification){
+        var phenocode_list = info.value.map((pheno) => {return pheno.phenocode + "." + Object.values(pheno.stratification).join('.')})
+    } else {
+        var phenocode_list = info.value.map((pheno) => {return pheno.phenocode})
+    }
 
     var remoteBase = "https://portaldev.sph.umich.edu/api/v1/";
 
@@ -138,7 +153,7 @@ onMounted(() => {
                     margin: { top: 20 },
                     id: dynamicPart,
                     title: { 
-                        text: phenocode.split('.').slice(1).join(', '),
+                        text: phenocode.split('.').join(', '),
                         style: {'font-size': '14px'},
                         y : 15,
                         x : 50,
@@ -303,6 +318,20 @@ onMounted(() => {
         })
     )
 
+    // if location is gene page, don't have this option.
+    var link_to_pheno;
+    if (route.params.region){
+        link_to_pheno = {
+            type: 'link',
+            title: 'Go to Pheno Page',
+            text:' Miami / Manhattan Plot',
+            url: window.location.origin + '/phenotypes/' + phenocode,
+            position: 'left',
+        };    
+    }
+
+
+    
     // This outer call to Layouts.get() will ensure that namespaces are applied, and the returned result is a concrete 
     //   layout ready for use in drawing a plot with specific data sets. 
     var layout_new = LocusZoom.Layouts.get('plot', 'association_catalog', { // Override select fields of a pre-made layout 
@@ -312,13 +341,9 @@ onMounted(() => {
         responsive_resize: true,
         max_region_scale: 500e3,
         toolbar: {
-            widgets: [{
-                type: 'link',
-                title: 'Go to Pheno Page',
-                text:' Miami / Manhattan Plot',
-                url: window.location.origin + '/phenotypes/' + phenocode,
-                position: 'left',
-            }, {
+            widgets: [
+            link_to_pheno,
+            {
                 type: 'move',
                 text: '<<',
                 title: 'Shift view 1/4 to the left',
@@ -364,27 +389,31 @@ onMounted(() => {
         },
         panels: all_panels, 
     });
-
-    LocusZoom.TransformationFunctions.add("neglog10_or_323", function(x) {
-        if (x === 0) return 323;
-        return -Math.log(x) / Math.LN10;
-    });
+    if (!LocusZoom.TransformationFunctions._items.has("neglog10_or_323")){
+        LocusZoom.TransformationFunctions.add("neglog10_or_323", function(x) {
+            if (x === 0) return 323;
+            return -Math.log(x) / Math.LN10;
+        });
+    }
 
     // Toolbar Widgets
     function add_toolbar_button(name, click_handler) {
-        LocusZoom.Widgets.extend('BaseWidget', name, {
-            update() {
-                if (this.button)
-                    return this;
-                this.button = new (LocusZoom.Widgets.get('_Button'))(this)
-                    .setColor(this.layout.color)
-                    .setHtml(this.layout.text)
-                    .setTitle(this.layout.title)
-                    .setOnclick(click_handler.bind(this));
-                this.button.show();
-                return this.update();
-            }
-        });
+        if (!LocusZoom.Widgets._items.has(name)){
+
+            LocusZoom.Widgets.extend('BaseWidget', name, {
+                update() {
+                    if (this.button)
+                        return this;
+                    this.button = new (LocusZoom.Widgets.get('_Button'))(this)
+                        .setColor(this.layout.color)
+                        .setHtml(this.layout.text)
+                        .setTitle(this.layout.title)
+                        .setOnclick(click_handler.bind(this));
+                    this.button.show();
+                    return this.update();
+                }
+            });
+        }
     }
 
     add_toolbar_button('link', function() {

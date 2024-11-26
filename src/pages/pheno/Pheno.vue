@@ -295,7 +295,6 @@ async function fetchPlottingData(phenocodes){
         }
     }
     allPlottingData.value = pheno_data_temp;
-    plottingData.value = pheno_data_temp;
 
 }
 
