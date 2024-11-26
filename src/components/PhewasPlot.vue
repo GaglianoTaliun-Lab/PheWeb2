@@ -95,7 +95,6 @@ function generatePlot(variant_list){
     // TODO: accept an argument for order of plots maybe, right now assume : Combined, Female, Male:
     var order = ['.European.Combined', '.European.Female', '.European.Male']
 
-    console.log(variant_list)
     variant_list = reorderListByValues(variant_list, order, 'stratification')
 
     var best_neglog10_pval = 0;
@@ -186,8 +185,6 @@ function generatePlot(variant_list){
       })()
       )
     })
-
-    console.log("first of each category list : ", first_of_each_category_list)
 
     var category_order_list = []
 

@@ -8,15 +8,14 @@
   import Navbar2 from '../../components/Navbar2.vue';
   import PhewasPlot from '../../components/PhewasPlot.vue';
 
-  // TODO: remove this eventually, should be global
+  // TODO: remove this eventually, should be global or only 38 allowed, or something.
   var HG_BUILD_NUMBER = "38";
 
   const route = useRoute();
 
-
   const variantCode = route.params.variant_id;
   const stratification_list = ref(null)
-  const variantList = ref([]); // TODO: fix this mess... why are there two variantLists??
+  const variantList = ref([]); // TODO: fix this (self-made) mess... why are there two variantLists??
   const maf_text = ref(null);
   const variant = ref(null);
   const rsids = ref(null);
@@ -25,10 +24,6 @@
 
   onMounted(async () => {
     try {
-      // get ALL POSSIBLE stratifications (need backend work)
-      // then loop over them to get the variant data for that stratification
-      // then pass in a big list to PheWAS plot.
-
       const response = await axios.get(`${api}/variant/stratification_list`)
 
       stratification_list.value = JSON.parse(JSON.stringify(response.data));
