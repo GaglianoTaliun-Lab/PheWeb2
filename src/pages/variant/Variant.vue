@@ -63,7 +63,7 @@
   <v-app>
     <Navbar2 />
     <v-main>
-      <div  class="ml-4 mt-2">   
+      <div class="ml-4 mt-2">
         <h1 class="mb-0">{{variantCode}}</h1>
         <!-- why does variant_list here work but not variantList ???-->
         <div v-if="variant">
@@ -71,15 +71,29 @@
           <p class="mb-0"> {{maf_text}} </p>
           <p class="mb-0">
             View on
-            <a :href="`http://genome.ucsc.edu/cgi-bin/hgTracks?db=hg${HG_BUILD_NUMBER}&highlight=hg${HG_BUILD_NUMBER}.chr${variant.chrom}%3A${variant.pos}-${variant.pos}&position=chr${variant.chrom}%3A${variant.pos - 200000}-${variant.pos + 200000}`">UCSC</a>
+            <a :href="`http://genome.ucsc.edu/cgi-bin/hgTracks?db=hg${HG_BUILD_NUMBER}&highlight=hg${HG_BUILD_NUMBER}.chr${variant.chrom}%3A${variant.pos}-${variant.pos}&position=chr${variant.chrom}%3A${variant.pos - 200000}-${variant.pos + 200000}`"
+              target="_blank" rel="noopener noreferrer">UCSC</a>,
+            <a :href="`https://www.ncbi.nlm.nih.gov/snp/?term=${variant.chrom}%5BChromosome%5D+AND+${variant.pos}%5BCHRPOS%5D`"
+              target="_blank" rel="noopener noreferrer">dbSNP</a>,
+            <a :href="`https://useast.ensembl.org/Homo_sapiens/Location/Variant/Table?r=${variant.chrom}:${variant.pos}-${variant.pos}`"
+              target="_blank" rel="noopener noreferrer">Ensembl</a>,
+            <a :href="`https://genetics.opentargets.org/Variant/${variant.chrom}_${variant.pos}_${variant.ref}_${variant.alt}/associations`"
+              target="_blank" rel="noopener noreferrer">Open Targets Genetics</a>,
+            <a :href="`https://gnomad.broadinstitute.org/variant/${variant.chrom}-${variant.pos}-${variant.ref}-${variant.alt}?dataset=gnomad_r4`"
+              target="_blank" rel="noopener noreferrer">gnomAD</a>
+
             <template v-if="rsids.length === 1">
               , <a :href="`https://www.ebi.ac.uk/gwas/search?query=${rsids[0]}`">GWAS Catalog</a>
-              , <a :href="`http://www.ncbi.nlm.nih.gov/projects/SNP/snp_ref.cgi?searchType=adhoc_search&type=rs&rs=${rsids[0]}`">dbSNP</a>
+              , <a
+                :href="`http://www.ncbi.nlm.nih.gov/projects/SNP/snp_ref.cgi?searchType=adhoc_search&type=rs&rs=${rsids[0]}`">dbSNP</a>
             </template>
+
             <template v-else>
               <span v-for="rsid in rsids" :key="rsid">
                 , <a :href="`https://www.ebi.ac.uk/gwas/search?query=${rsid}`">GWAS Catalog for {{ rsid }}</a>
-                , <a :href="`http://www.ncbi.nlm.nih.gov/projects/SNP/snp_ref.cgi?searchType=adhoc_search&type=rs&rs=${rsid}`">dbSNP for {{ rsid }}</a>
+                , <a
+                  :href="`http://www.ncbi.nlm.nih.gov/projects/SNP/snp_ref.cgi?searchType=adhoc_search&type=rs&rs=${rsid}`">dbSNP
+                  for {{ rsid }}</a>
               </span>
             </template>
             <span style="font-weight:bold" id="pubmed-link"></span>
@@ -90,7 +104,7 @@
           <PhewasPlot :variantList="variant_list" />
         </div>
       </div>
-      </v-main>
+    </v-main>
   </v-app>
 
 </template>
