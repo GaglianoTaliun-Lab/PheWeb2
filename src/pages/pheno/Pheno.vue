@@ -50,26 +50,30 @@ const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URL
 onMounted(async () => {
     try {
       const response = await axios.get(`${api}/phenotypes/phenotypes_list/` + phenocode);
+      const response_interaction = await axios.get(`${api}/phenotypes/interaction_list/` + phenocode);
 
       info.value = response.data;
+      if (response_interaction.data) {
+        info.value = info.value.concat(response_interaction.data)
+      }
 
+      // just take the first instance...they will all be the same
       phenostring.value = info.value[0].phenostring
-      await generateQQs(info.value.map(pheno => pheno.phenocode+"."+Object.values(pheno.stratification).join('.') ));
-      await fetchPlottingData(info.value.map(pheno => pheno.phenocode+"."+Object.values(pheno.stratification).join('.') ));
+
+      await generateQQs(info.value.map(pheno => pheno.phenocode + returnExtraInfoString(pheno) ));
+      await fetchPlottingData(info.value.map(pheno => pheno.phenocode + returnExtraInfoString(pheno)  ));
       
       populateDataPreview(phenocode)
-      // is this appropriate to do here?
-      // again, needs to be male or female here, not 2 or 1
       
       //logic for choosing first two 
-      var strats = chooseDefaultStratifications(info.value)
+      var strats = chooseDefaultPhenos(info.value)
 
-      selectedStratification1.value = stratificationsToKey(info.value[0].phenocode, strats[0])
-      selectedStratification2.value = strats[1] ? stratificationsToKey(info.value[0].phenocode, strats[1]): "None"
+      selectedStratification1.value = strats[0].phenocode +returnExtraInfoString(strats[0])
+      selectedStratification2.value = strats[1] ? strats[1].phenocode + returnExtraInfoString(strats[1]): "None"
 
       // set sample size labels (case controls, etc.) for future use
       info.value.forEach(pheno => {
-        const key = stratificationsToKey(pheno.phenocode, pheno.stratification);
+        const key = pheno.phenocode + returnExtraInfoString(pheno);
         if (pheno.num_cases !== "" && pheno.num_controls !== "") {
           sampleSizeLabel.value[key] = `${new Intl.NumberFormat('en-US', { maximumSignificantDigits: 3 }).format( pheno.num_cases )} cases, ${new Intl.NumberFormat('en-US', { maximumSignificantDigits: 3 }).format( pheno.num_controls )} controls`;
         } else {
@@ -77,7 +81,7 @@ onMounted(async () => {
         }
       });
 
-      // call plotting function
+      // call plotting function to populate plot
       handleRadioChange(); 
     }
     catch (error) {
@@ -92,7 +96,9 @@ function updateFilteringParameters({ min, max, type}) {
 
 }
 
-function chooseDefaultStratifications(data){
+function chooseDefaultPhenos(data){
+
+  // TODO change to return phenos and not stratifications
 
   if (!data[0].stratification){
       return ['', null]  
@@ -103,11 +109,11 @@ function chooseDefaultStratifications(data){
   })
 
   if (all_stratifications.length == 1){
-    return [all_stratifications[0], null];
+    return [pheno[0], null];
   }
 
   if (!all_stratifications[0].sex){
-    return [all_stratifications[0], all_stratifications[1]];
+    return [pheno[0], pheno[1]];
   }
 
   var chosen_stratifications = [];
@@ -121,13 +127,13 @@ function chooseDefaultStratifications(data){
       chosen_stratifications.push(item)
     }
 
-    if ('Female' === item.sex){
+    if ('female' === item.sex.toLowerCase()){
       female = item;
     }
-    else if ('Male' === item.sex){
+    else if ('male' === item.sex.toLowerCase()){
       male = item;
     }
-    else if ('Both' === item.sex){
+    else if ('both' === item.sex.toLowerCase()){
       both = item;
     }
   }
@@ -146,7 +152,19 @@ function chooseDefaultStratifications(data){
     chosen_stratifications[0] = both;
   }
 
-  return chosen_stratifications
+  // return phenos with those exact stratification
+
+  var chosen_phenos = [null, null]
+
+  for (var pheno of data){
+    if (JSON.stringify(pheno.stratification) === JSON.stringify(chosen_stratifications[0])){
+      chosen_phenos[0] = pheno
+    } else if (JSON.stringify(pheno.stratification) === JSON.stringify(chosen_stratifications[1])){
+      chosen_phenos[1] = pheno
+    }
+  }
+
+  return chosen_phenos
 
 }
 
@@ -169,11 +187,40 @@ const handleRadioChange = () => {
     qqSubset.value[selectedStratification1.value] = qqData.value[selectedStratification1.value];
     qqSubset.value[selectedStratification2.value] = qqData.value[selectedStratification2.value];
 
+
   }
 
   refreshKey.value += 1;
   qqRefreshKey.value += 1;
 };
+
+function returnExtraInfoString(pheno) {
+  let extraInfoString = "";
+
+  if (pheno.interaction !== null && pheno.interaction !== undefined) {
+    extraInfoString += ".inter-" + pheno.interaction;
+  }
+
+  if (pheno.stratification !== null && pheno.stratification !== undefined && typeof pheno.stratification === "object") {
+    extraInfoString += "." + Object.values(pheno.stratification).join(".");
+  }
+
+  return extraInfoString;
+}
+
+function returnExtraInfoLabel(pheno) {
+  let extraInfoLabel = "";
+
+  if (pheno.interaction) {
+    extraInfoLabel += "Interaction: " + pheno.interaction + ", ";
+  }
+
+  if (pheno.stratification && typeof pheno.stratification === "object") {
+    extraInfoLabel += Object.values(pheno.stratification).join(", ");
+  }
+
+  return extraInfoLabel;
+}
 
 const downloadAll = () => {
   var downloads = []
@@ -239,6 +286,7 @@ const stratificationsToKey = (phenocode, strats) => {
 }
 
 const keyToLabel = (phenoLabel) => {
+  console.log(phenoLabel)
   return functions.keyToLabel(phenoLabel);
 }
 
@@ -316,11 +364,11 @@ async function fetchPlottingData(phenocodes){
                             <input 
                             :checked="index === 1" 
                             type="radio" 
-                            :value="stratificationsToKey(pheno.phenocode, pheno.stratification)" 
+                            :value="pheno.phenocode + returnExtraInfoString(pheno)" 
                             :name="pheno.phenocode + '1'" 
                             v-model="selectedStratification1"
                             @change="handleRadioChange">
-                            {{ stratificationsToLabel(pheno.stratification) + " (" + sampleSizeLabel[stratificationsToKey(pheno.phenocode, pheno.stratification)] + ")"}} 
+                            {{ returnExtraInfoLabel(pheno) + " (" + sampleSizeLabel[pheno.phenocode + returnExtraInfoString(pheno)] + ")"}} 
                         </label> 
                     </div>
                   </div>
@@ -332,11 +380,11 @@ async function fetchPlottingData(phenocodes){
                             <input 
                             :checked="index === 2" 
                             type="radio" 
-                            :value="stratificationsToKey(pheno.phenocode, pheno.stratification)" 
+                            :value="pheno.phenocode + returnExtraInfoString(pheno)" 
                             :name="pheno.phenocode + '2'"
                             v-model="selectedStratification2"
                             @change="handleRadioChange"> 
-                            {{ stratificationsToLabel(pheno.stratification) + " (" + sampleSizeLabel[stratificationsToKey(pheno.phenocode, pheno.stratification)] + ")" }} 
+                            {{ returnExtraInfoLabel(pheno) + " (" + sampleSizeLabel[pheno.phenocode + returnExtraInfoString(pheno)] + ")" }} 
                         </label>
                         <label v-if="info">
                             <input type="radio" value="None" :name="info[0].phenocode + '2'" v-model="selectedStratification2" @change="handleRadioChange"> None
