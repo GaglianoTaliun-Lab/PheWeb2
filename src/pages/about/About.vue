@@ -140,7 +140,7 @@
                         <ol>
                             <li>We used <a href="https://csg.sph.umich.edu/chaolong/LASER/TRACE_Manual.pdf" target = "_blank">TRACE</a> to project principal components onto Human Genome Diversity Project (HGDP) and 1000 Genomes Project (1KG) combined references (Figure 1). We removed individuals that had a Z score of <span>&#177;</span>5.</li>
                             <li>Using the projection results, we used a RandomForestModel to calculate probabilities of ancestry group.</li>
-                            <li>We used 0.78 probability as the inclusion threshold for the European subset.</li>
+                            <li>We used 0.79 probability as the inclusion threshold for the European subset.</li>
                         </ol>
                         <p>These steps resulted in 24,505 individuals in the European subset for analysis.</p>
                         <br/>
