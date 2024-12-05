@@ -462,17 +462,31 @@ function create_manhattan_plot(variant_bins, unbinned_variants, variants = "filt
                 return color_by_chrom_dim(d.chrom);
             })
             .on('mouseover', function (d) {
+                // Show the tooltip on hover
                 if (!tooltip_showing.value) {
                     point_tooltip.value.show(d, this);
                 }
             })
             .on('mouseout', function (d) {
+                // Only hide the tooltip on mouseout if it wasn't clicked to stay open
                 if (!tooltip_showing.value) {
                     point_tooltip.value.hide(d, this);
                 }
             })
+            // .on('click', function (d) {
+            //     console.log('Clicked on:', d); // Handle the click event without navigation
+            // });
             .on('click', function (d) {
-                console.log('Clicked on:', d); // Handle the click event without navigation
+                d3.event.stopPropagation();
+                if (tooltip_showing.value) {
+                    // Hide the tooltip if it’s already showing and was clicked again
+                    point_tooltip.value.hide(d, this);
+                    tooltip_showing.value = false;
+                } else {
+                    // Show the tooltip and make it stay open
+                    point_tooltip.value.show(d, this);
+                    tooltip_showing.value = true;
+                }
             });
     }
         pp2();
