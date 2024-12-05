@@ -441,42 +441,40 @@ function create_manhattan_plot(variant_bins, unbinned_variants, variants = "filt
                 }
             });
 
-        function pp2() {
-            d3.select('#variant_points')
-            .selectAll('a.variant_point')
+    function pp2() {
+        d3.select('#variant_points')
+            .selectAll('circle.variant_point') // Directly select and append <circle> elements
             .data(unbinned_variants)
             .enter()
-            .append('a')
+            .append('circle') // Directly append <circle>, no <a> wrapper
             .attr('class', 'variant_point')
-            .attr('xlink:href', get_link_to_LZ)
-            .append('circle')
-            .attr('id', function(d) {
+            .attr('id', function (d) {
                 return utils.fmt('variant-point-{0}-{1}-{2}-{3}', d.chrom, d.pos, d.ref, d.alt);
             })
-            .attr('cx', function(d) {
+            .attr('cx', function (d) {
                 return x_scale.value(get_genomic_position(d));
             })
-            .attr('cy', function(d) {
+            .attr('cy', function (d) {
                 return y_scale_data.value(-Math.log10(d.pval));
             })
             .attr('r', 2.3)
-            .style('fill', function(d) {
+            .style('fill', function (d) {
                 return color_by_chrom_dim(d.chrom);
             })
             .on('mouseover', function (d) {
-                    // Show the tooltip on hover
-                    if (!tooltip_showing.value) {
-                        point_tooltip.value.show(d, this);
-                    }
-                })      
-
-                .on('mouseout', function (d) {
-                    // Only hide the tooltip on mouseout if it wasn't clicked to stay open
-                    if (!tooltip_showing.value) {
-                        point_tooltip.value.hide(d, this);
-                    }
-                })
-        }
+                if (!tooltip_showing.value) {
+                    point_tooltip.value.show(d, this);
+                }
+            })
+            .on('mouseout', function (d) {
+                if (!tooltip_showing.value) {
+                    point_tooltip.value.hide(d, this);
+                }
+            })
+            .on('click', function (d) {
+                console.log('Clicked on:', d); // Handle the click event without navigation
+            });
+    }
         pp2();
 
         function pp3() { // drawing the ~60k binned variant circles takes ~500ms.  The (far fewer) unbinned variants take much less time.
@@ -566,7 +564,6 @@ var manhattan_filter_view = {
 
         point_selection.exit().remove();
         point_selection.enter()
-            .append('a')
             .attr('class', 'variant_point')
             .attr('xlink:href', get_link_to_LZ)
             .append('circle')
@@ -602,7 +599,6 @@ var manhattan_filter_view = {
 
         hover_ring_selection.exit().remove();
         hover_ring_selection.enter()
-            .append('a')
             .attr('class', 'variant_hover_ring')
             .attr('xlink:href', get_link_to_LZ)
             .append('circle')
