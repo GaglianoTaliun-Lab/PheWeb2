@@ -30,6 +30,15 @@ const minFreq = ref(0);
 const maxFreq = ref(0.5);
 const selectedType = ref('Both');
 const hiddenToggle = ref(null);
+const tooltip_showing = ref(false)
+
+// Close tooltip function
+const hideTooltip = () => {
+    if (tooltip_showing.value) {
+        point_tooltip.value.hide();
+        tooltip_showing.value = false;
+    }
+};
 
 const get_chrom_offsets = ref(null)
 const point_tooltip = ref(null)
@@ -58,7 +67,14 @@ const selectType = (type) => {
 
 onMounted(() => {
 
-    info.value = props.data
+    info.value = props.data;
+    document.addEventListener('click', function(event) {
+        if (tooltip_showing.value && !d3.select(event.target).classed('variant_point')) {
+            // Hide the tooltip if clicking outside a variant point
+            point_tooltip.value.hide();
+            tooltip_showing.value = false;
+        }
+    });
 
     createManhattan('all')
 
@@ -447,11 +463,19 @@ function create_manhattan_plot(variant_bins, unbinned_variants, variants = "filt
             .style('fill', function(d) {
                 return color_by_chrom_dim(d.chrom);
             })
-            .on('mouseover', function(d) {
-                //Note: once a tooltip has been explicitly placed once, it must be explicitly placed forever after.
-                point_tooltip.value.show(d, this);
-            })
-            .on('mouseout', point_tooltip.value.hide);
+            .on('mouseover', function (d) {
+                    // Show the tooltip on hover
+                    if (!tooltip_showing.value) {
+                        point_tooltip.value.show(d, this);
+                    }
+                })      
+
+                .on('mouseout', function (d) {
+                    // Only hide the tooltip on mouseout if it wasn't clicked to stay open
+                    if (!tooltip_showing.value) {
+                        point_tooltip.value.hide(d, this);
+                    }
+                })
         }
         pp2();
 
@@ -559,11 +583,18 @@ set_variants: function(variant_bins, unbinned_variants, weakest_pval) {
         .style('fill', function(d) {
             return color_by_chrom(d.chrom);
         })
-        .on('mouseover', function(d) {
-            //Note: once a tooltip has been explicitly placed once, it must be explicitly placed forever after.
-            point_tooltip.value.show(d, this);
-        })
-        .on('mouseout', point_tooltip.value.hide);
+        .on('mouseover', function (d) {
+                    // Show the tooltip on hover
+                    if (!tooltip_showing.value) {
+                        point_tooltip.value.show(d, this);
+                    }
+                })        
+                .on('mouseout', function (d) {
+                    // Only hide the tooltip on mouseout if it wasn't clicked to stay open
+                    if (!tooltip_showing.value) {
+                        point_tooltip.value.hide(d, this);
+                    }
+                })
 
     var hover_ring_selection = d3.select('#filtered_variant_hover_rings')
         .selectAll('a.variant_hover_ring')
