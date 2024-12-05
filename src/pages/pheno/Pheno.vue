@@ -47,6 +47,8 @@ const miamiToggle = ref(true);
 
 const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URL
 
+const chosenVariant = ref('');
+
 onMounted(async () => {
     try {
       const response = await axios.get(`${api}/phenotypes/phenotypes_list/` + phenocode);
@@ -299,6 +301,12 @@ async function fetchPlottingData(phenocodes){
 
 }
 
+const updateChosenVariantMehod = (variant) => {
+  console.log('Received chosen variant:', variant.value);
+  chosenVariant.value = variant.value; 
+  // console.log(chosenVariant.value);
+};
+
 
 </script>
 
@@ -354,12 +362,11 @@ async function fetchPlottingData(phenocodes){
                   </div>
             </div> 
             <div v-if="miamiToggle && Object.keys(miamiData).length > 0">
-                <MiamiPlot :key="refreshKey" :data="miamiData" @updateFilteringParams="updateFilteringParameters"/>
+                <MiamiPlot :key="refreshKey" :data="miamiData" @updateFilteringParams="updateFilteringParameters" @updateChosenVariant="updateChosenVariantMehod"/>
             </div>
             <div v-else-if="!miamiToggle && Object.keys(manhattanData).length > 0">
                 <ManhattanPlot :key="refreshKey" :data="manhattanData"  @updateFilteringParams="updateFilteringParameters"/>
             </div>
-            <br>
             <GWASTable 
               :selectedStratification1= "selectedStratification1"
               :selectedStratification2= "selectedStratification2"
@@ -368,6 +375,7 @@ async function fetchPlottingData(phenocodes){
               :maxFreq="maxFreq"
               :selectedType= "selectedType"
               :miamiData="miamiData"
+              :chosenVariant="chosenVariant"
             />
             <br>
             <div v-if="qqData && dimension"> 

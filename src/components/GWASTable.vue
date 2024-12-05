@@ -1,17 +1,11 @@
 <template>
-  <h3 v-if="props.selectedStratification1 !== props.selectedStratification2 && props.selectedStratification2 !== 'None'">
-    GWAS Table ({{props.selectedStratification1.split('.').slice(-2).join(', ')}} vs. {{props.selectedStratification2.split('.').slice(-2).join(', ')}}): 
-  </h3>
-  <h3 v-else>
-    GWAS Table ({{props.selectedStratification1.split('.').slice(-2).join(', ')}}): 
-  </h3>
-  <v-card elevation="5" class="pa-2">
+  <v-card elevation="5" class="">
     <v-row>
     <v-col :cols="selectedStratification2 !== 'None' ? 12 : 12">
       <!-- <h5>{{ props.selectedStratification1.split('.').slice(-2).join(', ') }}</h5>
       <h5>{{ pheno1 }}</h5> -->
       <v-data-table 
-        :items="mergedVariants" 
+        :items="filteredMergedVariants" 
         :headers="headers" 
         :header-props="headerProps"
         :search="search" 
@@ -23,28 +17,70 @@
         hover
         :loading="isTableLoading"
         @update:sort-by="updateSortBy"
+        dense
+        v-model:page="page"
         >
 
-        <template v-slot:item.variantid="{ item }">
-          <router-link :to="`/variant/${item.variantid}`" style="white-space: nowrap;">
-            {{ item.variantName}}
-          </router-link>
-        </template>
-
-        <template v-slot:item.nearest_genes="{ item }">
-            <span v-for="(gene, index) in item.nearest_genes" :key="index">
-              <router-link :to="`/gene/${gene.trim()}/${props.phenocode}`"
-                style="white-space: nowrap; font-style: italic;">
-                {{ gene.trim() }}
+        <template v-slot:body="{ items }" >
+          <tr v-for="item in items" :key="item.variantid" :class="{ 'selected-row': item.variantid === props.chosenVariant }">
+            <td>
+              <!-- variantid -->
+              <router-link :to="`/variant/${item.variantid}`" style="white-space: nowrap;">
+                {{ item.variantName}}
               </router-link>
-              <span v-if="index < item.nearest_genes.length - 1">, </span>
-            </span>
+            </td>
+            <td>
+              <!-- nearest genes -->
+              <span v-for="(gene, index) in item.nearest_genes" :key="index">
+                <router-link :to="`/gene/${gene.trim()}/${props.phenocode}`"
+                  style="white-space: nowrap; font-style: italic;">
+                  {{ gene.trim() }}
+                </router-link>
+                <span v-if="index < item.nearest_genes.length - 1">, </span>
+              </span>
+            </td>
+            <td>
+              <!-- af1 -->
+              {{ item.af_pheno1 }}
+            </td>
+            <td v-if="props.selectedStratification2 !== props.selectedStratification1 && props.selectedStratification2 !== 'None'" style="border-right:thin dashed rgba(var(--v-border-color), var(--v-border-opacity));">
+              <!-- af2 w/ divider-->
+              {{ item.af_pheno2 }}
+            </td>
+            <td>
+              <!-- pval1 -->
+              <v-chip v-if="item.pval_pheno1 !== 'NA'" :color="getColour(item.pval_pheno1)">
+                {{ item.pval_pheno1 }}
+              </v-chip>
+              <span v-else>
+                {{ item.pval_pheno1 }}
+              </span>
+            </td>
+            <td v-if="props.selectedStratification2 !== props.selectedStratification1 && props.selectedStratification2 !== 'None'" style="border-right:thin dashed rgba(var(--v-border-color), var(--v-border-opacity));">
+              <!-- pval2 w/ divider -->
+              <v-chip v-if="item.pval_pheno2 !== 'NA'" :color="getColour(item.pval_pheno2)" >
+                {{ item.pval_pheno2 }}
+              </v-chip>
+              <span v-else>
+                {{ item.pval_pheno2 }}
+              </span>
+            </td>
+            <td>
+              <!-- effect size1 -->
+              {{ item.effect_size_pheno1 }}
+            </td>
+            <td v-if="props.selectedStratification2 !== props.selectedStratification1 && props.selectedStratification2 !== 'None'">
+              <!-- effect size2 -->
+              {{ item.effect_size_pheno2 }}
+            </td>
+          </tr>
         </template>
 
         <template v-slot:header.variantid="{ column, isSorted, getSortIcon }">
-          <div style="display: flex; align-items: center; ">
+          <div style="display: flex; align-items: center;">
             <span style="white-space: nowrap;">{{ column.title }}</span>
-            <v-tooltip location="top">
+            <v-tooltip 
+              location="top">
               <template v-slot:activator="{ props }">
                 <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
               </template>
@@ -52,19 +88,118 @@
                 1) Chromosome <br>
                 2) Position <br>
                 3) Reference allele <br>
-                4) Alternate allele <br>
+                4) Alternate allele <br> 
                 5) rsid (if applicable)
               </span>
             </v-tooltip>
-            <template v-if="isSorted(column)">
-              <v-icon :icon="getSortIcon(column)"></v-icon>
-            </template>
+            <v-menu
+              open-on-hover
+              v-model="menu"
+              :close-on-content-click="false"
+              location="bottom"
+              
+            >
+              <template v-slot:activator="{ props }">
+                  <v-icon small color="primary" v-bind="props" class="ml-2" 
+                  :icon="filteredVariant === 'All' ? 'mdi-feature-search-outline' : 'mdi-feature-search'"></v-icon>
+              </template>
+              <v-card class="pa-3">
+                <v-text-field
+                  v-model="selectedVariant"
+                  label="Enter vairantID or rsID"
+                  hint="Try rs11553699 or 12-121779004-A-G"
+                  style="width: 400px;"
+                  variant="outlined"
+                  density="compact"
+                  elevation="2"
+                  rounded
+                  prepend-inner-icon="mdi-magnify"
+                  @keydown.enter="filterVariants"
+                ></v-text-field>
+
+                <v-row justify="end">
+                  <v-col cols="auto">
+                    <v-btn 
+                      @click="clearVariants" 
+                      color="primary" 
+                      class="mt-3"
+                      variant="outlined"
+                    >
+                      Clear
+                    </v-btn>
+                  </v-col>
+                  <v-col cols="auto">
+                    <v-btn 
+                      @click="filterVariants" 
+                      color="primary" 
+                      class="mt-3"
+                      variant="outlined"
+                    >
+                      Save
+                    </v-btn>
+                  </v-col>
+                </v-row>
+              </v-card>
+            </v-menu>
           </div>
         </template>
 
-        <template v-slot:header.nearest_genes="{ column }">
+        <template v-slot:header.nearest_genes="{ column, isSorted, getSortIcon }">
           <div style="display: flex; align-items: center;">
             <span style="white-space: nowrap;">{{ column.title }}</span>
+            <v-tooltip text="Head to internal page" location="top">
+              <template v-slot:activator="{ props }">
+                <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
+              </template>
+            </v-tooltip>
+            <v-menu
+              open-on-hover
+              v-model="menu2"
+              :close-on-content-click="false"
+              location="bottom"
+              
+            >
+              <template v-slot:activator="{ props }">
+                  <v-icon small color="primary" v-bind="props" class="ml-2" 
+                  :icon="filteredGene === 'All' ? 'mdi-feature-search-outline' : 'mdi-feature-search'"></v-icon>
+              </template>
+              <v-card class="pa-3">
+                <v-text-field
+                  v-model="selectedGene"
+                  label="Enter gene name"
+                  hint="Try RHOF"
+                  style="width: 400px;"
+                  variant="outlined"
+                  density="compact"
+                  elevation="2"
+                  rounded
+                  prepend-inner-icon="mdi-magnify"
+                  @keydown.enter="filterGene"
+                ></v-text-field>
+                <v-row justify="end">
+                  <v-col cols="auto">
+                    <v-btn 
+                      @click="clearGene" 
+                      color="primary" 
+                      class="mt-3"
+                      variant="outlined"
+                    >
+                      Clear
+                    </v-btn>
+                  </v-col>
+                  <v-col cols="auto">
+                    <v-btn 
+                      @click="filterGene" 
+                      color="primary" 
+                      class="mt-3"
+                      variant="outlined"
+                    >
+                      Save
+                    </v-btn>
+                  </v-col>
+                </v-row>
+              </v-card>
+            </v-menu>
           </div>
         </template>
 
@@ -100,16 +235,6 @@
           </div>
         </template>
 
-        <template v-slot:item.af_pheno2="{ value }">
-          <div style="border-right:thin dashed rgba(var(--v-border-color), var(--v-border-opacity));">
-            <span>
-              {{ value }}
-            </span>
-            </div>
-        </template>
-
-        
-
         <template v-slot:header.pval="{ column }">
           <div style="display: flex; align-items: center; justify-content: center; text-align: center; ">
             <span style="white-space: nowrap;">{{ column.title }}</span>
@@ -135,34 +260,12 @@
           </div>
         </template>
 
-        <template v-slot:item.pval_pheno1="{ value }">
-          <v-chip v-if="value !== 'NA'" :color="getColour(value)">
-            {{ value }}
-          </v-chip>
-          <span v-else>
-            {{ value }}
-          </span>
-        </template>
-
-        
-
         <template v-slot:header.pval_pheno2="{ column, isSorted, getSortIcon }">
           <div style="display: flex; align-items: center;">
             <span style="white-space: nowrap;">{{ column.title }}</span>
             <template v-if="isSorted(column)">
               <v-icon :icon="getSortIcon(column)"></v-icon>
             </template>
-          </div>
-        </template>
-        
-        <template v-slot:item.pval_pheno2="{ value }">
-          <div style="border-right:thin dashed rgba(var(--v-border-color), var(--v-border-opacity));">
-            <v-chip v-if="value !== 'not tested'" :color="getColour(value)">
-              {{ value }}
-            </v-chip>
-            <span v-else>
-              {{ value }}
-            </span>
           </div>
         </template>
 
@@ -189,15 +292,6 @@
           </div>
         </template>
 
-        <!-- <template v-slot:item.effect_size_pheno1="{ value }">
-          <div v-if="item.beta > 0">
-            <span>
-              {{ value }}
-            </span>
-            <v-icon :icon="arrowUpThin"></v-icon>
-          </div>
-        </template> -->
-
         <template v-slot:header.effect_size_pheno2="{ column, isSorted, getSortIcon }">
           <div style="display: flex; align-items: center;">
             <span style="white-space: nowrap;">{{ column.title }}</span>
@@ -206,8 +300,6 @@
             </template>
           </div>
         </template>
-
-        
 
       </v-data-table>
     </v-col>
@@ -324,15 +416,14 @@
         minFreq: Number,
         maxFreq: Number,
         selectedType: String,
-        miamiData: Object
+        miamiData: Object,
+        chosenVariant: String,
       });
       console.log(props.selectedStratification1, props.selectedStratification2);
       const tableInfo = ref([]);
       
   
       // main table
-
-  
       const variants1 = ref([]);
       const variants2 = ref([]);
       const mergedVariants = ref([]);
@@ -341,8 +432,8 @@
       const errorMessage = ref('');
       const search = ref('');
       const isTableLoading = ref(true);
-      const currentPage1 = ref(1);
-      const currentPage2 = ref(1);
+      const page = ref(3);
+
       const itemsPerPage = 7; 
       const sortBy = ref([{ key: 'pval_pheno1', order: 'asc' }]);
       const updateSortBy = (newSort) => {
@@ -430,7 +521,7 @@
           var keys = Object.keys(tableInfo.value)
           pheno1.value = keys[0];
           pheno2.value = keys[1] || keys[0];
-          console.log("pheno1&2", pheno1.value, pheno2.value);
+          // console.log("pheno1&2", pheno1.value, pheno2.value);
           // TODO: make this more efficient when stratification2 is None 
 
           variants1.value = tableInfo.value[pheno1.value]?.unbinned_variants.map(item => ({
@@ -441,8 +532,8 @@
               : `${item.chrom}: ${item.pos} ${item.ref} / ${item.alt}`,
             nearest_genes: item.nearest_genes ? item.nearest_genes.split(',') : [], 
             effect_size: item.beta > 0
-                  ? `${item.beta} (${item.sebeta}) ↑`
-                  : `${item.beta} (${item.sebeta}) ↓`
+                  ? `${item.beta} (${item.sebeta}) △`
+                  : `${item.beta} (${item.sebeta}) ▽`
           }));
           
           if (props.selectedStratification2 !== "None" && props.selectedStratification2 !== props.selectedStratification1){
@@ -454,8 +545,8 @@
                 : `${item.chrom}: ${item.pos} ${item.ref} / ${item.alt}`,
               nearest_genes: item.nearest_genes ? item.nearest_genes.split(',') : [], 
               effect_size: item.beta > 0
-                  ? `${item.beta} (${item.sebeta}) ↑`
-                  : `${item.beta} (${item.sebeta}) ↓`
+                  ? `${item.beta} (${item.sebeta}) △`
+                  : `${item.beta} (${item.sebeta}) ▽`
             }));
           } else {
             variants2.value = variants1.value
@@ -491,7 +582,7 @@
                 .sort((a, b) => a.localeCompare(b))
             };
 
-            console.log(unmatchedVariants)
+            // console.log(unmatchedVariants)
             const apiUrl_post = `${api}/phenotypes/gwas.missing`;
             const response = await axios.post(apiUrl_post, unmatchedVariants, {
               headers: {
@@ -499,9 +590,9 @@
               }
             })
             .then(response => {
-              console.log(response.data.data)
-              console.log("vairants1 #: ", variants1.value.length);
-              console.log("vairants2 #: ", variants2.value.length);
+              // console.log(response.data.data)
+              // console.log("vairants1 #: ", variants1.value.length);
+              // console.log("vairants2 #: ", variants2.value.length);
               const missingData1 = response.data.data[Object.keys(response.data.data)[0]].map(item => ({
                 ...item,
                 variantid: `${item.chrom}-${item.pos}-${item.ref}-${item.alt}`,
@@ -510,8 +601,8 @@
                   : `${item.chrom}: ${item.pos} ${item.ref} / ${item.alt}`,
                 nearest_genes: item.nearest_genes ? item.nearest_genes.split(',') : [], 
                 effect_size: item.beta > 0
-                  ? `${item.beta} (${item.sebeta}) ↑`
-                  : `${item.beta} (${item.sebeta}) ↓`
+                  ? `${item.beta} (${item.sebeta}) △`
+                  : `${item.beta} (${item.sebeta}) ▽`
               }));;
               const missingData2 = response.data.data[Object.keys(response.data.data)[1]].map(item => ({
                 ...item,
@@ -521,20 +612,20 @@
                   : `${item.chrom}: ${item.pos} ${item.ref} / ${item.alt}`,
                 nearest_genes: item.nearest_genes ? item.nearest_genes.split(',') : [], 
                 effect_size: item.beta > 0
-                  ? `${item.beta} (${item.sebeta}) ↑`
-                  : `${item.beta} (${item.sebeta}) ↓`
+                  ? `${item.beta} (${item.sebeta}) △`
+                  : `${item.beta} (${item.sebeta}) ▽`
               }));;
 
               if (missingData1 && Array.isArray(missingData1) && missingData2 && Array.isArray(missingData2)) {
                 variants1.value.push(...missingData1);
                 variants2.value.push(...missingData2);
               }
-              console.log("vairants1 after #: ", variants1.value.length);
-              console.log("vairants2 after #: ", variants2.value.length);
+              // console.log("vairants1 after #: ", variants1.value.length);
+              // console.log("vairants2 after #: ", variants2.value.length);
               // console.log(variants1)
 
-              console.log(variants2.value.filter(variant2 => !variants1.value.some(variant1 => variant1.variantid === variant2.variantid)))
-              console.log(variants1.value.filter(variant1 => !variants2.value.some(variant2 => variant1.variantid === variant2.variantid)))
+              // console.log(variants2.value.filter(variant2 => !variants1.value.some(variant1 => variant1.variantid === variant2.variantid)))
+              // console.log(variants1.value.filter(variant1 => !variants2.value.some(variant2 => variant1.variantid === variant2.variantid)))
               
             })
             .catch(error => {
@@ -582,7 +673,43 @@
         
       };
 
-
+      // in-table filters
+      const selectedVariant = ref('');
+      const selectedGene = ref('');
+      const menu = ref(false);
+      const menu2 = ref(false);
+      // const variantSearchLoading = ref(true);
+      const variantSearchLoading = computed(() => {
+        if (selectedVariant.value != ''){
+          return true;
+        } else {
+          return false;
+        }
+      });
+      const filteredVariant = ref('All');
+      const filteredGene = ref('All');
+      const filterVariants = () => {
+        variantSearchLoading.value = false;
+        filteredVariant.value = selectedVariant.value;
+      };
+      const filterGene = () => {
+        filteredGene.value = selectedGene.value;
+      };
+      const clearVariants = () => {
+        selectedVariant.value = '';
+        filteredVariant.value = 'All';
+      };
+      const clearGene = () => {
+        selectedGene.value = '';
+        filteredGene.value = 'All';
+      };
+      const filteredMergedVariants = computed(() => {
+        return mergedVariants.value.filter(item => {
+          const variantMatches = !filteredVariant.value || filteredVariant.value === 'All' ||  item.rsids === filteredVariant.value || item.variantid === filteredVariant.value;
+          const geneMatches = !filteredGene.value || filteredGene.value === 'All' ||   item.nearest_genes.includes(filteredGene.value.toUpperCase());
+          return  variantMatches && geneMatches;
+        });
+      });
       // const selectedVariantId = ref(null);
       // function calculatePageIndex(data, variantId) {
       //   const index = data.findIndex(item => item.variantid === variantId);
@@ -599,7 +726,15 @@
         if (pval < 5e-8 && pval !== null) return 'green';
         else if (pval === "NA") return null;
         return '#grey';
-      }
+      };
+
+      const chosenPage = computed(() => {
+        const index = filteredMergedVariants.value.findIndex(
+          (item) => item.variantid === props.chosenVariant
+        );
+        if (index === -1) return 1; 
+        return Math.ceil((index + 1) / itemsPerPage);
+      });
 
 
       // download
@@ -636,9 +771,11 @@
         }
       });
 
-      watch(() => [props.selectedStratification1, props.selectedStratification2, props.miamiData], (newSelectedStratification1, newSelectedStratification2, newData) => {
+      watch(() => [props.selectedStratification1, props.selectedStratification2, props.miamiData, props.chosenVariant], (newSelectedStratification1, newSelectedStratification2, newData, newChosenVariant) => {
         console.log(`Selected value changed to: ${newSelectedStratification1}, ${newSelectedStratification2}`);
+        // console.log(`here ${newChosenVariant}`)
         fetchSampleData();
+        page.value = chosenPage.value;
         
         // const unbinnedVariants = props.miamiData[props.selectedStratification1]["unbinned_variants"];
         // console.log("Unbinned Variants:", unbinnedVariants);

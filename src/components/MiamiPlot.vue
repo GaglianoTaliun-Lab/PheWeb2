@@ -40,7 +40,9 @@ const y_scale_data2 = ref(null)
 const pheno1 = ref(null);
 const pheno2 = ref(null);
 
-const emit = defineEmits(['updateFilteringParams']) 
+const emit = defineEmits(['updateFilteringParams', 'updateChosenVariant']);
+
+const chosenVariant = ref(null);
 
 const toggleExpanded = () => {
   showExpandedClick.value = !showExpandedClick.value;
@@ -695,6 +697,9 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
                 .on('click', function(d) {
                     //Note: once a tooltip has been explicitly placed once, it must be explicitly placed forever after.
                     console.log(d)
+                    chosenVariant.value = `${d.chrom}-${d.pos}-${d.ref}-${d.alt}`;
+                    // console.log(chosenVariant);
+                    emit('updateChosenVariant', chosenVariant)
                     console.log(tooltip_showing.value)
 
                     if (tooltip_showing.value){
@@ -737,6 +742,9 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
                 .on('click', function( d) {
                     //Note: once a tooltip has been explicitly placed once, it must be explicitly placed forever after.
                     console.log(d)
+                    chosenVariant.value = `${d.chrom}-${d.pos}-${d.ref}-${d.alt}`;
+                    // console.log(chosenVariant)
+                    emit('updateChosenVariant', chosenVariant)
                     console.log(tooltip_showing.value)
 
                     if (tooltip_showing.value){
@@ -947,6 +955,8 @@ var miami_filter_view = {
             .on('click', function(d) {
                 //Note: once a tooltip has been explicitly placed once, it must be explicitly placed forever after.
                 console.log(d)
+                chosenVariant.value = `${d.chrom}-${d.pos}-${d.ref}-${d.alt}`;
+                console.log(chosenVariant)
                 console.log(tooltip_showing.value)
 
                 if (tooltip_showing.value){
@@ -991,6 +1001,8 @@ var miami_filter_view = {
             .on('click', function(d) {
                 //Note: once a tooltip has been explicitly placed once, it must be explicitly placed forever after.
                 console.log(d)
+                chosenVariant.value = `${d.chrom}-${d.pos}-${d.ref}-${d.alt}`;
+                console.log(chosenVariant)
                 console.log(tooltip_showing.value)
 
                 if (tooltip_showing.value){

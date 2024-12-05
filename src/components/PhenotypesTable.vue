@@ -189,7 +189,7 @@
           >
             <template v-slot:activator="{ props }">
                 <v-icon small color="primary" v-bind="props" class="ml-2" 
-                :icon="filteredVariant === 'All' ? 'mdi-feature-search-outline' : 'mdi-feature-search'"></v-icon>
+                :icon="filteredGene === 'All' ? 'mdi-feature-search-outline' : 'mdi-feature-search'"></v-icon>
             </template>
             <v-card class="pa-3">
               <v-text-field
