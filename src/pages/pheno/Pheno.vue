@@ -10,6 +10,7 @@ import ManhattanPlot from '../../components/ManhattanPlot.vue';
 import MiamiPlot from '../../components/MiamiPlot.vue';
 import QQPlot from '../../components/QQPlot.vue';
 import GWASTable from '../../components/GWASTable.vue';
+import InteractionPlot from '../../components/InteractionPlot.vue'
 
 import * as functions from './Pheno.js';
 
@@ -30,6 +31,7 @@ const qqRefreshKey = ref(0)
 
 const allPlottingData = ref({})
 const plottingData = ref({});
+const interactionPlottingData = ref({})
 const miamiData = ref({});
 const manhattanData = ref({});
 
@@ -54,7 +56,15 @@ onMounted(async () => {
 
       info.value = response.data;
       if (response_interaction.data) {
-        info.value = info.value.concat(response_interaction.data)
+        //info.value = info.value.concat(response_interaction.data)
+        let pheno = response_interaction.data[0]
+        try {
+            const response = await axios.get(`${api}/phenotypes/` + pheno.phenocode + returnExtraInfoString(pheno));
+            interactionPlottingData.value[pheno.phenocode] = response.data ; 
+            console.log(interactionPlottingData.value)
+        } catch (error) {
+            console.log(`Error fetching interaction plotting data for ${phenocode}:`, error);
+        }
       }
 
       // just take the first instance...they will all be the same
@@ -62,6 +72,7 @@ onMounted(async () => {
 
       await generateQQs(info.value.map(pheno => pheno.phenocode + returnExtraInfoString(pheno) ));
       await fetchPlottingData(info.value.map(pheno => pheno.phenocode + returnExtraInfoString(pheno)  ));
+      
       
       populateDataPreview(phenocode)
       
@@ -287,7 +298,6 @@ const stratificationsToKey = (phenocode, strats) => {
 }
 
 const keyToLabel = (phenoLabel) => {
-  console.log(phenoLabel)
   return functions.keyToLabel(phenoLabel);
 }
 
@@ -361,7 +371,7 @@ async function fetchPlottingData(phenocodes){
                 <div class="dropdown p-1" id="dropdown-data1">
                     <button class="btn btn-primary btn-drop" id="button-data1">{{keyToLabel(selectedStratification1) + " (" + sampleSizeLabel[selectedStratification1] + ")"}}<span class="arrow-container"><span class="arrow-down"></span></span></button>
                     <div class="dropdown-menu" id="dropdown-content-data1">
-                        <label v-for="(pheno, index) in info" >
+                        <label v-for="(pheno, index) in info">
                             <input 
                             :checked="index === 1" 
                             type="radio" 
@@ -410,7 +420,11 @@ async function fetchPlottingData(phenocodes){
             <br>
             <GWASTable />
             <br>
-            <div v-if="qqData && dimension"> 
+            <div v-if="Object.keys(interactionPlottingData).length > 0" class="mt-5 mb-5">
+              <h2>Genome-Wide SNPxSex Interaction</h2>
+              <InteractionPlot :key="1" :data="interactionPlottingData" />
+            </div>
+            <div v-if="qqData && dimension" class="mt-10 mb-5"> 
                 <h2> QQ Plot(s): </h2>
                 <div class="qq-container">
                     <div :key="qqRefreshKey" class="qq" v-for="qq in Object.keys(qqSubset)" >

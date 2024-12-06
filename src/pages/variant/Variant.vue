@@ -28,6 +28,8 @@
 
       stratification_list.value = JSON.parse(JSON.stringify(response.data));
 
+      console.log(stratification_list.value)
+
       // we need to map here to get rid of the proxy
       variantList.value = await fetchPhewasPlottingData(stratification_list.value.map(stratification => stratification))
 
@@ -47,8 +49,11 @@
       try {
           const response = await axios.get(`${api}/variant/${variantCode}/${stratification}`)
           result = response.data
-          result.stratification = "." + stratification;
+          
+          result.stratification = "." + stratification.toLowerCase();
           temp_variant_list.push(result)
+
+          console.log(result)
       } catch (error) {
         console.log(`Error fetching plotting data with stratification ${stratification}:`, error);
       }

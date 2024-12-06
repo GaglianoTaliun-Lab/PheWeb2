@@ -84,6 +84,18 @@
 
   <v-card elevation="5">
 
+    <!-- <template v-slot:text>
+      <v-text-field 
+        v-model="search" 
+        label="Try 'Diseases', 'Type 2 Diabetes', '12: 121779004 A/G', etc."
+        prepend-inner-icon="mdi-magnify" 
+        variant="outlined" 
+        hide-details 
+        single-line
+        autocomplete="on"
+      ></v-text-field>
+    </template> -->
+
     <v-data-table 
       :items="filteredPhenotypes" 
       :headers="headers" 
@@ -130,20 +142,6 @@
         <span style="white-space: nowrap;">
           {{ item.pval }}
         </span>
-      </template>
-
-      <template v-slot:header.interaction="{ column, isSorted, getSortIcon, }">
-        <div style="display: flex; align-items: center;">
-          <span style="white-space: nowrap;">{{ column.title }}</span>
-          <v-tooltip text="SNPxVariable interaction identifier. NA if no interaction results." location="top">
-            <template v-slot:activator="{ props }">
-              <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
-            </template>
-          </v-tooltip>
-          <template v-if="isSorted(column)">
-              <v-icon :icon="getSortIcon(column)"></v-icon>
-          </template>
-        </div>
       </template>
 
       <template v-slot:header.num_samples="{ column, isSorted, getSortIcon, }">
@@ -344,9 +342,8 @@
       { title: 'Phenotype', key: 'phenostring' },
       { title: 'Sex', key: 'sex' },
       { title: 'Ancestry', key: 'ancestry' },
-      { title: 'Interaction', key: 'interaction'},
-      { title: '# Samples', key: 'num_samples' },
-      { title: '# Loci < 5e-8', key: 'num_peaks' },
+      { title: '#Samples', key: 'num_samples' },
+      { title: '#Loci < 5e-8', key: 'num_peaks' },
       { title: 'P-value', key: 'pval' },
       { title: 'Top Variant', key: 'variantid', sortable: false },
       { title: 'Nearest Gene(s)', key: 'nearest_genes', sortable: false },
@@ -363,35 +360,10 @@
       isLoading.value = true;
       errorMessage.value = '';
       try {
-        const response = await axios.get(`${api}/phenotypes/phenotypes_list`)
-
-        const response_interaction = await axios.get(`${api}/phenotypes/interaction_list`)
-
-        // for now just see if phenocode with stratification matches another instance, but the whole
-        //  interaction data is available if we want to do something with it.
-        // also... there's gotta be a faster way to do this... but will decide after table handling is finalized.
-
-        const list_of_phenos_with_interaction = response.data.map((pheno) => {
-          let foundInteraction = "NA"; 
-
-          for (const interaction of response_interaction.data) {
-
-            if (
-              JSON.stringify(interaction.stratification) === JSON.stringify(pheno.stratification) &&
-              interaction.phenocode === pheno.phenocode
-            ) {
-              foundInteraction = interaction.interaction;
-              break;
-            }
-          }
-
-          return { ...pheno, interaction: foundInteraction };
-        });
-
-        console.log(list_of_phenos_with_interaction)
-
+        // console.log(`${api}/phenotypes`)
+        const response = await axios.get(`${api}/phenotypes`)
         // console.log(response);
-        phenotypes.value = list_of_phenos_with_interaction.map(item => ({
+        phenotypes.value = response.data.map(item => ({
           ...item,
           variantid: `${item.chrom}-${item.pos}-${item.ref}-${item.alt}`,
           variantName: item.rsids 
@@ -400,7 +372,6 @@
           ancestry: `${item.stratification.ancestry}`,
           sex: `${item.stratification.sex}`,
           ancestry: `${item.stratification.ancestry}`,
-          interaction: `${item.interaction}`,
           num_controls: `${item.num_controls}`,
           num_num_cases: `${item.num_cases}`,
           nearest_genes: item.nearest_genes ? item.nearest_genes.split(',') : [],  // Convert string to array
@@ -541,8 +512,3 @@
     })
 
 </script>
-
-
-
-
-
