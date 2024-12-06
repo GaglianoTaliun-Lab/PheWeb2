@@ -1,6 +1,6 @@
 <script setup>
 import axios from 'axios';
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, onBeforeUnmount } from 'vue';
 import { useRoute } from 'vue-router';
 import * as d3 from 'd3';
 import d3Tip from 'd3-tip';
@@ -28,6 +28,15 @@ const selectedType = ref('Both');
 const hiddenToggle = ref(null);
 const tooltip_showing = ref(false)
 
+// Close tooltip function
+const hideTooltip = () => {
+    if (tooltip_showing.value) {
+        point_tooltip.value.hide();
+        tooltip_showing.value = false;
+    }
+};
+
+
 const get_chrom_offsets_data1 = ref(null)
 const get_chrom_offsets_data2 = ref(null)
 const point_tooltip = ref(null)
@@ -43,7 +52,6 @@ const pheno2 = ref(null);
 const emit = defineEmits(['updateFilteringParams', 'updateChosenVariant']);
 
 const chosenVariant = ref(null);
-
 const toggleExpanded = () => {
   showExpandedClick.value = !showExpandedClick.value;
 
@@ -89,10 +97,16 @@ const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URL
 
 const route = useRoute();
 const phenocode = route.params.phenocode;
-
+// Add event listener to document to close tooltip when clicking outside
 onMounted(() => {
-    info.value = props.data
-
+    info.value = props.data;
+    document.addEventListener('click', function(event) {
+        if (tooltip_showing.value && !d3.select(event.target).classed('variant_point')) {
+            // Hide the tooltip if clicking outside a variant point
+            point_tooltip.value.hide();
+            tooltip_showing.value = false;
+        }
+    });
 
     createMiamis('all');
 });
@@ -665,101 +679,101 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
             })
 
         //these are where clickable points will be appended to the plot
-        function pp2(flip) {
-            if(flip ){
-                d3.select('#variant_points_lower')
+    function pp2(flip) {
+        if (flip) {
+            d3.select('#variant_points_lower')
                 .selectAll('a.variant_point')
                 .data(variant_unbinned2)
                 .enter()
                 .append('a')
                 .attr('class', 'variant_point') //.attr('xlink:href', get_link_to_LZ_data2)
                 .append('circle')
-                .attr('id', function(d) {
+                .attr('id', function (d) {
                     return utils.fmt('variant-point-{0}-{1}-{2}-{3}', d.chrom, d.pos, d.ref, d.alt);
                 })
-                .attr('cx', function(d) {
+                .attr('cx', function (d) {
                     return x_scale.value(get_genomic_position_data2(d));
                 })
-                .attr('cy', function(d) {
+                .attr('cy', function (d) {
                     return y_scale_data2.value(-Math.log10(d.pval));
                 })
                 .attr('r', 2.3)
-                .style('fill', function(d) {
+                .style('fill', function (d) {
                     return color_by_chrom_dim(d.chrom);
                 })
-                // .on('mouseover', function(d) {
-                //     //Note: once a tooltip has been explicitly placed once, it must be explicitly placed forever after.
-                //     console.log(point_tooltip.value)
-                //     point_tooltip.value.show(d, this);
-                //     console.log(point_tooltip.value)
-                // })
-                // .on('mouseout', point_tooltip.value.hide)
-                .on('click', function(d) {
-                    //Note: once a tooltip has been explicitly placed once, it must be explicitly placed forever after.
-                    console.log(d)
-                    chosenVariant.value = `${d.chrom}-${d.pos}-${d.ref}-${d.alt}`;
-                    // console.log(chosenVariant);
-                    emit('updateChosenVariant', chosenVariant)
-                    console.log(tooltip_showing.value)
-
-                    if (tooltip_showing.value){
-                        point_tooltip.value.hide;
+                .on('mouseover', function (d) {
+                    // Show the tooltip on hover
+                    if (!tooltip_showing.value) {
+                        point_tooltip.value.show(d, this);
+                    }
+                })
+                .on('mouseout', function (d) {
+                    // Only hide the tooltip on mouseout if it wasn't clicked to stay open
+                    if (!tooltip_showing.value) {
+                        point_tooltip.value.hide(d, this);
+                    }
+                })
+                .on('click', function (d) {
+                    d3.event.stopPropagation();
+                    if (tooltip_showing.value) {
+                        // Hide the tooltip if it’s already showing and was clicked again
+                        point_tooltip.value.hide(d, this);
                         tooltip_showing.value = false;
                     } else {
+                        // Show the tooltip and make it stay open
                         point_tooltip.value.show(d, this);
                         tooltip_showing.value = true;
                     }
-
-                    d3.event.stopPropagation();
-
                 });
-            } else if (!flip ) {
-                d3.select('#variant_points_upper')
+
+        } else if (!flip) {
+            d3.select('#variant_points_upper')
                 .selectAll('a.variant_point')
                 .data(variant_unbinned1)
                 .enter()
                 .append('a')
                 .attr('class', 'variant_point')//.attr('xlink:href', get_link_to_LZ_data1)
                 .append('circle')
-                .attr('id', function(d) {
+                .attr('id', function (d) {
                     return utils.fmt('variant-point-{0}-{1}-{2}-{3}', d.chrom, d.pos, d.ref, d.alt);
                 })
-                .attr('cx', function(d) {
+                .attr('cx', function (d) {
                     return x_scale.value(get_genomic_position_data1(d));
                 })
-                .attr('cy', function(d) {
+                .attr('cy', function (d) {
                     return y_scale_data1.value(-Math.log10(d.pval));
                 })
                 .attr('r', 2.3)
-                .style('fill', function(d) {
+                .style('fill', function (d) {
                     return color_by_chrom_dim(d.chrom);
                 })
-                // .on('mouseover', function(d) {
-                //     //Note: once a tooltip has been explicitly placed once, it must be explicitly placed forever after.
-                //     point_tooltip.value.show(d, this);
-                // })
-                // .on('mouseout', point_tooltip.value.hide)
-                .on('click', function( d) {
-                    //Note: once a tooltip has been explicitly placed once, it must be explicitly placed forever after.
-                    console.log(d)
-                    chosenVariant.value = `${d.chrom}-${d.pos}-${d.ref}-${d.alt}`;
-                    // console.log(chosenVariant)
-                    emit('updateChosenVariant', chosenVariant)
-                    console.log(tooltip_showing.value)
-
-                    if (tooltip_showing.value){
-                        point_tooltip.value.hide;
+                .on('mouseover', function (d) {
+                    // Show the tooltip on hover
+                    if (!tooltip_showing.value) {
+                        point_tooltip.value.show(d, this);
+                    }
+                })
+                .on('mouseout', function (d) {
+                    // Only hide the tooltip on mouseout if it wasn't clicked to stay open
+                    if (!tooltip_showing.value) {
+                        point_tooltip.value.hide(d, this);
+                    }
+                })
+                .on('click', function (d) {
+                    d3.event.stopPropagation();
+                    if (tooltip_showing.value) {
+                        // Hide the tooltip if it’s already showing and was clicked again
+                        point_tooltip.value.hide(d, this);
                         tooltip_showing.value = false;
                     } else {
+                        // Show the tooltip and make it stay open
                         point_tooltip.value.show(d, this);
                         tooltip_showing.value = true;
                     }
-
-                    d3.event.stopPropagation();
-
                 });
-            }
+
         }
+    }
         if ( variant_bins1 != null){
             pp2(false);
         }
@@ -1199,13 +1213,8 @@ function get_genomic_position_data2(variant) {
     return chrom_offsets[variant.chrom] + variant.pos;
 }
 
-//  emit variables to parent component if it changes
-// not using this right now, because we want it to only change when the user presses 'filter' 
-// watch([minFreq, maxFreq, selectedType], ([newMinFreq, newMaxFreq, newSelectedType]) => {
-//     emit('updateFilteringParams', { min: newMinFreq, max: newMaxFreq, type : newSelectedType });
-// })
-
 async function refilter() {
+    //variant_table.clear();
 
     var phenocode_with_stratifications1 = pheno1.value
     var phenocode_with_stratifications2 = pheno2.value
@@ -1236,8 +1245,6 @@ async function refilter() {
         const response = await axios.get(url);
         var data = response.data ; 
         miami_filter_view.set_variants(data[0].variant_bins , data[0].unbinned_variants, data[0].weakest_pval , data[1].variant_bins , data[1].unbinned_variants , data[1].weakest_pval );
-
-        emit('updateFilteringParams', { min: minFreq.value, max: maxFreq.value, type : selectedType.value });
 
     } catch (error) {
         console.log(`Error fetching plotting with url ${url}:`, error);

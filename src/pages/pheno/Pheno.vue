@@ -154,7 +154,8 @@ function chooseDefaultStratifications(data){
 
 // this function will just change a value that determins if a manhattan or miami plot is generated
 const handleRadioChange = () => {
-  if (selectedStratification2.value === "None"){
+  if (selectedStratification2.value === "None" || selectedStratification1.value === selectedStratification2.value){
+    manhattanData.value = {}
     miamiToggle.value = false;
     manhattanData.value[selectedStratification1.value] = allPlottingData.value[selectedStratification1.value];
 
@@ -297,7 +298,6 @@ async function fetchPlottingData(phenocodes){
         }
     }
     allPlottingData.value = pheno_data_temp;
-    plottingData.value = pheno_data_temp;
 
 }
 

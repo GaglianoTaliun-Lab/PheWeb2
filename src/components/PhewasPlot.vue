@@ -3,7 +3,7 @@ import LocusZoom from 'locuszoom';
 import 'locuszoom/dist/locuszoom.css';
 import * as d3 from 'd3'
 import _ from 'underscore'
-import { onMounted } from 'vue';
+import { onMounted, ref } from 'vue';
 
 // TODO : This works for our purposes, but we need to investigate why it was passed as a variable in the pheweb v1.
 var lz_template = `{{#if rsid}}<strong>{{rsid}}</strong><br>{{/if}}\n
@@ -23,8 +23,8 @@ var lz_template = `{{#if rsid}}<strong>{{rsid}}</strong><br>{{/if}}\n
 {{#if num_controls}}#controls: <strong>{{num_controls}}</strong><br>{{/if}}\n
 {{#if num_samples}}#samples: <strong>{{num_samples}}</strong><br>{{/if}}\n`
 
-// TODO: need to get URL prefix dynamically
-var url_prefix = "http://localhost:8090"
+const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URL;
+const plot = ref(null)
 
 const props = defineProps({
     variantList: {
@@ -78,7 +78,7 @@ LocusZoom.ScaleFunctions.add("effect_direction", function(parameters, input){
     return null;
 });
 
-function reorderListByValues(dictList, orderedValues, key = 'id') {
+function reorderListByValues(dictList, orderedValues, key ) {
     const dictMap = dictList.reduce((map, obj) => {
         map[obj[key]] = obj;
         return map;
@@ -243,7 +243,7 @@ function generatePlot(variant_list){
                 },
                 id: i.toString(),
                 min_width: 640, // feels reasonable to me
-                margin: { top: 40, right: 40, bottom: 120, left: 50 },
+                margin: { top: 40, right: 40, bottom: 80, left: 50 },
                 data_layers: [
                     LocusZoom.Layouts.get('data_layer', 'significance', {
                         unnamespaced: true,
@@ -295,8 +295,7 @@ function generatePlot(variant_list){
                             }
                             return ret;
                         })(),
-                        // TODO: fix this!
-                        "behaviors.onclick": [{action:"link", href:url_prefix+"/pheno/{{phewas_code}}"}],
+                        "behaviors.onclick": [{action:"link", href:api+"/pheno/{{phewas_code}}"}],
                     }),
                 ],
     
@@ -331,7 +330,7 @@ function generatePlot(variant_list){
         panels: panel_list,
     };
 
-    var plot = LocusZoom.populate("#phewas_plot_container", data_sources, layout);
+    plot.value = LocusZoom.populate("#phewas_plot_container", data_sources, layout);
 
     return;
 }

@@ -23,8 +23,8 @@ onMounted(async () => {
     try {
       const response = await axios.get(`${api}/phenotypes/phenotypes_list/` + phenocode);
 
-      console.log(route)
       info.value = response.data;
+      console.log("value: " , info.value)
       phenostring.value = info.value[0].phenostring
 
       //await getInitialRegionData(info.value.map(pheno => pheno.phenocode+"."+Object.values(pheno.stratification).join('.') ));
@@ -34,20 +34,6 @@ onMounted(async () => {
       console.log(error);
     }
 })
-
-// async function getInitialRegionData(phenocodes){
-//     var region_data_temp = {}
-
-//     for (const phenocode of phenocodes) {
-//         try {
-//             const response = await axios.get(`${api}/phenotypes/` + phenocode + `/region/` + region);
-//             region_data_temp[phenocode] = response.data ; 
-//         } catch (error) {
-//             console.log(`Error fetching plotting data for ${phenocode}:`, error);
-//         }
-//     }
-//     allPlottingData.value = region_data_temp;
-// }
 
 </script>
 

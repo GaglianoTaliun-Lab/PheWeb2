@@ -30,6 +30,15 @@ const minFreq = ref(0);
 const maxFreq = ref(0.5);
 const selectedType = ref('Both');
 const hiddenToggle = ref(null);
+const tooltip_showing = ref(false)
+
+// Close tooltip function
+const hideTooltip = () => {
+    if (tooltip_showing.value) {
+        point_tooltip.value.hide();
+        tooltip_showing.value = false;
+    }
+};
 
 const get_chrom_offsets = ref(null)
 const point_tooltip = ref(null)
@@ -58,7 +67,14 @@ const selectType = (type) => {
 
 onMounted(() => {
 
-    info.value = props.data
+    info.value = props.data;
+    document.addEventListener('click', function(event) {
+        if (tooltip_showing.value && !d3.select(event.target).classed('variant_point')) {
+            // Hide the tooltip if clicking outside a variant point
+            point_tooltip.value.hide();
+            tooltip_showing.value = false;
+        }
+    });
 
     createManhattan('all')
 
@@ -389,7 +405,12 @@ function create_manhattan_plot(variant_bins, unbinned_variants, variants = "filt
         // Points & labels
         var tooltip_template = _.template(
             utils.tooltip_underscoretemplate +
-                "<% if(_.has(d, 'num_significant_in_peak') && d.num_significant_in_peak>1) { %>#significant variants in peak: <%= d.num_significant_in_peak %><br><% } %>");
+            "<% if(_.has(d, 'num_significant_in_peak') && d.num_significant_in_peak>1) { %>#significant variants in peak: <%= d.num_significant_in_peak %><br><% } %>" +
+    
+            // add link
+            "<br>Region Plot: <a href='<%= `${window.location}/region/${d.chrom}:${Math.max(0, d.pos - 200 * 1000)}-${d.pos + 200 * 1000}` %>' target='_blank'>View</a>"
+        );
+
         point_tooltip.value = d3Tip()
             .attr('class', 'd3-tip')
             .html(function(d) {
@@ -425,34 +446,54 @@ function create_manhattan_plot(variant_bins, unbinned_variants, variants = "filt
                 }
             });
 
-        function pp2() {
-            d3.select('#variant_points')
-            .selectAll('a.variant_point')
+    function pp2() {
+        d3.select('#variant_points')
+            .selectAll('circle.variant_point') // Directly select and append <circle> elements
             .data(unbinned_variants)
             .enter()
-            .append('a')
+            .append('circle') // Directly append <circle>, no <a> wrapper
             .attr('class', 'variant_point')
-            .attr('xlink:href', get_link_to_LZ)
-            .append('circle')
-            .attr('id', function(d) {
+            .attr('id', function (d) {
                 return utils.fmt('variant-point-{0}-{1}-{2}-{3}', d.chrom, d.pos, d.ref, d.alt);
             })
-            .attr('cx', function(d) {
+            .attr('cx', function (d) {
                 return x_scale.value(get_genomic_position(d));
             })
-            .attr('cy', function(d) {
+            .attr('cy', function (d) {
                 return y_scale_data.value(-Math.log10(d.pval));
             })
             .attr('r', 2.3)
-            .style('fill', function(d) {
+            .style('fill', function (d) {
                 return color_by_chrom_dim(d.chrom);
             })
-            .on('mouseover', function(d) {
-                //Note: once a tooltip has been explicitly placed once, it must be explicitly placed forever after.
-                point_tooltip.value.show(d, this);
+            .on('mouseover', function (d) {
+                // Show the tooltip on hover
+                if (!tooltip_showing.value) {
+                    point_tooltip.value.show(d, this);
+                }
             })
-            .on('mouseout', point_tooltip.value.hide);
-        }
+            .on('mouseout', function (d) {
+                // Only hide the tooltip on mouseout if it wasn't clicked to stay open
+                if (!tooltip_showing.value) {
+                    point_tooltip.value.hide(d, this);
+                }
+            })
+            // .on('click', function (d) {
+            //     console.log('Clicked on:', d); // Handle the click event without navigation
+            // });
+            .on('click', function (d) {
+                d3.event.stopPropagation();
+                if (tooltip_showing.value) {
+                    // Hide the tooltip if it’s already showing and was clicked again
+                    point_tooltip.value.hide(d, this);
+                    tooltip_showing.value = false;
+                } else {
+                    // Show the tooltip and make it stay open
+                    point_tooltip.value.show(d, this);
+                    tooltip_showing.value = true;
+                }
+            });
+    }
         pp2();
 
         function pp3() { // drawing the ~60k binned variant circles takes ~500ms.  The (far fewer) unbinned variants take much less time.
@@ -511,138 +552,143 @@ function create_manhattan_plot(variant_bins, unbinned_variants, variants = "filt
 
 var manhattan_filter_view = {
 
-// TODO: these javascript selects need to be changed I think, getting error about y_scale_data not defined.
-clear: function() {
-    d3.select('#filtered_variant_points').selectAll('a.variant_point').data([]).exit().remove();
-    d3.select('#filtered_variant_hover_rings').selectAll('a.variant_hover_ring').data([]).exit().remove();
-    d3.select('#filtered_variant_bins').selectAll('g.bin').data([]).exit().remove();
-    d3.select('#unchecked_variants_mask').attr('y', 0).attr('height', 0);
+    // TODO: these javascript selects need to be changed I think, getting error about y_scale_data not defined.
+    clear: function () {
+        d3.select('#filtered_variant_points').selectAll('a.variant_point').data([]).exit().remove();
+        d3.select('#filtered_variant_hover_rings').selectAll('a.variant_hover_ring').data([]).exit().remove();
+        d3.select('#filtered_variant_bins').selectAll('g.bin').data([]).exit().remove();
+        d3.select('#unchecked_variants_mask').attr('y', 0).attr('height', 0);
 
-},
-set_variants: function(variant_bins, unbinned_variants, weakest_pval) {
-    d3.select('#unchecked_variants_mask')
-        .attr('transform', `translate(${-point_radius},0)`) // move left by the radius of the variant points (3px)
-        .attr('width', plot_width.value+point_radius*2) // widen by 2x the radius of the variant points
-        .attr('y', y_scale_data.value(-Math.log10(weakest_pval))+point_radius)
-        .attr('height', Math.abs(y_scale_data.value(-Math.log10(weakest_pval))-y_scale_data.value(0)))
-        .raise();
+    },
+    set_variants: function (variant_bins, unbinned_variants, weakest_pval) {
+        d3.select('#unchecked_variants_mask')
+            .attr('transform', `translate(${-point_radius},0)`) // move left by the radius of the variant points (3px)
+            .attr('width', plot_width.value + point_radius * 2) // widen by 2x the radius of the variant points
+            .attr('y', y_scale_data.value(-Math.log10(weakest_pval)) + point_radius)
+            .attr('height', Math.abs(y_scale_data.value(-Math.log10(weakest_pval)) - y_scale_data.value(0)))
+            .raise();
 
-    // Order from weakest to strongest pvalue, so that the strongest variant will be on top (z-order) and easily hoverable
-    // In the DOM, later siblings are displayed over top of (and occluding) earlier siblings.
-    unbinned_variants = _.sortBy(unbinned_variants, function(d){return -d.pval});
+        // Order from weakest to strongest pvalue, so that the strongest variant will be on top (z-order) and easily hoverable
+        // In the DOM, later siblings are displayed over top of (and occluding) earlier siblings.
+        unbinned_variants = _.sortBy(unbinned_variants, function (d) { return -d.pval });
 
-    var gwas_plot = d3.select("#gwas_plot");
-    var color_by_chrom = d3.scaleOrdinal()
-        .domain(get_chrom_offsets.value().chroms)
-        .range(['rgb(120,120,186)', 'rgb(0,0,66)']);
+        var gwas_plot = d3.select("#gwas_plot");
+        var color_by_chrom = d3.scaleOrdinal()
+            .domain(get_chrom_offsets.value().chroms)
+            .range(['rgb(120,120,186)', 'rgb(0,0,66)']);
 
-    var point_selection = d3.select('#filtered_variant_points')
-        .selectAll('a.variant_point')
-        .data(unbinned_variants);
-        
-    point_selection.exit().remove();
-    point_selection.enter()
-        .append('a')
-        .attr('class', 'variant_point')
-        .attr('xlink:href', get_link_to_LZ)
-        .append('circle')
-        .attr('id', function(d) {
-            return utils.fmt('filtered-variant-point-{0}-{1}-{2}-{3}', d.chrom, d.pos, d.ref, d.alt);
-        })
-        .attr('cx', function(d) {
-            return x_scale.value(get_genomic_position(d));
-        })
-        .attr('cy', function(d) {
-            return y_scale_data.value(-Math.log10(d.pval));
-        })
-        .attr('r', point_radius)
-        .style('fill', function(d) {
-            return color_by_chrom(d.chrom);
-        })
-        .on('mouseover', function(d) {
-            //Note: once a tooltip has been explicitly placed once, it must be explicitly placed forever after.
-            point_tooltip.value.show(d, this);
-        })
-        .on('mouseout', point_tooltip.value.hide);
+        var point_selection = d3.select('#filtered_variant_points')
+            .selectAll('a.variant_point')
+            .data(unbinned_variants);
 
-    var hover_ring_selection = d3.select('#filtered_variant_hover_rings')
-        .selectAll('a.variant_hover_ring')
-        .data(unbinned_variants);
+        point_selection.exit().remove();
+        point_selection.enter()
+            .attr('class', 'variant_point')
+            .attr('xlink:href', get_link_to_LZ)
+            .append('circle')
+            .attr('id', function (d) {
+                return utils.fmt('filtered-variant-point-{0}-{1}-{2}-{3}', d.chrom, d.pos, d.ref, d.alt);
+            })
+            .attr('cx', function (d) {
+                return x_scale.value(get_genomic_position(d));
+            })
+            .attr('cy', function (d) {
+                return y_scale_data.value(-Math.log10(d.pval));
+            })
+            .attr('r', point_radius)
+            .style('fill', function (d) {
+                return color_by_chrom(d.chrom);
+            })
+            .on('mouseover', function (d) {
+                // Show the tooltip on hover
+                if (!tooltip_showing.value) {
+                    point_tooltip.value.show(d, this);
+                }
+            })
+            .on('mouseout', function (d) {
+                // Only hide the tooltip on mouseout if it wasn't clicked to stay open
+                if (!tooltip_showing.value) {
+                    point_tooltip.value.hide(d, this);
+                }
+            })
 
-    hover_ring_selection.exit().remove();
-    hover_ring_selection.enter()
-        .append('a')
-        .attr('class', 'variant_hover_ring')
-        .attr('xlink:href', get_link_to_LZ)
-        .append('circle')
-        .attr('cx', function(d) {
-            return x_scale.value(get_genomic_position(d));
-        })
-        .attr('cy', function(d) {
-            return y_scale_data.value(-Math.log10(d.pval));
-        })
-        .attr('r', 7)
-        .style('opacity', 0)
-        .style('stroke-width', 1) /* why? */
-        .on('mouseover', function(d) {
-            //Note: once a tooltip has been explicitly placed once, it must be explicitly placed forever after.
-            var target_node = document.getElementById(utils.fmt('filtered-variant-point-{0}-{1}-{2}-{3}', d.chrom, d.pos, d.ref, d.alt));
-            point_tooltip.value.show(d, target_node);
-        })
-        .on('mouseout', point_tooltip.value.hide);
+        var hover_ring_selection = d3.select('#filtered_variant_hover_rings')
+            .selectAll('a.variant_hover_ring')
+            .data(unbinned_variants);
 
-    var bin_selection = d3.select('#filtered_variant_bins')
-        .selectAll('g.bin')
-        .data(variant_bins);
-    bin_selection.exit().remove();
-    var bins = bin_selection.enter()
-        .append('g')
-        .attr('class', 'bin')
-        .attr('data-index', function(d, i) { return i; }) // make parent index available from DOM
-        .each(function(d) { //todo: do this in a forEach
-            d.x = x_scale.value(get_genomic_position(d));
-            d.color = color_by_chrom(d.chrom);
-        });
-    bins.selectAll('circle.binned_variant_point')
-        .data(_.property('qvals'))
-        .enter()
-        .append('circle')
-        .attr('class', 'binned_variant_point')
-        .attr('cx', function(d, i) {
-            var parent_i = +this.parentNode.getAttribute('data-index');
-            return variant_bins[parent_i].x;
-        })
-        .attr('cy', function(qval) {
-            return y_scale_data.value(qval);
-        })
-        .attr('r', point_radius)
-        .style('fill', function(d, i) {
-            var parent_i = +this.parentNode.getAttribute('data-index');
-            return variant_bins[parent_i].color;
-        });
-    bins.selectAll('line.binned_variant_line')
-        .data(_.property('qval_extents'))
-        .enter()
-        .append('line')
-        .attr('class', 'binned_variant_line')
-        .attr('x1', function(d, i) {
-            var parent_i = +this.parentNode.getAttribute('data-index');
-            return variant_bins[parent_i].x;
-        })
-        .attr('x2', function(d, i) {
-            var parent_i = +this.parentNode.getAttribute('data-index');
-            return variant_bins[parent_i].x;
-        })
-        .attr('y1', function(d) { return y_scale_data.value(d[0]); })
-        .attr('y2', function(d) { return y_scale_data.value(d[1]); })
-        .style('stroke', function(d, i) {
-            var parent_i = +this.parentNode.getAttribute('data-index');
-            return variant_bins[parent_i].color;
-        })
-        .style('stroke-width', 4.6)
-        .style('stroke-linecap', 'round');
+        hover_ring_selection.exit().remove();
+        hover_ring_selection.enter()
+            .attr('class', 'variant_hover_ring')
+            .attr('xlink:href', get_link_to_LZ)
+            .append('circle')
+            .attr('cx', function (d) {
+                return x_scale.value(get_genomic_position(d));
+            })
+            .attr('cy', function (d) {
+                return y_scale_data.value(-Math.log10(d.pval));
+            })
+            .attr('r', 7)
+            .style('opacity', 0)
+            .style('stroke-width', 1) /* why? */
+            .on('mouseover', function (d) {
+                //Note: once a tooltip has been explicitly placed once, it must be explicitly placed forever after.
+                var target_node = document.getElementById(utils.fmt('filtered-variant-point-{0}-{1}-{2}-{3}', d.chrom, d.pos, d.ref, d.alt));
+                point_tooltip.value.show(d, target_node);
+            })
+            .on('mouseout', point_tooltip.value.hide);
 
-}
+        var bin_selection = d3.select('#filtered_variant_bins')
+            .selectAll('g.bin')
+            .data(variant_bins);
+        bin_selection.exit().remove();
+        var bins = bin_selection.enter()
+            .append('g')
+            .attr('class', 'bin')
+            .attr('data-index', function (d, i) { return i; }) // make parent index available from DOM
+            .each(function (d) { //todo: do this in a forEach
+                d.x = x_scale.value(get_genomic_position(d));
+                d.color = color_by_chrom(d.chrom);
+            });
+        bins.selectAll('circle.binned_variant_point')
+            .data(_.property('qvals'))
+            .enter()
+            .append('circle')
+            .attr('class', 'binned_variant_point')
+            .attr('cx', function (d, i) {
+                var parent_i = +this.parentNode.getAttribute('data-index');
+                return variant_bins[parent_i].x;
+            })
+            .attr('cy', function (qval) {
+                return y_scale_data.value(qval);
+            })
+            .attr('r', point_radius)
+            .style('fill', function (d, i) {
+                var parent_i = +this.parentNode.getAttribute('data-index');
+                return variant_bins[parent_i].color;
+            });
+        bins.selectAll('line.binned_variant_line')
+            .data(_.property('qval_extents'))
+            .enter()
+            .append('line')
+            .attr('class', 'binned_variant_line')
+            .attr('x1', function (d, i) {
+                var parent_i = +this.parentNode.getAttribute('data-index');
+                return variant_bins[parent_i].x;
+            })
+            .attr('x2', function (d, i) {
+                var parent_i = +this.parentNode.getAttribute('data-index');
+                return variant_bins[parent_i].x;
+            })
+            .attr('y1', function (d) { return y_scale_data.value(d[0]); })
+            .attr('y2', function (d) { return y_scale_data.value(d[1]); })
+            .style('stroke', function (d, i) {
+                var parent_i = +this.parentNode.getAttribute('data-index');
+                return variant_bins[parent_i].color;
+            })
+            .style('stroke-width', 4.6)
+            .style('stroke-linecap', 'round');
+
+    }
 };
 
 function get_link_to_LZ(variant) {
