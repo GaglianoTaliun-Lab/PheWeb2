@@ -59,6 +59,8 @@
       }
     }
     variant_list.value = temp_variant_list;
+    console.log(`VARIANT LIST : ${variant_list.value}`)
+
     return(variant_list.value)
   }
   
@@ -70,7 +72,6 @@
     <v-main>
       <div class="ml-4 mt-2">
         <h1 class="mb-0">{{variantCode}}</h1>
-        <!-- why does variant_list here work but not variantList ???-->
         <div v-if="variant">
           <p class="mb-0"> Nearest genes: {{variant.nearest_genes}}</p>
           <p class="mb-0"> {{maf_text}} </p>

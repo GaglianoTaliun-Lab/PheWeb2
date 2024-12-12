@@ -93,7 +93,7 @@ function generatePlot(variant_list){
     variant_list = JSON.parse(JSON.stringify(variant_list))
 
     // TODO: accept an argument for order of plots maybe, right now assume : Combined, Female, Male:
-    var order = ['.european.combined', '.european.female', '.european.male']
+    var order = ['.european.both', '.european.female', '.european.male']
 
     variant_list = reorderListByValues(variant_list, order, 'stratification')
 
@@ -296,7 +296,7 @@ function generatePlot(variant_list){
                             }
                             return ret;
                         })(),
-                        "behaviors.onclick": [{action:"link", href:api+"/pheno/{{phewas_code}}"}],
+                        "behaviors.onclick": [{action:"link", href:window.location.origin+"/phenotypes/{{phewas_code}}"}],
                     }),
                 ],
     

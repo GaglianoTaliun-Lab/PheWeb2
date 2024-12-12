@@ -69,8 +69,11 @@ const isInteractionChecked = ref(false); // Initialize it to false or true based
 
 onMounted(async () => {
     try {
-      const response = await axios.get(`${api}/phenotypes/phenotypes_list/` + phenocode);
-      const responseInteraction = await axios.get(`${api}/phenotypes/interaction_list/` + phenocode);
+      // const response = await axios.get(`${api}/phenotypes/phenotypes_list/` + phenocode);
+      // const responseInteraction = await axios.get(`${api}/phenotypes/interaction_list/` + phenocode);
+
+      const response = await axios.get(`${api}/phenotypes/${phenocode}/phenotypes_list`);
+      const responseInteraction = await axios.get(`${api}/phenotypes/${phenocode}/interaction_list`);
 
       info.value = response.data;
       infoInteraction.value = responseInteraction.data;
@@ -78,12 +81,49 @@ onMounted(async () => {
       // just take the first instance...they will all be the same
       phenostring.value = info.value[0].phenostring
 
-      await generateQQs(info.value.map(pheno => pheno.phenocode + returnExtraInfoString(pheno) ));
-      await fetchPlottingData(info.value.map(pheno => pheno.phenocode + returnExtraInfoString(pheno)  ));
-      if (infoInteraction.value) {
-        await generateInteractionQQs(infoInteraction.value.map(pheno => pheno.phenocode + returnExtraInfoString(pheno)));
-        await fetchInteractionPlottingData(infoInteraction.value.map(pheno => pheno.phenocode + returnExtraInfoString(pheno)));
+      for (let i = 0; i < info.value.length; i++) {
+        const phenocode = info.value[i].phenocode;
+        const extraInfo = returnExtraInfoString(info.value[i]);
+        
+        await generateQQs(phenocode, extraInfo);
+        await fetchPlottingData(phenocode, extraInfo);
+
+        // set sample size labels (case controls, etc.) for future use
+        info.value.forEach(pheno => {
+          const key = pheno.phenocode + returnExtraInfoString(pheno);
+          if (pheno.num_cases !== "" && pheno.num_controls !== "") {
+            sampleSizeLabel.value[key] = `${new Intl.NumberFormat('en-US', { maximumSignificantDigits: 3 }).format( pheno.num_cases )} cases, ${new Intl.NumberFormat('en-US', { maximumSignificantDigits: 3 }).format( pheno.num_controls )} controls`;
+          } else {
+            sampleSizeLabel.value[key] = `${new Intl.NumberFormat('en-US', { maximumSignificantDigits: 3 }).format( pheno.num_samples )} samples`;
+          }
+        });
       }
+
+      dimension.value = calculate_qq_dimension(qqData.value);
+
+      if (infoInteraction.value.length > 0) {
+        for (let i = 0; i < infoInteraction.value.length; i++) {
+          const phenocode = infoInteraction.value[i].phenocode;
+          const extraInfo = returnExtraInfoString(infoInteraction.value[i]);
+          
+          await generateInteractionQQs(phenocode, extraInfo);
+          await fetchInteractionPlottingData(phenocode, extraInfo);
+        }
+        dimensionInteraction.value = calculate_qq_dimension(qqInteractionData.value);
+
+        infoInteraction.value.forEach(pheno => {
+          const key = pheno.phenocode + returnExtraInfoString(pheno);
+          if (pheno.num_cases !== "" && pheno.num_controls !== "") {
+            sampleSizeLabel.value[key] = `${new Intl.NumberFormat('en-US', { maximumSignificantDigits: 3 }).format( pheno.num_cases )} cases, ${new Intl.NumberFormat('en-US', { maximumSignificantDigits: 3 }).format( pheno.num_controls )} controls`;
+          } else {
+            sampleSizeLabel.value[key] = `${new Intl.NumberFormat('en-US', { maximumSignificantDigits: 3 }).format( pheno.num_samples )} samples`;
+          }
+        });
+
+      }
+
+
+
       
       populateDataPreview(phenocode)
       
@@ -264,8 +304,14 @@ const downloadAll = () => {
 
   // get all phenocodes api calls
   for (const pheno of info.value){
-    var phenocode = stratificationsToKey(pheno.phenocode, pheno.stratification)
-    var api_link = `${api}/sumstats/${phenocode}`;
+    var phenocode = pheno.phenocode + returnExtraInfoString(pheno)
+    var api_link = `${api}/phenotypes/${pheno.phenocode}/${returnExtraInfoString(pheno)}/download`;
+    downloads.push({url:api_link, filename : phenocode})
+  };
+
+  for (const pheno of infoInteraction.value){
+    var phenocode = pheno.phenocode + returnExtraInfoString(pheno)
+    var api_link = `${api}/phenotypes/${pheno.phenocode}/${returnExtraInfoString(pheno)}/download`;
     downloads.push({url:api_link, filename : phenocode})
   };
 
@@ -285,11 +331,36 @@ const downloadAll = () => {
 // TODO: change to streaming instead of backend call
 const downloadCurrent = () => {
   var downloads = []
-  
-  downloads.push({url: `${api}/sumstats/${selectedStratification1.value}`, filename: selectedStratification1.value})
-  if (selectedStratification2.value != "No stratification"){
-      downloads.push({url: `${api}/sumstats/${selectedStratification2.value}`, filename: selectedStratification2.value})
+
+  if (!isInteractionChecked.value) {
+
+    var code1 = selectedStratification1.value.split(".")
+    var phenocode1 = code1[0]
+    var suffix1 = "." + code1.slice(1).join('.')
+
+    downloads.push({url: `${api}/phenotypes/${phenocode1}/${suffix1}/download`})
+
+    if (selectedStratification2.value != "No stratification"){
+      var code2 = selectedStratification2.value.split(".")
+      var phenocode2 = code2[0]
+      var suffix2 = "." + code2.slice(1).join('.')
+      downloads.push({url: `${api}/phenotypes/${phenocode2}/${suffix2}/download`})
+    }
+  } else {
+    var code1 = selectedInteractionStratification1.value.split(".")
+    var phenocode1 = code1[0]
+    var suffix1 = "." + code1.slice(1).join('.')
+
+    downloads.push({url: `${api}/phenotypes/${phenocode1}/${suffix1}/download`})
+
+    if (selectedInteractionStratification2.value != "No stratification"){
+      var code2 = selectedInteractionStratification2.value.split(".")
+      var phenocode2 = code2[0]
+      var suffix2 = "." + code2.slice(1).join('.')
+      downloads.push({url: `${api}/phenotypes/${phenocode2}/${suffix2}/download`})
+    }
   }
+
   downloads.forEach((file, index) => {
     setTimeout(() => {
       const a = document.createElement('a');
@@ -333,8 +404,8 @@ function calculate_qq_dimension(combined_data){
   var width = 0
   var dimensions = [height, width]
 
-  for (var qqData of combined_data){
-      qqData.by_maf.forEach(function(data){
+  for (var qqData of Object.keys(combined_data)){
+      combined_data[qqData].by_maf.forEach(function(data){
 
           //the last one will always be the one to increase the figure size
           var max_height = data.qq.bins[data.qq.bins.length - 1][1]
@@ -352,99 +423,60 @@ function calculate_qq_dimension(combined_data){
   return dimensions
 }
 
-async function generateQQs(phenocodes){
-    var qqDataTemp = []; 
+async function generateQQs(phenocode, extraInfo){
 
-    for (const phenocode of phenocodes) {
-        try {
-            const response = await axios.get(`${api}/phenotypes/qq/` + phenocode);
-            qqDataTemp.push(response.data); 
-            qqData.value[phenocode] = response.data;
-        } catch (error) {
-            console.log(`Error fetching QQ data for ${phenocode}:`, error);
-        }
-    }
-    dimension.value = calculate_qq_dimension(qqDataTemp);
-}
-
-async function generateInteractionQQs(phenocodes){
-    var qqDataTemp = []; 
-
-    for (const phenocode of phenocodes) {
-        try {
-            const response = await axios.get(`${api}/phenotypes/qq/` + phenocode);
-            qqDataTemp.push(response.data); 
-            qqInteractionData.value[phenocode] = response.data;
-        } catch (error) {
-            console.log(`Error fetching QQ data for ${phenocode}:`, error);
-        }
-    }
-    dimensionInteraction.value = calculate_qq_dimension(qqDataTemp);
-}
-
-async function fetchPlottingData(phenocodes){
-  var pheno_data_temp = {}
-
-  for (const phenocode of phenocodes) {
-      try {
-          const response = await axios.get(`${api}/phenotypes/` + phenocode);
-          pheno_data_temp[phenocode] = response.data ; 
-      } catch (error) {
-          console.log(`Error fetching plotting data for ${phenocode}:`, error);
-      }
+  try {
+      const response = await axios.get(`${api}/phenotypes/${phenocode}/${extraInfo}/qq`);
+      qqData.value[phenocode + extraInfo] = response.data;
+  } catch (error) {
+      console.log(`Error fetching QQ data for ${phenocode}:`, error);
   }
-  allPlottingData.value = pheno_data_temp;
-
-  // set sample size labels (case controls, etc.) for future use
-  info.value.forEach(pheno => {
-    const key = pheno.phenocode + returnExtraInfoString(pheno);
-    if (pheno.num_cases !== "" && pheno.num_controls !== "") {
-      sampleSizeLabel.value[key] = `${new Intl.NumberFormat('en-US', { maximumSignificantDigits: 3 }).format( pheno.num_cases )} cases, ${new Intl.NumberFormat('en-US', { maximumSignificantDigits: 3 }).format( pheno.num_controls )} controls`;
-    } else {
-      sampleSizeLabel.value[key] = `${new Intl.NumberFormat('en-US', { maximumSignificantDigits: 3 }).format( pheno.num_samples )} samples`;
-    }
-  });
 }
 
-async function fetchInteractionPlottingData(phenocodes){
-  var pheno_data_temp = {}
+async function generateInteractionQQs(phenocode, extraInfo){
 
-  for (const phenocode of phenocodes) {
-      try {
-          const response = await axios.get(`${api}/phenotypes/` + phenocode);
-          pheno_data_temp[phenocode] = response.data ; 
-      } catch (error) {
-          console.log(`Error fetching plotting data for ${phenocode}:`, error);
-      }
-  }
-  allInteractionPlottingData.value = pheno_data_temp;
-        // set sample size labels (case controls, etc.) for future use
-  infoInteraction.value.forEach(pheno => {
-    const key = pheno.phenocode + returnExtraInfoString(pheno);
-    if (pheno.num_cases !== "" && pheno.num_controls !== "") {
-      sampleSizeInteractionLabel.value[key] = `${new Intl.NumberFormat('en-US', { maximumSignificantDigits: 3 }).format( pheno.num_cases )} cases, ${new Intl.NumberFormat('en-US', { maximumSignificantDigits: 3 }).format( pheno.num_controls )} controls`;
-    } else {
-      sampleSizeInteractionLabel.value[key] = `${new Intl.NumberFormat('en-US', { maximumSignificantDigits: 3 }).format( pheno.num_samples )} samples`;
+    try {
+        const response = await axios.get(`${api}/phenotypes/${phenocode}/${extraInfo}/qq`);
+        qqInteractionData.value[phenocode + extraInfo] = response.data;
+    } catch (error) {
+        console.log(`Error fetching QQ data for ${phenocode}:`, error);
     }
-  });
+}
+
+async function fetchPlottingData(phenocode, extraInfo){
+
+  try {
+    const response = await axios.get(`${api}/phenotypes/${phenocode}/${extraInfo}`);
+    allPlottingData.value[phenocode + extraInfo] = response.data ; 
+  } catch (error) {
+      console.log(`Error fetching plotting data for ${phenocode}:`, error);
+  }
+
+}
+
+async function fetchInteractionPlottingData(phenocode, extraInfo){
+
+  try {
+      const response = await axios.get(`${api}/phenotypes/${phenocode}/${extraInfo}`);
+      allInteractionPlottingData.value[phenocode + extraInfo] = response.data ; 
+  } catch (error) {
+      console.log(`Error fetching plotting data for ${phenocode}:`, error);
+  }
+
 }
 
 const updateChosenVariantMehod = (variant) => {
-  console.log('Received chosen variant:', variant.value);
   chosenVariant.value = variant.value; 
-  // console.log(chosenVariant.value);
 };
 
 function onInteractionCheckboxChange() {
   if (isInteractionChecked.value) {
-    console.log("Checkbox checked");
     var strats = chooseDefaultPhenos(infoInteraction.value)
     selectedInteractionStratification1.value = strats[0].phenocode +returnExtraInfoString(strats[0])
     selectedInteractionStratification2.value = strats[1] ? strats[1].phenocode + returnExtraInfoString(strats[1]): "No stratification"
     handleInteractionRadioChange(); 
 
   } else {
-    console.log("Checkbox unchecked");
     var strats = chooseDefaultPhenos(info.value)
     selectedStratification1.value = strats[0].phenocode +returnExtraInfoString(strats[0])
     selectedStratification2.value = strats[1] ? strats[1].phenocode + returnExtraInfoString(strats[1]): "No stratification"
@@ -561,7 +593,7 @@ function onInteractionCheckboxChange() {
             <div v-else class="interaction">
               <div class="pheno-info col-12 mt-0">
                 <div class="dropdown p-1" id="dropdown-data1">
-                    <button class="btn btn-primary btn-drop" id="button-data1">{{keyToLabel(selectedInteractionStratification1) + " (" + sampleSizeInteractionLabel[selectedStratification1] + ")"}}<span class="arrow-container"><span class="arrow-down"></span></span></button>
+                    <button class="btn btn-primary btn-drop" id="button-data1">{{keyToLabel(selectedInteractionStratification1) + " (" + sampleSizeInteractionLabel[selectedInteractionStratification1] + ")"}}<span class="arrow-container"><span class="arrow-down"></span></span></button>
                     <div class="dropdown-menu" id="dropdown-content-data1">
                         <label v-for="(pheno, index) in infoInteraction">
                             <input 

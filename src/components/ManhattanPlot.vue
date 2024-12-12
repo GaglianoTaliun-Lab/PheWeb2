@@ -583,6 +583,7 @@ var manhattan_filter_view = {
 
         point_selection.exit().remove();
         point_selection.enter()
+            .append('a')
             .attr('class', 'variant_point')
             .attr('xlink:href', get_link_to_LZ)
             .append('circle')
@@ -618,6 +619,7 @@ var manhattan_filter_view = {
 
         hover_ring_selection.exit().remove();
         hover_ring_selection.enter()
+            .append('a')
             .attr('class', 'variant_hover_ring')
             .attr('xlink:href', get_link_to_LZ)
             .append('circle')
@@ -703,43 +705,39 @@ function get_link_to_LZ(variant) {
 // watch([minFreq, maxFreq, selectedType], ([newMinFreq, newMaxFreq, newSelectedType]) => {
 //     emit('updateFilteringParams', { min: newMinFreq, max: newMaxFreq, type : newSelectedType });
 // })
-
 async function refilter() {
-    //variant_table.clear();
 
-    var phenocode_with_stratifications = pheno.value
-    //remove any past filters
-    manhattan_filter_view.clear();
+var stratifications = "." + pheno.value.split('.').splice(1).join(".")
 
-    // get variants which pass the filters
-    var url_base = `${api}/phenotypes/pheno-filter/${phenocode_with_stratifications}?`
-    var get_params = [];
-    get_params.push(utils.fmt("min_maf={0}", minFreq.value ));
-    get_params.push(utils.fmt("max_maf={0}", maxFreq.value ));
-    var snp_indel_value = selectedType.value;
-    if (snp_indel_value=='SNP' || snp_indel_value=='Indel') {
-        get_params.push(utils.fmt("indel={0}", (snp_indel_value=='Indel')?'true':'false'));
-    }
+//remove any past filters
+manhattan_filter_view.clear();
 
-    // we don't have this fonctionality implemented... probably never will
+// get variants which pass the filters
+var url_base = `${api}/phenotypes/${phenocode}/${stratifications}/filter?`
+var get_params = [];
+get_params.push(utils.fmt("min_maf={0}", minFreq.value ));
+get_params.push(utils.fmt("max_maf={0}", maxFreq.value ));
+var snp_indel_value = selectedType.value;
+if (snp_indel_value=='SNP' || snp_indel_value=='Indel') {
+    get_params.push(utils.fmt("indel={0}", (snp_indel_value=='Indel')?'true':'false'));
+}
 
-    // var csq_value = $('#csq input:radio:checked').val();
-    // if (csq_value=='lof' || csq_value=='nonsyn') {
-    //     get_params.push(utils.fmt("csq={0}", csq_value));
-    // }
+
+
+var url = url_base + get_params.join('&');
+
+try {
+    const response = await axios.get(url);
+    var data = response.data ;
+
+    console.log("data", data)
+    manhattan_filter_view.set_variants(data.variant_bins , data.unbinned_variants, data.weakest_pval );
     
-    var url = url_base + get_params.join('&');
+    emit('updateFilteringParams', { min: minFreq.value, max: maxFreq.value, type : selectedType.value });
 
-    try {
-        const response = await axios.get(url);
-        var data = response.data ;
-        manhattan_filter_view.set_variants(data[0].variant_bins , data[0].unbinned_variants, data[0].weakest_pval );
-        
-        emit('updateFilteringParams', { min: minFreq.value, max: maxFreq.value, type : selectedType.value });
-
-    } catch (error) {
-        console.log(`Error fetching plotting with url ${url}:`, error);
-    }
+} catch (error) {
+    console.log(`Error fetching plotting with url ${url}:`, error);
+}
 }
 
 function reset_for_manhattan_plot() {
@@ -778,7 +776,7 @@ function reset_for_manhattan_plot() {
     <div class="shadow-sm border rounded mt-3 mb-3">
       <div class="container-fluid mt-2 ml-1 mr-2">
         <!-- Left: Filter Button and Filter Options -->
-        <div class="d-flex flex-grow-0 flex-shrink-0" style="width:75%; " @mouseleave="showExpanded = false"
+        <div class="d-flex" @mouseleave="showExpanded = false"
         >
           <button 
             class="btn btn-primary" 
@@ -849,7 +847,7 @@ function reset_for_manhattan_plot() {
           </transition>
         </div>
 
-        <div class="d-flex flex-grow-0 flex-shrink-0" style="width:25%">
+        <div class="d-flex" style="">
           <button 
             type="button" 
             class="btn btn-light border bg-body rounded"
@@ -897,12 +895,14 @@ function reset_for_manhattan_plot() {
 
 .container-fluid {
     display: flex;
+    justify-content:space-between;
     width: 100%; 
     max-height:40px;
 }
 
 .expanded-content {
     display: flex;
+    justify-content:left;
     align-items: center;
 }
 

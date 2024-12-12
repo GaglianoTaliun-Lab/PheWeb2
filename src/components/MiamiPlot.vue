@@ -1214,16 +1214,19 @@ function get_genomic_position_data2(variant) {
 }
 
 async function refilter() {
-    //variant_table.clear();
 
-    var phenocode_with_stratifications1 = pheno1.value
-    var phenocode_with_stratifications2 = pheno2.value
+    var stratifications1 = "." + pheno1.value.split('.').splice(1).join(".")
+    var stratifications2 = "." + pheno2.value.split('.').splice(1).join(".")
 
     //remove any past filters
     miami_filter_view.clear();
 
+    var data = []
+
     // get variants which pass the filters
-    var url_base = `${api}/phenotypes/pheno-filter/${phenocode_with_stratifications1}/${phenocode_with_stratifications2}?`
+    var url_base1 = `${api}/phenotypes/${phenocode}/${stratifications1}/filter?`
+    var url_base2 = `${api}/phenotypes/${phenocode}/${stratifications2}/filter?`
+
     var get_params = [];
     get_params.push(utils.fmt("min_maf={0}", minFreq.value ));
     get_params.push(utils.fmt("max_maf={0}", maxFreq.value ));
@@ -1231,19 +1234,17 @@ async function refilter() {
     if (snp_indel_value=='SNP' || snp_indel_value=='Indel') {
         get_params.push(utils.fmt("indel={0}", (snp_indel_value=='Indel')?'true':'false'));
     }
-
-    // we don't have this fonctionality implemented... probably never will
-
-    // var csq_value = $('#csq input:radio:checked').val();
-    // if (csq_value=='lof' || csq_value=='nonsyn') {
-    //     get_params.push(utils.fmt("csq={0}", csq_value));
-    // }
     
-    var url = url_base + get_params.join('&');
+    var url1 = url_base1 + get_params.join('&');
+    var url2 = url_base2 + get_params.join('&');
+
 
     try {
-        const response = await axios.get(url);
-        var data = response.data ; 
+        const response1 = await axios.get(url1);
+        data.push(response1.data) ; 
+        const response2 = await axios.get(url2);
+        data.push(response2.data) ; 
+
         miami_filter_view.set_variants(data[0].variant_bins , data[0].unbinned_variants, data[0].weakest_pval , data[1].variant_bins , data[1].unbinned_variants , data[1].weakest_pval );
 
     } catch (error) {
@@ -1300,7 +1301,7 @@ function reset_for_miami_plot() {
     <div class="shadow-sm border rounded mt-3 mb-3">
       <div class="container-fluid mt-2 ml-1 mr-2">
         <!-- Left: Filter Button and Filter Options -->
-        <div class="d-flex flex-grow-0 flex-shrink-0" style="width:75%; " @mouseleave="showExpanded = false"
+        <div class="d-flex" @mouseleave="showExpanded = false"
         >
           <button 
             class="btn btn-primary" 
@@ -1375,7 +1376,7 @@ function reset_for_miami_plot() {
           </transition>
         </div>
 
-        <div class="d-flex flex-grow-0 flex-shrink-0" style="width:25%">
+        <div class="d-flex">
           <button 
             type="button" 
             class="btn btn-light border bg-body rounded"
@@ -1423,12 +1424,14 @@ function reset_for_miami_plot() {
 
 .container-fluid {
     display: flex;
-    width: 100%;
+    justify-content:space-between;
+    width: 100%; 
     max-height:40px;
 }
 
 .expanded-content {
     display: flex;
+    justify-content:left;
     align-items: center;
 }
 

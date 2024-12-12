@@ -107,7 +107,6 @@
         errorMessage.value = '';
         try {
           const response = await axios.get(`${api}/phenotypes/tophits`)
-          console.log(response);
           phenotypes.value = response.data.map(item => ({
             ...item,
             category: item.category ? item.category.replace(/_/g, ' ') : '',
