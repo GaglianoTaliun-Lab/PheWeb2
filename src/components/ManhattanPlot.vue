@@ -466,6 +466,7 @@ function create_manhattan_plot(variant_bins, unbinned_variants, variants = "filt
             .style('fill', function (d) {
                 return color_by_chrom_dim(d.chrom);
             })
+            .style('cursor', 'pointer') // Add this line
             .on('mouseover', function (d) {
                 // Show the tooltip on hover
                 if (!tooltip_showing.value) {
@@ -584,6 +585,7 @@ var manhattan_filter_view = {
         point_selection.exit().remove();
         point_selection.enter()
             .attr('class', 'variant_point')
+            .style('cursor', 'pointer') // Add this line
             .attr('xlink:href', get_link_to_LZ)
             .append('circle')
             .attr('id', function (d) {
@@ -599,6 +601,7 @@ var manhattan_filter_view = {
             .style('fill', function (d) {
                 return color_by_chrom(d.chrom);
             })
+            .style('cursor', 'pointer') // Add this line
             .on('mouseover', function (d) {
                 // Show the tooltip on hover
                 if (!tooltip_showing.value) {

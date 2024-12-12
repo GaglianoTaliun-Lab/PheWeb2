@@ -687,6 +687,7 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
                 .enter()
                 .append('a')
                 .attr('class', 'variant_point') //.attr('xlink:href', get_link_to_LZ_data2)
+                .style('cursor', 'pointer') // Add this line
                 .append('circle')
                 .attr('id', function (d) {
                     return utils.fmt('variant-point-{0}-{1}-{2}-{3}', d.chrom, d.pos, d.ref, d.alt);
@@ -701,6 +702,7 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
                 .style('fill', function (d) {
                     return color_by_chrom_dim(d.chrom);
                 })
+                .style('cursor', 'pointer') // Add this line to circles as well
                 .on('mouseover', function (d) {
                     // Show the tooltip on hover
                     if (!tooltip_showing.value) {
@@ -733,6 +735,7 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
                 .enter()
                 .append('a')
                 .attr('class', 'variant_point')//.attr('xlink:href', get_link_to_LZ_data1)
+                .style('cursor', 'pointer') // Add this line
                 .append('circle')
                 .attr('id', function (d) {
                     return utils.fmt('variant-point-{0}-{1}-{2}-{3}', d.chrom, d.pos, d.ref, d.alt);
@@ -747,6 +750,7 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
                 .style('fill', function (d) {
                     return color_by_chrom_dim(d.chrom);
                 })
+                .style('cursor', 'pointer') // Add this line to circles as well
                 .on('mouseover', function (d) {
                     // Show the tooltip on hover
                     if (!tooltip_showing.value) {
