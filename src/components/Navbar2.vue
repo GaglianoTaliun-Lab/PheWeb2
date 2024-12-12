@@ -71,7 +71,7 @@ function toRandom() {
     window.location.href = `${window.location.origin}/variant/${hit['chrom']}-${hit['pos']}-${hit['ref']}-${hit['alt']}`;
   } else {
     var offset = Number("50E3")
-    window.location.href = `${window.location.origin}/phenotypes/${hit['phenocode']}/${hit['chrom']}:${hit['pos']-offset}-${hit['pos']+offset}`;
+    window.location.href = `${window.location.origin}/phenotypes/${hit['phenocode']}/region/${hit['chrom']}:${hit['pos']-offset}-${hit['pos']+offset}`;
   }
 
 }
