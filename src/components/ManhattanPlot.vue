@@ -779,98 +779,98 @@ function reset_for_manhattan_plot() {
 
 <template>
     <div class="shadow-sm border rounded mt-3 mb-3">
-      <div class="container-fluid mt-2 ml-1 mr-2">
-        <!-- Left: Filter Button and Filter Options -->
-        <div class="d-flex flex-grow-0 flex-shrink-0" style="width:75%; " @mouseleave="showExpanded = false"
-        >
-          <button 
-            class="btn btn-primary" 
-            @click="toggleExpanded" 
-            @mouseover="showExpanded = true" 
-            ref="hiddenToggle"
-          > 
-            Filter Variants 
-          </button>
+        <div class="container-fluid mt-2 ml-1 mr-2 d-flex justify-content-between">
+  <!-- Left: Filter Button and Filter Options -->
+  <div class="d-flex flex-grow-0 flex-shrink-0" style="width:75%;" @mouseleave="showExpanded = false">
+    <button 
+      class="btn btn-primary" 
+      @click="toggleExpanded" 
+      @mouseover="showExpanded = true" 
+      ref="hiddenToggle"
+    > 
+      Filter Variants 
+    </button>
   
-          <transition name="slide-fade">
-            <div v-if="showExpanded || showExpandedClick" class="expanded-content rounded" style="">
-              <label class="mr-1 ml-2" ><b>Minor Allele Freq Range:</b></label>
+    <transition name="slide-fade">
+      <div v-if="showExpanded || showExpandedClick" class="expanded-content rounded">
+        <label class="mr-1 ml-2"><b>Minor Allele Freq Range:</b></label>
   
-              <input
-                type="number"
-                v-model="minFreq"
-                class="form-control form-control-sm mr-1"
-                style="width:70px; border: 1px solid black; color: black; font-size: 16px;"
-                :min="0"
-                :max="0.5"
-                :step="0.05"
-              />
-              <span class="mr-1">-</span>
-              <input
-                type="number"
-                v-model="maxFreq"
-                class="form-control form-control-sm mr-3"
-                style="width:70px; border: 1px solid black; color: black; font-size: 16px;"
-                :min="0"
-                :max="0.5"
-                :step="0.05"
-              />
+        <input
+          type="number"
+          v-model="minFreq"
+          class="form-control form-control-sm mr-1"
+          style="width:70px; border: 1px solid black; color: black; font-size: 16px;"
+          :min="0"
+          :max="0.5"
+          :step="0.05"
+        />
+        <span class="mr-1">-</span>
+        <input
+          type="number"
+          v-model="maxFreq"
+          class="form-control form-control-sm mr-3"
+          style="width:70px; border: 1px solid black; color: black; font-size: 16px;"
+          :min="0"
+          :max="0.5"
+          :step="0.05"
+        />
   
-              <div class="btn-group mr-2">
-                <button
-                  type="button"
-                  class="btn btn-primary"
-                  :class="{ active: selectedType === 'SNP' }"
-                  @click="selectType('SNP')"
-                >
-                  SNP
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-primary"
-                  :class="{ active: selectedType === 'Indel' }"
-                  @click="selectType('Indel')"
-                >
-                  Indel
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-primary"
-                  :class="{ active: selectedType === 'Both' }"
-                  @click="selectType('Both')"
-                >
-                  Both
-                </button>
-              </div>
-              <button class="btn btn-primary blue-button mr-2" @click="applyFilter">
-                Filter
-              </button>
-              <button class="btn btn-secondary" @click="cancelFilter()">
-                Cancel
-              </button>
-            </div>
-          </transition>
-        </div>
-
-        <div class="d-flex flex-grow-0 flex-shrink-0" style="width:25%">
-          <button 
-            type="button" 
-            class="btn btn-light border bg-body rounded"
-            style="width:150px" 
-            @click="downloadPNG"
+        <div class="btn-group mr-2">
+          <button
+            type="button"
+            class="btn btn-primary"
+            :class="{ active: selectedType === 'SNP' }"
+            @click="selectType('SNP')"
           >
-            Download PNG
+            SNP
           </button>
-          <button 
-            type="button" 
-            class="btn btn-light border ml-2 bg-body rounded"
-            style="width:150px" 
-            @click="downloadSVG"
+          <button
+            type="button"
+            class="btn btn-primary"
+            :class="{ active: selectedType === 'Indel' }"
+            @click="selectType('Indel')"
           >
-            Download SVG
+            Indel
+          </button>
+          <button
+            type="button"
+            class="btn btn-primary"
+            :class="{ active: selectedType === 'Both' }"
+            @click="selectType('Both')"
+          >
+            Both
           </button>
         </div>
+        <button class="btn btn-primary blue-button mr-2" @click="applyFilter">
+          Filter
+        </button>
+        <button class="btn btn-secondary" @click="cancelFilter()">
+          Cancel
+        </button>
       </div>
+    </transition>
+  </div>
+
+  <!-- Right: Download Buttons -->
+  <div class="button-container">
+    <button 
+      type="button" 
+      class="btn btn-light border bg-body rounded"
+      style="width:150px" 
+      @click="downloadPNG"
+    >
+      Download PNG
+    </button>
+    <button 
+      type="button" 
+      class="btn btn-light border ml-2 bg-body rounded"
+      style="width:150px" 
+      @click="downloadSVG"
+    >
+      Download SVG
+    </button>
+  </div>
+</div>
   
       <div class="manhattan" ref="manhattanPlotContainer"></div>
     </div>
@@ -927,4 +927,20 @@ function reset_for_manhattan_plot() {
     transform: translateX(-10px);
     opacity: 0;
 }
+
+.button-container {
+  margin-left: auto; /* Pushes the container to the right */
+  display: flex;
+  gap: 10px; /* Adds spacing between the buttons */
+}
+
+.container-fluid {
+  align-items: center; /* Vertically center content */
+}
+
+.expanded-content {
+  display: flex;
+  align-items: center;
+}
+
 </style>
