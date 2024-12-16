@@ -104,7 +104,7 @@ onMounted(async () => {
 
     console.log(plottingData)
 
-    const genpos_response = await axios.get(`${api}/gene/gene_position/${geneName}`)
+    const genpos_response = await axios.get(`${api}/gene/${geneName}/gene_position`)
 
     geneChrom.value = genpos_response.data[0]
     geneStart.value = genpos_response.data[1]

@@ -103,7 +103,9 @@ onMounted(() => {
         .add("recomb", ["RecombLZ", { url: remoteBase + "annotation/recomb/results/", params: {build:'GRCh38'} }]);
 
     phenocode_list.forEach( function (phenocode, i){
-        data_sources_new.add(utils.fmt("assoc_study{0}",i+1), ["AssociationPheWeb", {url: api + "/phenotypes/"+ phenocode + "/region/", source: i+1}])
+        var phenocode_list = phenocode.split(".")
+        var stratification = '.' + phenocode_list.slice(1).join('.')
+        data_sources_new.add(utils.fmt("assoc_study{0}",i+1), ["AssociationPheWeb", {url: api + "/phenotypes/"+ phenocode_list[0] +"/"+ stratification + "/region/", source: i+1}])
     });
 
     var all_panels = []

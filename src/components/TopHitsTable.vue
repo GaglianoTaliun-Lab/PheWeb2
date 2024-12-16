@@ -16,14 +16,15 @@
         <router-link :to="`/phenotypes/${item.phenocode}`">{{ item.phenostring }}</router-link>
       </template>
       <template v-slot:item.variantid="{ item }">
-        <router-link :to="`/variant/${item.variantid}`" style="white-space: nowrap;">{{ item.variantName
-          }}</router-link>
+        <router-link :to="`/variant/${item.variantid}`" style="white-space: pre-line;">{{ item.variantName }}</router-link>
       </template>
 
       <template v-slot:item.nearest_genes="{ item }">
         <span v-for="(gene, index) in item.nearest_genes" :key="index">
-          <router-link :to="`/gene/${gene.trim()}?include=${item.chrom}-${item.pos}`"
-            style="white-space: nowrap; font-style: italic;">
+          <router-link 
+            :to="`/gene/${gene.trim()}/${item.phenocode}`" 
+            style="white-space: nowrap; font-style: italic;"
+          >
             {{ gene.trim() }}
           </router-link> <span v-if="index < item.nearest_genes.length - 1">, </span>
         </span>
@@ -75,6 +76,7 @@
       <template v-slot:item.rsids="{ item }">
         <a :href="`https://www.ncbi.nlm.nih.gov/snp/${item.rsids}`" target="_blank">{{ item.rsids }}</a>
       </template>
+      
     </v-data-table>
   </v-card>
 
@@ -90,6 +92,9 @@
         { title: 'Category', key: 'category' },
         // { title: 'Phenotype', key: 'phenostring' },
         { title: 'Phenotype', key: 'phenocode' },
+        { title: 'Sex', key: 'sex' },
+        { title: 'Ancestry', key: 'ancestry' },
+        //{ title: 'Interaction', key : 'interaction'},
         { title: 'Top Variant', key: 'variantid' },
         { title: 'P-value', key: 'pval' },
         { title: 'MAF', key: 'maf'},
@@ -107,14 +112,17 @@
         errorMessage.value = '';
         try {
           const response = await axios.get(`${api}/phenotypes/tophits`)
-          console.log(response);
+
+          console.log(response.data)
+
           phenotypes.value = response.data.map(item => ({
             ...item,
             category: item.category ? item.category.replace(/_/g, ' ') : '',
             variantid: `${item.chrom}-${item.pos}-${item.ref}-${item.alt}`,
             variantName: `${item.chrom}: ${item.pos} ${item.ref} / ${item.alt} (${item.rsids})`,
-            // ancestry: `${item.stratification.ancestry}`,
-            // sex: `${item.stratification.sex}`,
+            ancestry: `${item.stratification.ancestry}`,
+            sex: `${item.stratification.sex}`,
+            //interaction: `${item.interaction}`,
             maf: `${Number(item.af).toFixed(4)}`,
             num_controls: `${item.num_controls}`,
             num_num_cases: `${item.num_cases}`,

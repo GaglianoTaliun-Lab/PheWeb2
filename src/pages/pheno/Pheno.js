@@ -39,7 +39,16 @@ export function stratificationToKey(phenocode, stratification){
 }
 
 export function keyToLabel(phenoLabel){
-    return phenoLabel.split(".").slice(1).join(', ')
+    var label = phenoLabel.split(".").slice(1)
+    if (label.length < 1){
+        return []
+    }
+    console.log(label)
+    if (label[0].includes("inter-")){
+        label[0] = "Interaction: " + label[0].split("-")[1]
+    }
+
+    return label.join(', ')
 }
 
 function capitalizeFirstLetter(str) {

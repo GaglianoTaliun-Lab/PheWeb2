@@ -28,6 +28,8 @@
 
       stratification_list.value = JSON.parse(JSON.stringify(response.data));
 
+      console.log(stratification_list.value)
+
       // we need to map here to get rid of the proxy
       variantList.value = await fetchPhewasPlottingData(stratification_list.value.map(stratification => stratification))
 
@@ -47,13 +49,18 @@
       try {
           const response = await axios.get(`${api}/variant/${variantCode}/${stratification}`)
           result = response.data
-          result.stratification = "." + stratification;
+          
+          result.stratification = "." + stratification.toLowerCase();
           temp_variant_list.push(result)
+
+          console.log(result)
       } catch (error) {
         console.log(`Error fetching plotting data with stratification ${stratification}:`, error);
       }
     }
     variant_list.value = temp_variant_list;
+    console.log(`VARIANT LIST : ${variant_list.value}`)
+
     return(variant_list.value)
   }
   
@@ -65,7 +72,6 @@
     <v-main>
       <div class="ml-4 mt-2">
         <h1 class="mb-0">{{variantCode}}</h1>
-        <!-- why does variant_list here work but not variantList ???-->
         <div v-if="variant">
           <p class="mb-0"> Nearest genes: {{variant.nearest_genes}}</p>
           <p class="mb-0"> {{maf_text}} </p>

@@ -30,15 +30,6 @@ const minFreq = ref(0);
 const maxFreq = ref(0.5);
 const selectedType = ref('Both');
 const hiddenToggle = ref(null);
-const tooltip_showing = ref(false)
-
-// Close tooltip function
-const hideTooltip = () => {
-    if (tooltip_showing.value) {
-        point_tooltip.value.hide();
-        tooltip_showing.value = false;
-    }
-};
 
 const get_chrom_offsets = ref(null)
 const point_tooltip = ref(null)
@@ -67,14 +58,7 @@ const selectType = (type) => {
 
 onMounted(() => {
 
-    info.value = props.data;
-    document.addEventListener('click', function(event) {
-        if (tooltip_showing.value && !d3.select(event.target).classed('variant_point')) {
-            // Hide the tooltip if clicking outside a variant point
-            point_tooltip.value.hide();
-            tooltip_showing.value = false;
-        }
-    });
+    info.value = props.data
 
     createManhattan('all')
 
@@ -363,11 +347,11 @@ function create_manhattan_plot(variant_bins, unbinned_variants, variants = "filt
         if (variants === "filtered"){
             var color_by_chrom_dim = d3.scaleOrdinal()
             .domain(get_chrom_offsets.value().chroms)
-            .range(['rgb(221,221,237)', 'rgb(191,191,208)']);
+            .range(['rgb(220, 198, 224)', 'rgb(191, 165, 214)']);
         } else {
             var color_by_chrom_dim = d3.scaleOrdinal()
             .domain(get_chrom_offsets.value().chroms)
-            .range(['rgb(120,120,186)', 'rgb(0,0,66)']);
+            .range(['rgb(167, 133, 178)', 'rgb(86, 56, 101)']);
         }
 
         //colors to maybe sample from later:
@@ -405,12 +389,7 @@ function create_manhattan_plot(variant_bins, unbinned_variants, variants = "filt
         // Points & labels
         var tooltip_template = _.template(
             utils.tooltip_underscoretemplate +
-            "<% if(_.has(d, 'num_significant_in_peak') && d.num_significant_in_peak>1) { %>#significant variants in peak: <%= d.num_significant_in_peak %><br><% } %>" +
-    
-            // add link
-            "<br>Region Plot: <a href='<%= `${window.location}/region/${d.chrom}:${Math.max(0, d.pos - 200 * 1000)}-${d.pos + 200 * 1000}` %>' target='_blank'>View</a>"
-        );
-
+                "<% if(_.has(d, 'num_significant_in_peak') && d.num_significant_in_peak>1) { %>#significant variants in peak: <%= d.num_significant_in_peak %><br><% } %>");
         point_tooltip.value = d3Tip()
             .attr('class', 'd3-tip')
             .html(function(d) {
@@ -446,55 +425,34 @@ function create_manhattan_plot(variant_bins, unbinned_variants, variants = "filt
                 }
             });
 
-    function pp2() {
-        d3.select('#variant_points')
-            .selectAll('circle.variant_point') // Directly select and append <circle> elements
+        function pp2() {
+            d3.select('#variant_points')
+            .selectAll('a.variant_point')
             .data(unbinned_variants)
             .enter()
-            .append('circle') // Directly append <circle>, no <a> wrapper
+            .append('a')
             .attr('class', 'variant_point')
-            .attr('id', function (d) {
+            .attr('xlink:href', get_link_to_LZ)
+            .append('circle')
+            .attr('id', function(d) {
                 return utils.fmt('variant-point-{0}-{1}-{2}-{3}', d.chrom, d.pos, d.ref, d.alt);
             })
-            .attr('cx', function (d) {
+            .attr('cx', function(d) {
                 return x_scale.value(get_genomic_position(d));
             })
-            .attr('cy', function (d) {
+            .attr('cy', function(d) {
                 return y_scale_data.value(-Math.log10(d.pval));
             })
             .attr('r', 2.3)
-            .style('fill', function (d) {
+            .style('fill', function(d) {
                 return color_by_chrom_dim(d.chrom);
             })
-            .style('cursor', 'pointer') // Add this line
-            .on('mouseover', function (d) {
-                // Show the tooltip on hover
-                if (!tooltip_showing.value) {
-                    point_tooltip.value.show(d, this);
-                }
+            .on('mouseover', function(d) {
+                //Note: once a tooltip has been explicitly placed once, it must be explicitly placed forever after.
+                point_tooltip.value.show(d, this);
             })
-            .on('mouseout', function (d) {
-                // Only hide the tooltip on mouseout if it wasn't clicked to stay open
-                if (!tooltip_showing.value) {
-                    point_tooltip.value.hide(d, this);
-                }
-            })
-            // .on('click', function (d) {
-            //     console.log('Clicked on:', d); // Handle the click event without navigation
-            // });
-            .on('click', function (d) {
-                d3.event.stopPropagation();
-                if (tooltip_showing.value) {
-                    // Hide the tooltip if it’s already showing and was clicked again
-                    point_tooltip.value.hide(d, this);
-                    tooltip_showing.value = false;
-                } else {
-                    // Show the tooltip and make it stay open
-                    point_tooltip.value.show(d, this);
-                    tooltip_showing.value = true;
-                }
-            });
-    }
+            .on('mouseout', point_tooltip.value.hide);
+        }
         pp2();
 
         function pp3() { // drawing the ~60k binned variant circles takes ~500ms.  The (far fewer) unbinned variants take much less time.
@@ -553,147 +511,138 @@ function create_manhattan_plot(variant_bins, unbinned_variants, variants = "filt
 
 var manhattan_filter_view = {
 
-    // TODO: these javascript selects need to be changed I think, getting error about y_scale_data not defined.
-    clear: function () {
-        d3.select('#filtered_variant_points').selectAll('a.variant_point').data([]).exit().remove();
-        d3.select('#filtered_variant_hover_rings').selectAll('a.variant_hover_ring').data([]).exit().remove();
-        d3.select('#filtered_variant_bins').selectAll('g.bin').data([]).exit().remove();
-        d3.select('#unchecked_variants_mask').attr('y', 0).attr('height', 0);
+// TODO: these javascript selects need to be changed I think, getting error about y_scale_data not defined.
+clear: function() {
+    d3.select('#filtered_variant_points').selectAll('a.variant_point').data([]).exit().remove();
+    d3.select('#filtered_variant_hover_rings').selectAll('a.variant_hover_ring').data([]).exit().remove();
+    d3.select('#filtered_variant_bins').selectAll('g.bin').data([]).exit().remove();
+    d3.select('#unchecked_variants_mask').attr('y', 0).attr('height', 0);
 
-    },
-    set_variants: function (variant_bins, unbinned_variants, weakest_pval) {
-        d3.select('#unchecked_variants_mask')
-            .attr('transform', `translate(${-point_radius},0)`) // move left by the radius of the variant points (3px)
-            .attr('width', plot_width.value + point_radius * 2) // widen by 2x the radius of the variant points
-            .attr('y', y_scale_data.value(-Math.log10(weakest_pval)) + point_radius)
-            .attr('height', Math.abs(y_scale_data.value(-Math.log10(weakest_pval)) - y_scale_data.value(0)))
-            .raise();
+},
+set_variants: function(variant_bins, unbinned_variants, weakest_pval) {
+    d3.select('#unchecked_variants_mask')
+        .attr('transform', `translate(${-point_radius},0)`) // move left by the radius of the variant points (3px)
+        .attr('width', plot_width.value+point_radius*2) // widen by 2x the radius of the variant points
+        .attr('y', y_scale_data.value(-Math.log10(weakest_pval))+point_radius)
+        .attr('height', Math.abs(y_scale_data.value(-Math.log10(weakest_pval))-y_scale_data.value(0)))
+        .raise();
 
-        // Order from weakest to strongest pvalue, so that the strongest variant will be on top (z-order) and easily hoverable
-        // In the DOM, later siblings are displayed over top of (and occluding) earlier siblings.
-        unbinned_variants = _.sortBy(unbinned_variants, function (d) { return -d.pval });
+    // Order from weakest to strongest pvalue, so that the strongest variant will be on top (z-order) and easily hoverable
+    // In the DOM, later siblings are displayed over top of (and occluding) earlier siblings.
+    unbinned_variants = _.sortBy(unbinned_variants, function(d){return -d.pval});
 
-        var gwas_plot = d3.select("#gwas_plot");
-        var color_by_chrom = d3.scaleOrdinal()
-            .domain(get_chrom_offsets.value().chroms)
-            .range(['rgb(120,120,186)', 'rgb(0,0,66)']);
+    var gwas_plot = d3.select("#gwas_plot");
+    var color_by_chrom = d3.scaleOrdinal()
+        .domain(get_chrom_offsets.value().chroms)
+        .range(['rgb(167, 133, 178)', 'rgb(86, 56, 101)']);
 
-        var point_selection = d3.select('#filtered_variant_points')
-            .selectAll('a.variant_point')
-            .data(unbinned_variants);
+    var point_selection = d3.select('#filtered_variant_points')
+        .selectAll('a.variant_point')
+        .data(unbinned_variants);
+        
+    point_selection.exit().remove();
+    point_selection.enter()
+        .append('a')
+        .attr('class', 'variant_point')
+        .attr('xlink:href', get_link_to_LZ)
+        .append('circle')
+        .attr('id', function(d) {
+            return utils.fmt('filtered-variant-point-{0}-{1}-{2}-{3}', d.chrom, d.pos, d.ref, d.alt);
+        })
+        .attr('cx', function(d) {
+            return x_scale.value(get_genomic_position(d));
+        })
+        .attr('cy', function(d) {
+            return y_scale_data.value(-Math.log10(d.pval));
+        })
+        .attr('r', point_radius)
+        .style('fill', function(d) {
+            return color_by_chrom(d.chrom);
+        })
+        .on('mouseover', function(d) {
+            //Note: once a tooltip has been explicitly placed once, it must be explicitly placed forever after.
+            point_tooltip.value.show(d, this);
+        })
+        .on('mouseout', point_tooltip.value.hide);
 
-        point_selection.exit().remove();
-        point_selection.enter()
-            .append('a')
-            .attr('class', 'variant_point')
-            .style('cursor', 'pointer') // Add this line
-            .attr('xlink:href', get_link_to_LZ)
-            .append('circle')
-            .attr('id', function (d) {
-                return utils.fmt('filtered-variant-point-{0}-{1}-{2}-{3}', d.chrom, d.pos, d.ref, d.alt);
-            })
-            .attr('cx', function (d) {
-                return x_scale.value(get_genomic_position(d));
-            })
-            .attr('cy', function (d) {
-                return y_scale_data.value(-Math.log10(d.pval));
-            })
-            .attr('r', point_radius)
-            .style('fill', function (d) {
-                return color_by_chrom(d.chrom);
-            })
-            .style('cursor', 'pointer') // Add this line
-            .on('mouseover', function (d) {
-                // Show the tooltip on hover
-                if (!tooltip_showing.value) {
-                    point_tooltip.value.show(d, this);
-                }
-            })
-            .on('mouseout', function (d) {
-                // Only hide the tooltip on mouseout if it wasn't clicked to stay open
-                if (!tooltip_showing.value) {
-                    point_tooltip.value.hide(d, this);
-                }
-            })
+    var hover_ring_selection = d3.select('#filtered_variant_hover_rings')
+        .selectAll('a.variant_hover_ring')
+        .data(unbinned_variants);
 
-        var hover_ring_selection = d3.select('#filtered_variant_hover_rings')
-            .selectAll('a.variant_hover_ring')
-            .data(unbinned_variants);
+    hover_ring_selection.exit().remove();
+    hover_ring_selection.enter()
+        .append('a')
+        .attr('class', 'variant_hover_ring')
+        .attr('xlink:href', get_link_to_LZ)
+        .append('circle')
+        .attr('cx', function(d) {
+            return x_scale.value(get_genomic_position(d));
+        })
+        .attr('cy', function(d) {
+            return y_scale_data.value(-Math.log10(d.pval));
+        })
+        .attr('r', 7)
+        .style('opacity', 0)
+        .style('stroke-width', 1) /* why? */
+        .on('mouseover', function(d) {
+            //Note: once a tooltip has been explicitly placed once, it must be explicitly placed forever after.
+            var target_node = document.getElementById(utils.fmt('filtered-variant-point-{0}-{1}-{2}-{3}', d.chrom, d.pos, d.ref, d.alt));
+            point_tooltip.value.show(d, target_node);
+        })
+        .on('mouseout', point_tooltip.value.hide);
 
-        hover_ring_selection.exit().remove();
-        hover_ring_selection.enter()
-            .append('a')
-            .attr('class', 'variant_hover_ring')
-            .attr('xlink:href', get_link_to_LZ)
-            .append('circle')
-            .attr('cx', function (d) {
-                return x_scale.value(get_genomic_position(d));
-            })
-            .attr('cy', function (d) {
-                return y_scale_data.value(-Math.log10(d.pval));
-            })
-            .attr('r', 7)
-            .style('opacity', 0)
-            .style('stroke-width', 1) /* why? */
-            .on('mouseover', function (d) {
-                //Note: once a tooltip has been explicitly placed once, it must be explicitly placed forever after.
-                var target_node = document.getElementById(utils.fmt('filtered-variant-point-{0}-{1}-{2}-{3}', d.chrom, d.pos, d.ref, d.alt));
-                point_tooltip.value.show(d, target_node);
-            })
-            .on('mouseout', point_tooltip.value.hide);
+    var bin_selection = d3.select('#filtered_variant_bins')
+        .selectAll('g.bin')
+        .data(variant_bins);
+    bin_selection.exit().remove();
+    var bins = bin_selection.enter()
+        .append('g')
+        .attr('class', 'bin')
+        .attr('data-index', function(d, i) { return i; }) // make parent index available from DOM
+        .each(function(d) { //todo: do this in a forEach
+            d.x = x_scale.value(get_genomic_position(d));
+            d.color = color_by_chrom(d.chrom);
+        });
+    bins.selectAll('circle.binned_variant_point')
+        .data(_.property('qvals'))
+        .enter()
+        .append('circle')
+        .attr('class', 'binned_variant_point')
+        .attr('cx', function(d, i) {
+            var parent_i = +this.parentNode.getAttribute('data-index');
+            return variant_bins[parent_i].x;
+        })
+        .attr('cy', function(qval) {
+            return y_scale_data.value(qval);
+        })
+        .attr('r', point_radius)
+        .style('fill', function(d, i) {
+            var parent_i = +this.parentNode.getAttribute('data-index');
+            return variant_bins[parent_i].color;
+        });
+    bins.selectAll('line.binned_variant_line')
+        .data(_.property('qval_extents'))
+        .enter()
+        .append('line')
+        .attr('class', 'binned_variant_line')
+        .attr('x1', function(d, i) {
+            var parent_i = +this.parentNode.getAttribute('data-index');
+            return variant_bins[parent_i].x;
+        })
+        .attr('x2', function(d, i) {
+            var parent_i = +this.parentNode.getAttribute('data-index');
+            return variant_bins[parent_i].x;
+        })
+        .attr('y1', function(d) { return y_scale_data.value(d[0]); })
+        .attr('y2', function(d) { return y_scale_data.value(d[1]); })
+        .style('stroke', function(d, i) {
+            var parent_i = +this.parentNode.getAttribute('data-index');
+            return variant_bins[parent_i].color;
+        })
+        .style('stroke-width', 4.6)
+        .style('stroke-linecap', 'round');
 
-        var bin_selection = d3.select('#filtered_variant_bins')
-            .selectAll('g.bin')
-            .data(variant_bins);
-        bin_selection.exit().remove();
-        var bins = bin_selection.enter()
-            .append('g')
-            .attr('class', 'bin')
-            .attr('data-index', function (d, i) { return i; }) // make parent index available from DOM
-            .each(function (d) { //todo: do this in a forEach
-                d.x = x_scale.value(get_genomic_position(d));
-                d.color = color_by_chrom(d.chrom);
-            });
-        bins.selectAll('circle.binned_variant_point')
-            .data(_.property('qvals'))
-            .enter()
-            .append('circle')
-            .attr('class', 'binned_variant_point')
-            .attr('cx', function (d, i) {
-                var parent_i = +this.parentNode.getAttribute('data-index');
-                return variant_bins[parent_i].x;
-            })
-            .attr('cy', function (qval) {
-                return y_scale_data.value(qval);
-            })
-            .attr('r', point_radius)
-            .style('fill', function (d, i) {
-                var parent_i = +this.parentNode.getAttribute('data-index');
-                return variant_bins[parent_i].color;
-            });
-        bins.selectAll('line.binned_variant_line')
-            .data(_.property('qval_extents'))
-            .enter()
-            .append('line')
-            .attr('class', 'binned_variant_line')
-            .attr('x1', function (d, i) {
-                var parent_i = +this.parentNode.getAttribute('data-index');
-                return variant_bins[parent_i].x;
-            })
-            .attr('x2', function (d, i) {
-                var parent_i = +this.parentNode.getAttribute('data-index');
-                return variant_bins[parent_i].x;
-            })
-            .attr('y1', function (d) { return y_scale_data.value(d[0]); })
-            .attr('y2', function (d) { return y_scale_data.value(d[1]); })
-            .style('stroke', function (d, i) {
-                var parent_i = +this.parentNode.getAttribute('data-index');
-                return variant_bins[parent_i].color;
-            })
-            .style('stroke-width', 4.6)
-            .style('stroke-linecap', 'round');
-
-    }
+}
 };
 
 function get_link_to_LZ(variant) {
@@ -708,38 +657,37 @@ function get_link_to_LZ(variant) {
 // watch([minFreq, maxFreq, selectedType], ([newMinFreq, newMaxFreq, newSelectedType]) => {
 //     emit('updateFilteringParams', { min: newMinFreq, max: newMaxFreq, type : newSelectedType });
 // })
+
 async function refilter() {
 
-var stratifications = "." + pheno.value.split('.').splice(1).join(".")
+    var stratifications = "." + pheno.value.split('.').splice(1).join(".")
 
-//remove any past filters
-manhattan_filter_view.clear();
+    //remove any past filters
+    manhattan_filter_view.clear();
 
-// get variants which pass the filters
-var url_base = `${api}/phenotypes/${phenocode}/${stratifications}/filter?`
-var get_params = [];
-get_params.push(utils.fmt("min_maf={0}", minFreq.value ));
-get_params.push(utils.fmt("max_maf={0}", maxFreq.value ));
-var snp_indel_value = selectedType.value;
-if (snp_indel_value=='SNP' || snp_indel_value=='Indel') {
-    get_params.push(utils.fmt("indel={0}", (snp_indel_value=='Indel')?'true':'false'));
-}
+    // get variants which pass the filters
+    var url_base = `${api}/phenotypes/${phenocode}/${stratifications}/filter?`
+    var get_params = [];
+    get_params.push(utils.fmt("min_maf={0}", minFreq.value ));
+    get_params.push(utils.fmt("max_maf={0}", maxFreq.value ));
+    var snp_indel_value = selectedType.value;
+    if (snp_indel_value=='SNP' || snp_indel_value=='Indel') {
+        get_params.push(utils.fmt("indel={0}", (snp_indel_value=='Indel')?'true':'false'));
+    }
 
+    var url = url_base + get_params.join('&');
 
+    try {
+        const response = await axios.get(url);
+        var data = response.data ;
 
-var url = url_base + get_params.join('&');
+        console.log("data", data)
+        manhattan_filter_view.set_variants(data.variant_bins , data.unbinned_variants, data.weakest_pval );
+        
+        emit('updateFilteringParams', { min: minFreq.value, max: maxFreq.value, type : selectedType.value });
 
-try {
-    const response = await axios.get(url);
-    var data = response.data ;
-
-    console.log("data", data)
-    manhattan_filter_view.set_variants(data.variant_bins , data.unbinned_variants, data.weakest_pval );
-    
-    emit('updateFilteringParams', { min: minFreq.value, max: maxFreq.value, type : selectedType.value });
-
-} catch (error) {
-    console.log(`Error fetching plotting with url ${url}:`, error);
+    } catch (error) {
+        console.log(`Error fetching plotting with url ${url}:`, error);
 }
 }
 
@@ -790,29 +738,29 @@ function reset_for_manhattan_plot() {
             Filter Variants 
           </button>
   
-    <transition name="slide-fade">
-      <div v-if="showExpanded || showExpandedClick" class="expanded-content rounded">
-        <label class="mr-1 ml-2"><b>Minor Allele Freq Range:</b></label>
+          <transition name="slide-fade">
+            <div v-if="showExpanded || showExpandedClick" class="expanded-content rounded" style="">
+              <label class="mr-1 ml-2" ><b>Minor Allele Freq Range:</b></label>
   
-        <input
-          type="number"
-          v-model="minFreq"
-          class="form-control form-control-sm mr-1"
-          style="width:70px; border: 1px solid black; color: black; font-size: 16px;"
-          :min="0"
-          :max="0.5"
-          :step="0.05"
-        />
-        <span class="mr-1">-</span>
-        <input
-          type="number"
-          v-model="maxFreq"
-          class="form-control form-control-sm mr-3"
-          style="width:70px; border: 1px solid black; color: black; font-size: 16px;"
-          :min="0"
-          :max="0.5"
-          :step="0.05"
-        />
+              <input
+                type="number"
+                v-model="minFreq"
+                class="form-control form-control-sm mr-1"
+                style="width:70px; border: 1px solid black; color: black; font-size: 16px;"
+                :min="0"
+                :max="0.5"
+                :step="0.05"
+              />
+              <span class="mr-1">-</span>
+              <input
+                type="number"
+                v-model="maxFreq"
+                class="form-control form-control-sm mr-3"
+                style="width:70px; border: 1px solid black; color: black; font-size: 16px;"
+                :min="0"
+                :max="0.5"
+                :step="0.05"
+              />
   
               <div class="btn-group mr-2">
                 <button
@@ -850,63 +798,25 @@ function reset_for_manhattan_plot() {
           </transition>
         </div>
 
-        <div class="d-flex" style="">
+        <div class="d-flex">
           <button 
             type="button" 
             class="btn btn-light border bg-body rounded"
             style="width:150px" 
             @click="downloadPNG"
-
           >
-            SNP
+            Download PNG
           </button>
-          <button
-            type="button"
-            class="btn btn-primary"
-            :class="{ active: selectedType === 'Indel' }"
-            @click="selectType('Indel')"
+          <button 
+            type="button" 
+            class="btn btn-light border ml-2 bg-body rounded"
+            style="width:150px" 
+            @click="downloadSVG"
           >
-            Indel
-          </button>
-          <button
-            type="button"
-            class="btn btn-primary"
-            :class="{ active: selectedType === 'Both' }"
-            @click="selectType('Both')"
-          >
-            Both
+            Download SVG
           </button>
         </div>
-        <button class="btn btn-primary blue-button mr-2" @click="applyFilter">
-          Filter
-        </button>
-        <button class="btn btn-secondary" @click="cancelFilter()">
-          Cancel
-        </button>
       </div>
-    </transition>
-  </div>
-
-  <!-- Right: Download Buttons -->
-  <div class="button-container">
-    <button 
-      type="button" 
-      class="btn btn-light border bg-body rounded"
-      style="width:150px" 
-      @click="downloadPNG"
-    >
-      Download PNG
-    </button>
-    <button 
-      type="button" 
-      class="btn btn-light border ml-2 bg-body rounded"
-      style="width:150px" 
-      @click="downloadSVG"
-    >
-      Download SVG
-    </button>
-  </div>
-</div>
   
       <div class="manhattan" ref="manhattanPlotContainer"></div>
     </div>
@@ -965,20 +875,4 @@ function reset_for_manhattan_plot() {
     transform: translateX(-10px);
     opacity: 0;
 }
-
-.button-container {
-  margin-left: auto; /* Pushes the container to the right */
-  display: flex;
-  gap: 10px; /* Adds spacing between the buttons */
-}
-
-.container-fluid {
-  align-items: center; /* Vertically center content */
-}
-
-.expanded-content {
-  display: flex;
-  align-items: center;
-}
-
 </style>

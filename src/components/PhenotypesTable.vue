@@ -369,7 +369,6 @@
           variantName: item.rsids 
             ? `${item.chrom}: ${item.pos} ${item.ref} / ${item.alt}\n(${item.rsids})`
             : `${item.chrom}: ${item.pos} ${item.ref} / ${item.alt}`,
-          ancestry: `${item.stratification.ancestry}`,
           sex: `${item.stratification.sex}`,
           ancestry: `${item.stratification.ancestry}`,
           num_controls: `${item.num_controls}`,
@@ -512,8 +511,3 @@
     })
 
 </script>
-
-
-
-
-

@@ -21,10 +21,9 @@ const allPlottingData = ref({})
 
 onMounted(async () => {
     try {
-      const response = await axios.get(`${api}/phenotypes/phenotypes_list/` + phenocode);
+      const response = await axios.get(`${api}/phenotypes/${phenocode}/phenotypes_list`);
 
       info.value = response.data;
-      console.log("value: " , info.value)
       phenostring.value = info.value[0].phenostring
 
       //await getInitialRegionData(info.value.map(pheno => pheno.phenocode+"."+Object.values(pheno.stratification).join('.') ));
