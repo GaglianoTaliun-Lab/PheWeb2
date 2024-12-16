@@ -466,6 +466,7 @@ function create_manhattan_plot(variant_bins, unbinned_variants, variants = "filt
             .style('fill', function (d) {
                 return color_by_chrom_dim(d.chrom);
             })
+            .style('cursor', 'pointer') // Add this line
             .on('mouseover', function (d) {
                 // Show the tooltip on hover
                 if (!tooltip_showing.value) {
@@ -585,6 +586,7 @@ var manhattan_filter_view = {
         point_selection.enter()
             .append('a')
             .attr('class', 'variant_point')
+            .style('cursor', 'pointer') // Add this line
             .attr('xlink:href', get_link_to_LZ)
             .append('circle')
             .attr('id', function (d) {
@@ -600,6 +602,7 @@ var manhattan_filter_view = {
             .style('fill', function (d) {
                 return color_by_chrom(d.chrom);
             })
+            .style('cursor', 'pointer') // Add this line
             .on('mouseover', function (d) {
                 // Show the tooltip on hover
                 if (!tooltip_showing.value) {
@@ -787,29 +790,29 @@ function reset_for_manhattan_plot() {
             Filter Variants 
           </button>
   
-          <transition name="slide-fade">
-            <div v-if="showExpanded || showExpandedClick" class="expanded-content rounded" style="">
-              <label class="mr-1 ml-2" ><b>Minor Allele Freq Range:</b></label>
+    <transition name="slide-fade">
+      <div v-if="showExpanded || showExpandedClick" class="expanded-content rounded">
+        <label class="mr-1 ml-2"><b>Minor Allele Freq Range:</b></label>
   
-              <input
-                type="number"
-                v-model="minFreq"
-                class="form-control form-control-sm mr-1"
-                style="width:70px; border: 1px solid black; color: black; font-size: 16px;"
-                :min="0"
-                :max="0.5"
-                :step="0.05"
-              />
-              <span class="mr-1">-</span>
-              <input
-                type="number"
-                v-model="maxFreq"
-                class="form-control form-control-sm mr-3"
-                style="width:70px; border: 1px solid black; color: black; font-size: 16px;"
-                :min="0"
-                :max="0.5"
-                :step="0.05"
-              />
+        <input
+          type="number"
+          v-model="minFreq"
+          class="form-control form-control-sm mr-1"
+          style="width:70px; border: 1px solid black; color: black; font-size: 16px;"
+          :min="0"
+          :max="0.5"
+          :step="0.05"
+        />
+        <span class="mr-1">-</span>
+        <input
+          type="number"
+          v-model="maxFreq"
+          class="form-control form-control-sm mr-3"
+          style="width:70px; border: 1px solid black; color: black; font-size: 16px;"
+          :min="0"
+          :max="0.5"
+          :step="0.05"
+        />
   
               <div class="btn-group mr-2">
                 <button
@@ -853,19 +856,57 @@ function reset_for_manhattan_plot() {
             class="btn btn-light border bg-body rounded"
             style="width:150px" 
             @click="downloadPNG"
+
           >
-            Download PNG
+            SNP
           </button>
-          <button 
-            type="button" 
-            class="btn btn-light border ml-2 bg-body rounded"
-            style="width:150px" 
-            @click="downloadSVG"
+          <button
+            type="button"
+            class="btn btn-primary"
+            :class="{ active: selectedType === 'Indel' }"
+            @click="selectType('Indel')"
           >
-            Download SVG
+            Indel
+          </button>
+          <button
+            type="button"
+            class="btn btn-primary"
+            :class="{ active: selectedType === 'Both' }"
+            @click="selectType('Both')"
+          >
+            Both
           </button>
         </div>
+        <button class="btn btn-primary blue-button mr-2" @click="applyFilter">
+          Filter
+        </button>
+        <button class="btn btn-secondary" @click="cancelFilter()">
+          Cancel
+        </button>
       </div>
+    </transition>
+  </div>
+
+  <!-- Right: Download Buttons -->
+  <div class="button-container">
+    <button 
+      type="button" 
+      class="btn btn-light border bg-body rounded"
+      style="width:150px" 
+      @click="downloadPNG"
+    >
+      Download PNG
+    </button>
+    <button 
+      type="button" 
+      class="btn btn-light border ml-2 bg-body rounded"
+      style="width:150px" 
+      @click="downloadSVG"
+    >
+      Download SVG
+    </button>
+  </div>
+</div>
   
       <div class="manhattan" ref="manhattanPlotContainer"></div>
     </div>
@@ -924,4 +965,20 @@ function reset_for_manhattan_plot() {
     transform: translateX(-10px);
     opacity: 0;
 }
+
+.button-container {
+  margin-left: auto; /* Pushes the container to the right */
+  display: flex;
+  gap: 10px; /* Adds spacing between the buttons */
+}
+
+.container-fluid {
+  align-items: center; /* Vertically center content */
+}
+
+.expanded-content {
+  display: flex;
+  align-items: center;
+}
+
 </style>
