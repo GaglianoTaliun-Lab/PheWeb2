@@ -12,7 +12,7 @@ const props = defineProps({
     data: {},
     region:{
         type : String
-    }
+    },
 });
 
 const plot = ref(null)
@@ -23,12 +23,15 @@ const phenocode = route.params.phenocode;
 
 var region = route.params.region;
 
+var max_y_value = 10;
+
 if (!route.params.region){
     region = props.region;
 }
 
 //need to check if it already exists incase user presses the back arrow
 if (!LocusZoom.Adapters._items.has('AssociationPheWeb')){
+
     LocusZoom.Adapters.extend("AssociationLZ", "AssociationPheWeb", {
     getURL: function (state, chain, fields) {
         return this.url + state.chr + ":" + state.start + "-" + state.end;
@@ -38,6 +41,7 @@ if (!LocusZoom.Adapters._items.has('AssociationPheWeb')){
     extractFields: function(data, fields, outnames, trans) {
         // The field "all" has a special meaning, and only exists to trigger a request to this source.
         // We're not actually trying to request a field by that name.
+
         var has_all = fields.indexOf("all");
         if (has_all !== -1) {
             fields.splice(has_all, 1);
@@ -45,6 +49,7 @@ if (!LocusZoom.Adapters._items.has('AssociationPheWeb')){
             trans.splice(has_all, 1);
         }
         // Find all fields that have not been requested (sans transforms), and add them back to the fields array
+
         if (data.length) {
             var fieldnames = Object.keys(data[0]);
             var ns = this.source_id + ":"; // ensure that namespacing is applied to the fields
@@ -67,6 +72,16 @@ if (!LocusZoom.Adapters._items.has('AssociationPheWeb')){
         if (!Object.keys(data).length) {
             return [];
         }
+
+        console.log("given_max : ", data.max_log10p)
+        if (data.max_log10p > max_y_value){
+            max_y_value = Math.ceil(data.max_log10p);
+            // console.log(plot.refresh())
+        }
+        console.log(max_y_value)
+
+        delete data.max_log10p
+
         return LocusZoom.Adapters.get('AssociationLZ').prototype.normalizeResponse.call(this, data);
     }
 });
@@ -106,7 +121,9 @@ onMounted(() => {
         var phenocode_list = phenocode.split(".")
         var stratification = '.' + phenocode_list.slice(1).join('.')
         data_sources_new.add(utils.fmt("assoc_study{0}",i+1), ["AssociationPheWeb", {url: api + "/phenotypes/"+ phenocode_list[0] +"/"+ stratification + "/region/", source: i+1}])
+
     });
+
 
     var all_panels = []
 
@@ -180,6 +197,7 @@ onMounted(() => {
 
                                 options: [
                                     {
+                                        match: { send: '{{namespace[assoc]}}id', receive: '{{namespace[assoc]}}id' },
                                         // First dropdown menu item
                                         display_name: "Label catalog traits",  // Human readable representation of field name
                                         display: {  // Specify layout directives that control display of the plot for this option
@@ -275,7 +293,7 @@ onMounted(() => {
                                     field: "{{namespace[assoc]}}pvalue|neglog10_or_323",
                                     floor: 0,
                                     upper_buffer: 0.1,
-                                    min_extent: [0, 10]
+                                    min_extent: [0, max_y_value] // TODO: get the highest value of the list and put here.
                                 }
                             });
                             l.behaviors.onctrlclick = [{

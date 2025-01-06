@@ -113,7 +113,7 @@
       </template>
 
       <template v-slot:item.variantid="{ item }">
-        <router-link :to="`/variant/${item.variantid}`" style="white-space: pre-line;">{{ item.variantName }}</router-link>
+        <a :href="`/variant/${item.variantid}`" style="white-space: pre-line;">{{ item.variantName }}</a>
       </template>
 
       <template v-slot:item.nearest_genes="{ item }">

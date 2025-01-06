@@ -25,9 +25,7 @@
           <tr v-for="item in items" :key="item.variantid" :class="{ 'selected-row': item.variantid === props.chosenVariant }">
             <td>
               <!-- variantid -->
-              <router-link :to="`/variant/${item.variantid}`" style="white-space: nowrap;">
-                {{ item.variantName}}
-              </router-link>
+              <a :href="`/variant/${item.variantid}`" style="white-space: pre-line;">{{ item.variantName }}</a>
             </td>
             <td>
               <!-- nearest genes -->

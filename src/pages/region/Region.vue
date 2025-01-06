@@ -26,8 +26,6 @@ onMounted(async () => {
       info.value = response.data;
       phenostring.value = info.value[0].phenostring
 
-      //await getInitialRegionData(info.value.map(pheno => pheno.phenocode+"."+Object.values(pheno.stratification).join('.') ));
-
     }
     catch (error) {
       console.log(error);
