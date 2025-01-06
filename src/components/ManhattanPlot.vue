@@ -779,7 +779,7 @@ function reset_for_manhattan_plot() {
     <div class="shadow-sm border rounded mt-3 mb-3">
       <div class="container-fluid mt-2 ml-1 mr-2">
         <!-- Left: Filter Button and Filter Options -->
-        <div class="d-flex" @mouseleave="showExpanded = false"
+        <div class="d-flex flex-grow-0 flex-shrink-0" @mouseleave="showExpanded = false"
         >
           <button 
             class="btn btn-primary" 
@@ -790,29 +790,29 @@ function reset_for_manhattan_plot() {
             Filter Variants 
           </button>
   
-    <transition name="slide-fade">
-      <div v-if="showExpanded || showExpandedClick" class="expanded-content rounded">
-        <label class="mr-1 ml-2"><b>Minor Allele Freq Range:</b></label>
+          <transition name="slide-fade">
+            <div v-if="showExpanded || showExpandedClick" class="expanded-content rounded" style="">
+              <label class="mr-1 ml-2" ><b>Minor Allele Freq Range:</b></label>
   
-        <input
-          type="number"
-          v-model="minFreq"
-          class="form-control form-control-sm mr-1"
-          style="width:70px; border: 1px solid black; color: black; font-size: 16px;"
-          :min="0"
-          :max="0.5"
-          :step="0.05"
-        />
-        <span class="mr-1">-</span>
-        <input
-          type="number"
-          v-model="maxFreq"
-          class="form-control form-control-sm mr-3"
-          style="width:70px; border: 1px solid black; color: black; font-size: 16px;"
-          :min="0"
-          :max="0.5"
-          :step="0.05"
-        />
+              <input
+                type="number"
+                v-model="minFreq"
+                class="form-control form-control-sm mr-1"
+                style="width:70px; border: 1px solid black; color: black; font-size: 16px;"
+                :min="0"
+                :max="0.5"
+                :step="0.05"
+              />
+              <span class="mr-1">-</span>
+              <input
+                type="number"
+                v-model="maxFreq"
+                class="form-control form-control-sm mr-3"
+                style="width:70px; border: 1px solid black; color: black; font-size: 16px;"
+                :min="0"
+                :max="0.5"
+                :step="0.05"
+              />
   
               <div class="btn-group mr-2">
                 <button
@@ -850,63 +850,25 @@ function reset_for_manhattan_plot() {
           </transition>
         </div>
 
-        <div class="d-flex" style="">
+        <div class="d-flex flex-grow-0 flex-shrink-0" >
           <button 
             type="button" 
             class="btn btn-light border bg-body rounded"
             style="width:150px" 
             @click="downloadPNG"
-
           >
-            SNP
+            Download PNG
           </button>
-          <button
-            type="button"
-            class="btn btn-primary"
-            :class="{ active: selectedType === 'Indel' }"
-            @click="selectType('Indel')"
+          <button 
+            type="button" 
+            class="btn btn-light border ml-2 bg-body rounded"
+            style="width:150px" 
+            @click="downloadSVG"
           >
-            Indel
-          </button>
-          <button
-            type="button"
-            class="btn btn-primary"
-            :class="{ active: selectedType === 'Both' }"
-            @click="selectType('Both')"
-          >
-            Both
+            Download SVG
           </button>
         </div>
-        <button class="btn btn-primary blue-button mr-2" @click="applyFilter">
-          Filter
-        </button>
-        <button class="btn btn-secondary" @click="cancelFilter()">
-          Cancel
-        </button>
       </div>
-    </transition>
-  </div>
-
-  <!-- Right: Download Buttons -->
-  <div class="button-container">
-    <button 
-      type="button" 
-      class="btn btn-light border bg-body rounded"
-      style="width:150px" 
-      @click="downloadPNG"
-    >
-      Download PNG
-    </button>
-    <button 
-      type="button" 
-      class="btn btn-light border ml-2 bg-body rounded"
-      style="width:150px" 
-      @click="downloadSVG"
-    >
-      Download SVG
-    </button>
-  </div>
-</div>
   
       <div class="manhattan" ref="manhattanPlotContainer"></div>
     </div>
