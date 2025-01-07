@@ -589,9 +589,9 @@
             })
             .then(response => {
               // console.log(response.data.data)
-              // console.log("vairants1 #: ", variants1.value.length);
-              // console.log("vairants2 #: ", variants2.value.length);
-              const missingData1 = response.data.data[Object.keys(response.data.data)[0]].map(item => ({
+              console.log("vairants1 #: ", variants1.value.length);
+              console.log("vairants2 #: ", variants2.value.length);
+              const missingData1 = response.data.data[props.selectedStratification1].map(item => ({ 
                 ...item,
                 variantid: `${item.chrom}-${item.pos}-${item.ref}-${item.alt}`,
                 variantName: item.rsids 
@@ -602,7 +602,7 @@
                   ? `${item.beta} (${item.sebeta}) △`
                   : `${item.beta} (${item.sebeta}) ▽`
               }));;
-              const missingData2 = response.data.data[Object.keys(response.data.data)[1]].map(item => ({
+              const missingData2 = response.data.data[props.selectedStratification2].map(item => ({
                 ...item,
                 variantid: `${item.chrom}-${item.pos}-${item.ref}-${item.alt}`,
                 variantName: item.rsids 
@@ -618,8 +618,8 @@
                 variants1.value.push(...missingData1);
                 variants2.value.push(...missingData2);
               }
-              // console.log("vairants1 after #: ", variants1.value.length);
-              // console.log("vairants2 after #: ", variants2.value.length);
+              console.log("vairants1 after #: ", variants1.value.length);
+              console.log("vairants2 after #: ", variants2.value.length);
               // console.log(variants1)
 
               // console.log(variants2.value.filter(variant2 => !variants1.value.some(variant1 => variant1.variantid === variant2.variantid)))
