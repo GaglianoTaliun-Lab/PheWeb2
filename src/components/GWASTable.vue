@@ -581,7 +581,7 @@
             };
 
             // console.log(unmatchedVariants)
-            const apiUrl_post = `${api}/phenotypes/gwas.missing`;
+            const apiUrl_post = `${api}/phenotypes/variants`;
             const response = await axios.post(apiUrl_post, unmatchedVariants, {
               headers: {
                 'Content-Type': 'application/json'
