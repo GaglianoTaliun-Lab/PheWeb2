@@ -725,6 +725,9 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
                         // Show the tooltip and make it stay open
                         point_tooltip.value.show(d, this);
                         tooltip_showing.value = true;
+                        chosenVariant.value = `${d.chrom}-${d.pos}-${d.ref}-${d.alt}`;
+                        console.log(chosenVariant.value)
+                        emit('updateChosenVariant', chosenVariant)
                     }
                 });
 
@@ -773,6 +776,9 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
                         // Show the tooltip and make it stay open
                         point_tooltip.value.show(d, this);
                         tooltip_showing.value = true;
+                        chosenVariant.value = `${d.chrom}-${d.pos}-${d.ref}-${d.alt}`;
+                        console.log(chosenVariant.value)
+                        emit('updateChosenVariant', chosenVariant)
                     }
                 });
 

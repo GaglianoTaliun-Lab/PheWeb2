@@ -2,6 +2,19 @@
   <v-card elevation="5" class="">
     <v-row>
     <v-col :cols="selectedStratification2 !== 'None' ? 12 : 12">
+      <!-- <span v-if="countFilteredPvalAboveThreshold === 0" style="w">
+        Note: No variant pass significant threshold (5e-8)
+      </span> -->
+      <v-overlay
+        v-model="overlay"
+        class="align-center justify-center"
+        contained
+      >
+        <v-alert
+          text="No variant pass significant threshold (5e-8)"
+          type="warning"
+        ></v-alert>
+      </v-overlay>
       <v-data-table 
         :items="filteredMergedVariants" 
         :headers="headers" 
@@ -336,6 +349,7 @@
       const search = ref('');
       const isTableLoading = ref(true);
       const page = ref(3);
+      const overlay = ref(false);
 
       const itemsPerPage = 7; 
       const sortBy = ref([{ key: 'pval_pheno1', order: 'asc' }]);
@@ -350,10 +364,10 @@
           title: 'AF', 
           key: 'af',
           children: [
-            { title: pheno1.value.split('.').slice(-2).join(', '), key: 'af_pheno1' }, 
+            { title: pheno1.value.split('.').slice(-3).join(', '), key: 'af_pheno1' }, 
             ...(props.selectedStratification2 !== props.selectedStratification1 && props.selectedStratification2 !== "No stratification"
             ? [
-                { title: pheno2.value.split('.').slice(-2).join(', '), key: 'af_pheno2' }, 
+                { title: pheno2.value.split('.').slice(-3).join(', '), key: 'af_pheno2' }, 
               ]
             : [])
           ],
@@ -362,14 +376,14 @@
         { 
           title: 'P-value', 
           children: [
-            { title: pheno1.value.split('.').slice(-2).join(', '), 
+            { title: pheno1.value.split('.').slice(-3).join(', '), 
             key: 'pval_pheno1',
             class: 'with-divider'
             }, 
             ...(props.selectedStratification2 !== props.selectedStratification1 && props.selectedStratification2 !== "No stratification"
             ? [
                 { 
-                  title: pheno2.value.split('.').slice(-2).join(', '), 
+                  title: pheno2.value.split('.').slice(-3).join(', '), 
                   key: 'pval_pheno2'
                 }
               ]
@@ -381,10 +395,10 @@
         { 
           title: 'Effect Size', 
           children: [
-            { title: pheno1.value.split('.').slice(-2).join(', '), key: 'effect_size_pheno1' }, 
+            { title: pheno1.value.split('.').slice(-3).join(', '), key: 'effect_size_pheno1' }, 
             ...(props.selectedStratification2 !== props.selectedStratification1 && props.selectedStratification2 !== "No stratification"
             ? [
-                { title: pheno2.value.split('.').slice(-2).join(', '), key: 'effect_size_pheno2' }, 
+                { title: pheno2.value.split('.').slice(-3).join(', '), key: 'effect_size_pheno2' }, 
               ]
             : [])
           ],
@@ -410,7 +424,8 @@
           var keys = Object.keys(tableInfo.value)
           pheno1.value = keys[0];
           pheno2.value = keys[1] || keys[0];
-          // console.log("pheno1&2", pheno1.value, pheno2.value);
+          console.log("pheno1&2", pheno1.value, pheno2.value);
+          // console.log(selectedStratification1, selectedStratification2)
           // TODO: make this more efficient when stratification2 is None 
 
           variants1.value = tableInfo.value[pheno1.value]?.unbinned_variants.map(item => ({
@@ -441,72 +456,6 @@
             variants2.value = variants1.value
           }
 
-          // merge two datasets using map
-          const variants1Map = new Map(variants1.value.map(variant => [variant.variantid, variant]));
-          const variants2Map = new Map(variants2.value.map(variant => [variant.variantid, variant]));
-
-          if (props.selectedStratification2 !== "No stratification" && props.selectedStratification2 !== props.selectedStratification1 ){
-            const unmatchedVariants = {
-              [props.selectedStratification2]: variants1.value
-                .filter(variant1 => !variants2Map.has(variant1.variantid))
-                .map(variant1 => variant1.variantid)
-                .sort((a, b) => a.localeCompare(b)),
-              [props.selectedStratification1]: variants2.value
-                .filter(variant2 => !variants1Map.has(variant2.variantid))
-                .map(variant2 => variant2.variantid)
-                .sort((a, b) => a.localeCompare(b))
-            };
-
-            // console.log(unmatchedVariants)
-            const apiUrl_post = `${api}/phenotypes/variants`;
-            const response = await axios.post(apiUrl_post, unmatchedVariants, {
-              headers: {
-                'Content-Type': 'application/json'
-              }
-            })
-            .then(response => {
-              // console.log(response.data.data)
-              // console.log("vairants1 #: ", variants1.value.length);
-              // console.log("vairants2 #: ", variants2.value.length);
-              const missingData1 = response.data.data[props.selectedStratification1].map(item => ({ 
-                ...item,
-                variantid: `${item.chrom}-${item.pos}-${item.ref}-${item.alt}`,
-                variantName: item.rsids 
-                  ? `${item.chrom}: ${item.pos} ${item.ref} / ${item.alt} (${item.rsids})`
-                  : `${item.chrom}: ${item.pos} ${item.ref} / ${item.alt}`,
-                nearest_genes: item.nearest_genes ? item.nearest_genes.split(',') : [], 
-                effect_size: item.beta > 0
-                  ? `${item.beta} (${item.sebeta}) △`
-                  : `${item.beta} (${item.sebeta}) ▽`
-              }));;
-              const missingData2 = response.data.data[props.selectedStratification2].map(item => ({
-                ...item,
-                variantid: `${item.chrom}-${item.pos}-${item.ref}-${item.alt}`,
-                variantName: item.rsids 
-                  ? `${item.chrom}: ${item.pos} ${item.ref} / ${item.alt} (${item.rsids})`
-                  : `${item.chrom}: ${item.pos} ${item.ref} / ${item.alt}`,
-                nearest_genes: item.nearest_genes ? item.nearest_genes.split(',') : [], 
-                effect_size: item.beta > 0
-                  ? `${item.beta} (${item.sebeta}) △`
-                  : `${item.beta} (${item.sebeta}) ▽`
-              }));;
-
-              if (missingData1 && Array.isArray(missingData1) && missingData2 && Array.isArray(missingData2)) {
-                variants1.value.push(...missingData1);
-                variants2.value.push(...missingData2);
-              }
-              // console.log("vairants1 after #: ", variants1.value.length);
-              // console.log("vairants2 after #: ", variants2.value.length);
-              // console.log(variants1)
-              // console.log(variants2.value.filter(variant2 => !variants1.value.some(variant1 => variant1.variantid === variant2.variantid)))
-              // console.log(variants1.value.filter(variant1 => !variants2.value.some(variant2 => variant1.variantid === variant2.variantid)))
-              
-            })
-            .catch(error => {
-              console.error("Error fetching missing GWAS data:", error);
-            });
-            // console.log(response.data.data)
-          };
           const variants2Map2 = new Map(variants2.value.map(variant => [variant.variantid, variant]));
           mergedVariants.value = variants1.value.map(variant1 => {
             const variant2 = variants2Map2.get(variant1.variantid);
@@ -602,6 +551,13 @@
         return Math.ceil((index + 1) / itemsPerPage);
       });
 
+      const updateOverlay = () => {
+        overlay.value = filteredMergedVariants.value.filter(item => 
+          item.pval_pheno1 < 5e-8 || item.pval_pheno2 < 5e-8
+        ).length === 0;
+      };
+
+
 
       // download
       const coverToCSV = (data) => {
@@ -619,6 +575,7 @@
   
         return rows.join('\n');
       };
+
   
       const downloadCSV = () => {
         const csvContent = coverToCSV(phenotypes.value);
@@ -636,22 +593,21 @@
         //   fetchSampleData();
         // }
         fetchSampleData();
+        updateOverlay();
       });
 
       watch(() => [props.selectedStratification1, props.selectedStratification2], (newSelectedStratification1, newSelectedStratification2) => {
         // console.log(`Selected value changed to: ${newSelectedStratification1}, ${newSelectedStratification2}`);
         // console.log(`here ${newChosenVariant}`)
         fetchSampleData();
-        page.value = chosenPage.value;
-        
+        updateOverlay();        
         // const unbinnedVariants = props.miamiData[props.selectedStratification1]["unbinned_variants"];
         // console.log("Unbinned Variants:", unbinnedVariants);
-
       });
       watch(
         () => props.chosenVariant,
         (newValue) => {
-          console.log(`Chosen Variant updated: ${newValue}`);
+          // console.log(`Chosen Variant updated: ${newValue}`);
           page.value = chosenPage.value;
           // console.log(`Chosen Page updated: ${page.value}`);
           menu.value = true;
@@ -667,6 +623,7 @@
         (newValue) => {
           // console.log(`Chosen data updated: ${newValue}`);
           fetchSampleData();
+          updateOverlay();
         },
         // { deep: true }
       );

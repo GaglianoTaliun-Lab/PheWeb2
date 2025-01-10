@@ -12,6 +12,7 @@ import QQPlot from '../../components/QQPlot.vue';
 import GWASTable from '../../components/GWASTable.vue';
 import InteractionManhattanPlot from '../../components/InteractionManhattanPlot.vue'
 import InteractionMiamiPlot from '../../components/InteractionMiamiPlot.vue'
+import InteractionTable from '../../components/InteractionTable.vue';
 
 import * as functions from './Pheno.js';
 
@@ -250,6 +251,7 @@ const handleInteractionRadioChange = () => {
     manhattanInteractionData.value = {}
     miamiInteractionToggle.value = false;
     manhattanInteractionData.value[selectedInteractionStratification1.value] = allInteractionPlottingData.value[selectedInteractionStratification1.value];
+    console.log(manhattanInteractionData)
 
     qqInteractionSubset.value = {};
     qqInteractionSubset.value[selectedInteractionStratification1.value] = qqInteractionData.value[selectedInteractionStratification1.value];
@@ -562,20 +564,31 @@ function onInteractionCheckboxChange() {
             </div> 
             <div v-if="miamiToggle && Object.keys(miamiData).length > 0">
                 <MiamiPlot :key="refreshKey" :data="miamiData" @updateFilteringParams="updateFilteringParameters" @updateChosenVariant="updateChosenVariantMehod"/>
-            </div>
+                <GWASTable
+                  :selectedStratification1= "selectedStratification1"
+                  :selectedStratification2= "selectedStratification2"
+                  :phenocode= "phenocode"
+                  :minFreq="minFreq"
+                  :maxFreq="maxFreq"
+                  :selectedType= "selectedType"
+                  :miamiData="miamiData"
+                  :chosenVariant="chosenVariant"
+                />
+              </div>
             <div v-else-if="!miamiToggle && Object.keys(manhattanData).length > 0">
-                <ManhattanPlot :key="refreshKey" :data="manhattanData"  @updateFilteringParams="updateFilteringParameters"/>
-            </div>
-            <GWASTable 
-              :selectedStratification1= "selectedStratification1"
-              :selectedStratification2= "selectedStratification2"
-              :phenocode= "phenocode"
-              :minFreq="minFreq"
-              :maxFreq="maxFreq"
-              :selectedType= "selectedType"
-              :miamiData="miamiData"
-              :chosenVariant="chosenVariant"
-            />
+                <ManhattanPlot :key="refreshKey" :data="manhattanData"  @updateFilteringParams="updateFilteringParameters" @updateChosenVariant="updateChosenVariantMehod"/>
+                <GWASTable
+                  :selectedStratification1= "selectedStratification1"
+                  :selectedStratification2= "selectedStratification2"
+                  :phenocode= "phenocode"
+                  :minFreq="minFreq"
+                  :maxFreq="maxFreq"
+                  :selectedType= "selectedType"
+                  :miamiData="manhattanData"
+                  :chosenVariant="chosenVariant"
+                />
+              </div>
+            
             <br>
             <div v-if="qqData && dimension" class="mt-10 mb-5"> 
                 <h2> QQ Plot(s): </h2>
@@ -636,11 +649,32 @@ function onInteractionCheckboxChange() {
                   </div>
             </div> 
             <div v-if="miamiInteractionToggle && Object.keys(miamiInteractionData).length > 0">
-                <InteractionMiamiPlot :key="refreshKey" :data="miamiInteractionData" />
+                <InteractionMiamiPlot :key="refreshKey" :data="miamiInteractionData" @updateChosenVariant="updateChosenVariantMehod"/>
+                <InteractionTable 
+                  :selectedStratification1= "selectedInteractionStratification1"
+                  :selectedStratification2= "selectedInteractionStratification2"
+                  :phenocode= "phenocode"
+                  :minFreq="minFreq"
+                  :maxFreq="maxFreq"
+                  :selectedType= "selectedType"
+                  :miamiData="miamiInteractionData"
+                  :chosenVariant="chosenVariant"
+                />
             </div>
             <div v-else-if="!miamiInteractionToggle && Object.keys(manhattanInteractionData).length > 0">
-                <InteractionManhattanPlot :key="refreshKey" :data="manhattanInteractionData"  />
+                <InteractionManhattanPlot :key="refreshKey" :data="manhattanInteractionData" @updateChosenVariant="updateChosenVariantMehod"/>
+                <InteractionTable 
+                  :selectedStratification1= "selectedInteractionStratification1"
+                  :selectedStratification2= "selectedInteractionStratification2"
+                  :phenocode= "phenocode"
+                  :minFreq="minFreq"
+                  :maxFreq="maxFreq"
+                  :selectedType= "selectedType"
+                  :miamiData="manhattanInteractionData"
+                  :chosenVariant="chosenVariant"
+                />
             </div>
+
               <div v-if="qqInteractionData && dimensionInteraction" class="mt-10 mb-5"> 
                   <h2> QQ Plot(s): </h2>
                   <div class="qq-container">
