@@ -102,7 +102,7 @@
               <v-card class="pa-3">
                 <v-text-field
                   v-model="selectedVariant"
-                  label="Enter vairantID or rsID"
+                  label="Enter variantID or rsID"
                   hint="Try 12-121779004-A-G or rs11553699"
                   style="width: 400px;"
                   variant="outlined"
