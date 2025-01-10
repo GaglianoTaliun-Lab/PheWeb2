@@ -20,7 +20,13 @@
         >
 
         <template v-slot:body="{ items }" >
-          <tr v-for="item in items" :key="item.variantid" :class="{ 'selected-row': item.variantid === props.chosenVariant }">
+          <!-- <tr v-for="item in items" :key="item.variantid" :class="{ 'selected-row': item.variantid === props.chosenVariant }"> -->
+          <tr v-for="item in items" 
+          :key="item.variantid" 
+          :class="{ 'selected-row': item.variantid === props.chosenVariant }"
+          @mouseover="hoveredVariantId = item.variantid"
+          @mouseleave="hoveredVariantId = '' "
+          >
             <td>
               <!-- variantid -->
               <a :href="`/variant/${item.variantid}`" style="white-space: pre-line;">{{ item.variantName }}</a>
@@ -354,6 +360,8 @@
       const search = ref('');
       const isTableLoading = ref(true);
       const page = ref(3);
+      const hoveredVariantId = ref('');
+      const emit = defineEmits(['updateHoverVariant']);
 
       const itemsPerPage = 7; 
       const sortBy = ref([{ key: 'pval_pheno1', order: 'asc' }]);
@@ -690,6 +698,16 @@
           fetchSampleData();
         },
         // { deep: true }
+      );
+      watch(
+        () => hoveredVariantId.value,
+        (newValue) => {
+          // console.log(`Hovered Variant updated`, hoveredVariantId.value.split('-').slice(0, 2));
+          if (newValue != ''){
+            // emit('updateHoverVariant', hoveredVariantId.value.split('-').slice(0, 2))
+            emit('updateHoverVariant', hoveredVariantId)
+          }
+        }
       );
   
   </script>

@@ -68,6 +68,13 @@ const chosenVariant = ref('');
 
 const isInteractionChecked = ref(false); // Initialize it to false or true based on your needs
 
+const hoverVariant = ref([])
+const updateHoverVariantMethod = (variant) => {
+  // console.log('Hovered variant:', variant.value);
+  hoverVariant.value = variant.value;
+  // console.log(`Hovered Variant updated: ${hoverVariant.value}`);
+};
+
 onMounted(async () => {
     try {
       // const response = await axios.get(`${api}/phenotypes/phenotypes_list/` + phenocode);
@@ -563,7 +570,7 @@ function onInteractionCheckboxChange() {
                   </div>
             </div> 
             <div v-if="miamiToggle && Object.keys(miamiData).length > 0">
-                <MiamiPlot :key="refreshKey" :data="miamiData" @updateFilteringParams="updateFilteringParameters" @updateChosenVariant="updateChosenVariantMehod"/>
+                <MiamiPlot :key="refreshKey" :data="miamiData" :hoverVariant="hoverVariant" @updateFilteringParams="updateFilteringParameters" @updateChosenVariant="updateChosenVariantMehod"/>
                 <GWASTable
                   :selectedStratification1= "selectedStratification1"
                   :selectedStratification2= "selectedStratification2"
@@ -573,6 +580,7 @@ function onInteractionCheckboxChange() {
                   :selectedType= "selectedType"
                   :miamiData="miamiData"
                   :chosenVariant="chosenVariant"
+                  @updateHoverVariant="updateHoverVariantMethod"
                 />
               </div>
             <div v-else-if="!miamiToggle && Object.keys(manhattanData).length > 0">
@@ -586,6 +594,7 @@ function onInteractionCheckboxChange() {
                   :selectedType= "selectedType"
                   :miamiData="manhattanData"
                   :chosenVariant="chosenVariant"
+                  @updateHoverVariant="updateHoverVariantMethod"
                 />
               </div>
             
