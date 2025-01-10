@@ -26,6 +26,10 @@
               <a :href="`/variant/${item.variantid}`" style="white-space: pre-line;">{{ item.variantName }}</a>
             </td>
             <td>
+              <!-- effect allele -->
+              {{ item.ea }}
+            </td>
+            <td>
               <!-- nearest genes -->
               <span v-for="(gene, index) in item.nearest_genes" :key="index">
                 <router-link :to="`/gene/${gene.trim()}/${props.phenocode}`"
@@ -137,6 +141,20 @@
                 </v-row>
               </v-card>
             </v-menu>
+          </div>
+        </template>
+
+        <template v-slot:header.ea="{ column }">
+          <div style="display: flex; align-items: center; justify-content: center; text-align: center;">
+            <span style="white-space: nowrap;">{{ "EA" }}</span>
+            <v-tooltip location="top">
+              <template v-slot:activator="{ props }">
+                <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
+              </template>
+              <span style="white-space: normal;">
+                Effect allele
+              </span>
+            </v-tooltip>
           </div>
         </template>
 
@@ -345,6 +363,7 @@
 
       const headers = computed(() => [
         { title: 'Top Variant', key: 'variantid', sortable: false },
+        { title: 'EA', key: 'ea', sortable: false },
         { title: 'Nearest Gene(s)', key: 'nearest_genes', sortable: false },
         { 
           title: 'AF', 
@@ -512,6 +531,7 @@
             const variant2 = variants2Map2.get(variant1.variantid);
             return {
               variantid: variant1.variantid,
+              ea: variant1.alt,
               variantName: variant1.variantName,
               rsids: variant1.rsids || "NA",
               nearest_genes: variant1.nearest_genes,
@@ -527,6 +547,7 @@
             variants2.value.filter(variant2 => !variants1.value.some(variant1 => variant1.variantid === variant2.variantid))
               .map(variant2 => ({
                 variantid: variant2.variantid,
+                ea: variant2.alt,
                 variantName: variant2.variantName,
                 rsids: variant2.rsids || "NA",
                 nearest_genes: variant2.nearest_genes,
