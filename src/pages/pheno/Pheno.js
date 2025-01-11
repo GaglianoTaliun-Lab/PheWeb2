@@ -44,7 +44,7 @@ export function keyToLabel(phenoLabel){
         return []
     }
     console.log(label)
-    if (label[0].includes("inter-")){
+    if (label[0].includes("interaction-")){
         label[0] = "Interaction: " + label[0].split("-")[1]
     }
 

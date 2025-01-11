@@ -715,6 +715,7 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
                 })
                 .on('click', function (d) {
                     d3.event.stopPropagation();
+                    emit('updateChosenVariant', chosenVariant)
                     if (tooltip_showing.value) {
                         // Hide the tooltip if it’s already showing and was clicked again
                         point_tooltip.value.hide(d, this);
@@ -761,6 +762,8 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
                 })
                 .on('click', function (d) {
                     d3.event.stopPropagation();
+                    emit('updateChosenVariant', chosenVariant)
+
                     if (tooltip_showing.value) {
                         // Hide the tooltip if it’s already showing and was clicked again
                         point_tooltip.value.hide(d, this);
@@ -1246,6 +1249,8 @@ async function refilter() {
         data.push(response2.data) ; 
 
         miami_filter_view.set_variants(data[0].variant_bins , data[0].unbinned_variants, data[0].weakest_pval , data[1].variant_bins , data[1].unbinned_variants , data[1].weakest_pval );
+
+        emit('updateFilteringParams', { min: minFreq.value, max: maxFreq.value, type : selectedType.value });
 
     } catch (error) {
         console.log(`Error fetching plotting with url ${url}:`, error);

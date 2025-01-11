@@ -130,9 +130,6 @@ onMounted(async () => {
 
       }
 
-
-
-      
       populateDataPreview(phenocode)
       
       //logic for choosing first two 
@@ -150,6 +147,7 @@ onMounted(async () => {
 });
 
 function updateFilteringParameters({ min, max, type}) {
+
       minFreq.value = min;
       maxFreq.value = max;
       selectedType.value = type;
@@ -284,7 +282,7 @@ function returnExtraInfoString(pheno) {
   let extraInfoString = "";
 
   if (pheno.interaction !== null && pheno.interaction !== undefined) {
-    extraInfoString += ".inter-" + pheno.interaction;
+    extraInfoString += ".interaction-" + pheno.interaction;
   }
 
   if (pheno.stratification !== null && pheno.stratification !== undefined && typeof pheno.stratification === "object") {
@@ -308,79 +306,103 @@ function returnExtraInfoLabel(pheno) {
   return extraInfoLabel;
 }
 
+
 const downloadAll = () => {
   var downloads = []
 
-  // get all phenocodes api calls
-  for (const pheno of info.value){
-    var phenocode = pheno.phenocode + returnExtraInfoString(pheno)
+  for (const pheno of info.value) {
+    var phenocode = pheno.phenocode + returnExtraInfoString(pheno);
     var api_link = `${api}/phenotypes/${pheno.phenocode}/${returnExtraInfoString(pheno)}/download`;
-    downloads.push({url:api_link, filename : phenocode})
-  };
+    downloads.push({ url: api_link, filename: phenocode });
+  }
 
-  for (const pheno of infoInteraction.value){
-    var phenocode = pheno.phenocode + returnExtraInfoString(pheno)
+  for (const pheno of infoInteraction.value) {
+    var phenocode = pheno.phenocode + returnExtraInfoString(pheno);
     var api_link = `${api}/phenotypes/${pheno.phenocode}/${returnExtraInfoString(pheno)}/download`;
-    downloads.push({url:api_link, filename : phenocode})
-  };
+    downloads.push({ url: api_link, filename: phenocode });
+  }
 
-  //without slowing it down the website would jsut download the last of the list. maybe can use async await here
-  downloads.forEach((file, index) => {
-    setTimeout(() => {
+  // Open one download at a time with a slight delay
+  let index = 0;
+  function openNextDownload() {
+    if (index < downloads.length) {
+      const file = downloads[index];
       const a = document.createElement('a');
       a.href = file.url;
       a.download = file.filename;
+      a.target = '_blank'; // Open in a new tab
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-    }, index * 500);
-  });
-};
-
-// TODO: change to streaming instead of backend call
-const downloadCurrent = () => {
-  var downloads = []
-
-  if (!isInteractionChecked.value) {
-
-    var code1 = selectedStratification1.value.split(".")
-    var phenocode1 = code1[0]
-    var suffix1 = "." + code1.slice(1).join('.')
-
-    downloads.push({url: `${api}/phenotypes/${phenocode1}/${suffix1}/download`})
-
-    if (selectedStratification2.value != "No stratification"){
-      var code2 = selectedStratification2.value.split(".")
-      var phenocode2 = code2[0]
-      var suffix2 = "." + code2.slice(1).join('.')
-      downloads.push({url: `${api}/phenotypes/${phenocode2}/${suffix2}/download`})
-    }
-  } else {
-    var code1 = selectedInteractionStratification1.value.split(".")
-    var phenocode1 = code1[0]
-    var suffix1 = "." + code1.slice(1).join('.')
-
-    downloads.push({url: `${api}/phenotypes/${phenocode1}/${suffix1}/download`})
-
-    if (selectedInteractionStratification2.value != "No stratification"){
-      var code2 = selectedInteractionStratification2.value.split(".")
-      var phenocode2 = code2[0]
-      var suffix2 = "." + code2.slice(1).join('.')
-      downloads.push({url: `${api}/phenotypes/${phenocode2}/${suffix2}/download`})
+      index++;
+      setTimeout(openNextDownload, 500); // Delay before opening the next one
+    } else {
+      console.log('All downloads have been triggered.');
     }
   }
 
-  downloads.forEach((file, index) => {
-    setTimeout(() => {
+  openNextDownload(); // Start the process
+};
+
+
+
+// Handle the download logic
+const downloadCurrent = async () => {
+    const downloads = [];
+
+    const buildUrl = (phenocode, suffix, interactionChecked) => {
+        const base = `${api}/phenotypes/${phenocode}/${suffix}/download?`;
+        const params = [
+            `min_maf=${minFreq.value}`,
+            `max_maf=${maxFreq.value}`,
+        ];
+
+        const snpIndelValue = selectedType.value;
+        if (snpIndelValue === 'SNP' || snpIndelValue === 'Indel') {
+            params.push(`indel=${snpIndelValue === 'Indel' ? 'true' : 'false'}`);
+        }
+
+        return base + params.join('&');
+    };
+
+    const addDownload = (codeValue, stratificationKey) => {
+        if (codeValue !== "No stratification") {
+            const code = codeValue.split(".");
+            const phenocode = code[0];
+            const suffix = "." + code.slice(1).join('.');
+            const url = buildUrl(phenocode, suffix, stratificationKey === 'interaction');
+            downloads.push({ url, filename: `${phenocode}${suffix}.tsv` });
+        }
+    };
+
+    if (!isInteractionChecked.value) {
+        addDownload(selectedStratification1.value, 'nonInteraction');
+        addDownload(selectedStratification2.value, 'nonInteraction');
+    } else {
+        addDownload(selectedInteractionStratification1.value, 'interaction');
+        addDownload(selectedInteractionStratification2.value, 'interaction');
+    }
+
+  let index = 0;
+  function openNextDownload() {
+    if (index < downloads.length) {
+      const file = downloads[index];
       const a = document.createElement('a');
       a.href = file.url;
       a.download = file.filename;
+      a.target = '_blank'; // Open in a new tab
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-    }, index * 500);
-  });
-}
+      index++;
+      setTimeout(openNextDownload, 500); // Delay before opening the next one
+    } else {
+      console.log('All downloads have been triggered.');
+    }
+  }
+
+  openNextDownload(); // Start the process
+};
 
 const populateDataPreview = () => {
   try {
@@ -392,14 +414,6 @@ const populateDataPreview = () => {
   catch {
     console.log('Data preview portal is not reachable.');
   }
-}
-
-const stratificationsToLabel = (strats) => {
-    return functions.stratificationToLabel(strats);
-}
-
-const stratificationsToKey = (phenocode, strats) => {
-    return functions.stratificationToKey(phenocode, strats);
 }
 
 const keyToLabel = (phenoLabel) => {
@@ -565,7 +579,7 @@ function onInteractionCheckboxChange() {
                     <button class="btn btn-primary btn-drop">  Download Summary Statistics  <span class="arrow-container"><span class="arrow-down"></span></span></button>
                     <div class="dropdown-menu dropdown-menu-right p-1" id="dropdown-content-sumstats">
                       <button class="btn btn-secondary w-100 mt-1 mb-1"  id="download-all-button" @click="downloadAll">Download All</button>
-                      <button class="btn btn-secondary w-100 mt-1 mb-1"  id="download-current-button" @click="downloadCurrent">Download Current Selection</button>
+                      <button class="btn btn-secondary w-100 mt-1 mb-1"  id="download-current-button" @click="downloadCurrent">Download Plotted Variants</button>
                     </div>
                   </div>
             </div> 
@@ -759,11 +773,6 @@ function onInteractionCheckboxChange() {
     align-items: center; 
   }
 
-  .interaction {
-  }
-  .data-portal {
-  }
-
   .custom-checkbox {
     width: 20px;
     height: 20px; 
@@ -777,7 +786,7 @@ function onInteractionCheckboxChange() {
     min-width: 200px;
     box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
     padding: 12px 16px;
-    z-index: 1;
+    z-index: 5;
   }
   
   .dropdown-menu-right {
@@ -806,6 +815,7 @@ function onInteractionCheckboxChange() {
   
   .dropdown:hover .dropdown-menu {
     display: block;
+    z-index: 5;
   } 
   
   .dropdown:hover .dropdown-menu-right {
