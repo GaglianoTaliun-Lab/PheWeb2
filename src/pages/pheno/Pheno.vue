@@ -297,52 +297,45 @@ function returnExtraInfoLabel(pheno) {
   return extraInfoLabel;
 }
 
+
 const downloadAll = () => {
   var downloads = []
 
-  // get all phenocodes api calls
-  for (const pheno of info.value){
-    var phenocode = pheno.phenocode + returnExtraInfoString(pheno)
+  for (const pheno of info.value) {
+    var phenocode = pheno.phenocode + returnExtraInfoString(pheno);
     var api_link = `${api}/phenotypes/${pheno.phenocode}/${returnExtraInfoString(pheno)}/download`;
-    downloads.push({url:api_link, filename : phenocode})
-  };
+    downloads.push({ url: api_link, filename: phenocode });
+  }
 
-  for (const pheno of infoInteraction.value){
-    var phenocode = pheno.phenocode + returnExtraInfoString(pheno)
+  for (const pheno of infoInteraction.value) {
+    var phenocode = pheno.phenocode + returnExtraInfoString(pheno);
     var api_link = `${api}/phenotypes/${pheno.phenocode}/${returnExtraInfoString(pheno)}/download`;
-    downloads.push({url:api_link, filename : phenocode})
-  };
+    downloads.push({ url: api_link, filename: phenocode });
+  }
 
-  //without slowing it down the website would jsut download the last of the list. maybe can use async await here
-  downloads.forEach((file, index) => {
-    setTimeout(() => {
+  // Open one download at a time with a slight delay
+  let index = 0;
+  function openNextDownload() {
+    if (index < downloads.length) {
+      const file = downloads[index];
       const a = document.createElement('a');
       a.href = file.url;
       a.download = file.filename;
+      a.target = '_blank'; // Open in a new tab
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-    }, index * 500);
-  });
-};
-
-// Streaming download setup using fetch
-const currentDownloadSetup = async (file) => {
-    const response = await fetch(file.url);
-    if (!response.ok) {
-        throw new Error(`Failed to download file: ${file.filename || "unknown"}`);
+      index++;
+      setTimeout(openNextDownload, 500); // Delay before opening the next one
+    } else {
+      console.log('All downloads have been triggered.');
     }
+  }
 
-    const blob = await response.blob();
-    const a = document.createElement('a');
-    const objectURL = URL.createObjectURL(blob);
-    a.href = objectURL;
-    a.download = file.filename || 'downloaded_file';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(objectURL); // Free up memory
+  openNextDownload(); // Start the process
 };
+
+
 
 // Handle the download logic
 const downloadCurrent = async () => {
@@ -381,13 +374,25 @@ const downloadCurrent = async () => {
         addDownload(selectedInteractionStratification2.value, 'interaction');
     }
 
-    for (const file of downloads) {
-        try {
-            await currentDownloadSetup(file);
-        } catch (error) {
-            console.error(error.message);
-        }
+  let index = 0;
+  function openNextDownload() {
+    if (index < downloads.length) {
+      const file = downloads[index];
+      const a = document.createElement('a');
+      a.href = file.url;
+      a.download = file.filename;
+      a.target = '_blank'; // Open in a new tab
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      index++;
+      setTimeout(openNextDownload, 500); // Delay before opening the next one
+    } else {
+      console.log('All downloads have been triggered.');
     }
+  }
+
+  openNextDownload(); // Start the process
 };
 
 const populateDataPreview = () => {
@@ -565,7 +570,7 @@ function onInteractionCheckboxChange() {
                     <button class="btn btn-primary btn-drop">  Download Summary Statistics  <span class="arrow-container"><span class="arrow-down"></span></span></button>
                     <div class="dropdown-menu dropdown-menu-right p-1" id="dropdown-content-sumstats">
                       <button class="btn btn-secondary w-100 mt-1 mb-1"  id="download-all-button" @click="downloadAll">Download All</button>
-                      <button class="btn btn-secondary w-100 mt-1 mb-1"  id="download-current-button" @click="downloadCurrent">Download Current Selection</button>
+                      <button class="btn btn-secondary w-100 mt-1 mb-1"  id="download-current-button" @click="downloadCurrent">Download Plotted Variants</button>
                     </div>
                   </div>
             </div> 
