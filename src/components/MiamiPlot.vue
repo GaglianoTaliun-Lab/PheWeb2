@@ -15,7 +15,7 @@ const props = defineProps({
         String : {String : Object, String : Object},
         String : {String : Object, String : Object}
     },
-    hoverVariant: String,
+    hoverVariant: null,
 });
 window.miamiPlotUtils = {};
 
@@ -381,6 +381,7 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
             .offset([-8,0]);
         miami_svg.call(significance_threshold_tooltip);
 
+        // Vertical indication line HX
         var verticalLine = miami_svg.append("line")
         .attr("id", "vertical-line")
         .attr("x1", 0)
@@ -393,7 +394,7 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
         .style("display", "none");
         
         function updateVerticalLine(hoverVariant) {
-            if (!hoverVariant) {
+            if (!hoverVariant || hoverVariant==='None') {
                 verticalLine.style("display", "none");
                 return;
             }

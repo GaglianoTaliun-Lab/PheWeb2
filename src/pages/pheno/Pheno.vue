@@ -598,7 +598,7 @@ function onInteractionCheckboxChange() {
                 />
               </div>
             <div v-else-if="!miamiToggle && Object.keys(manhattanData).length > 0">
-                <ManhattanPlot :key="refreshKey" :data="manhattanData"  @updateFilteringParams="updateFilteringParameters" @updateChosenVariant="updateChosenVariantMehod"/>
+                <ManhattanPlot :key="refreshKey" :data="manhattanData" :hoverVariant="hoverVariant"  @updateFilteringParams="updateFilteringParameters" @updateChosenVariant="updateChosenVariantMehod"/>
                 <GWASTable
                   :selectedStratification1= "selectedStratification1"
                   :selectedStratification2= "selectedStratification2"

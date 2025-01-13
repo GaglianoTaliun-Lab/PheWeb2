@@ -25,7 +25,7 @@
           :key="item.variantid" 
           :class="{ 'selected-row': item.variantid === props.chosenVariant }"
           @mouseover="hoveredVariantId = item.variantid"
-          @mouseleave="hoveredVariantId = '' "
+          @mouseleave="hoveredVariantId = 'None' "
           >
             <td>
               <!-- variantid -->
@@ -360,7 +360,7 @@
       const search = ref('');
       const isTableLoading = ref(true);
       const page = ref(3);
-      const hoveredVariantId = ref('');
+      const hoveredVariantId = ref('None');
       const emit = defineEmits(['updateHoverVariant']);
 
       const itemsPerPage = 7; 
@@ -705,6 +705,8 @@
           // console.log(`Hovered Variant updated`, hoveredVariantId.value.split('-').slice(0, 2));
           if (newValue != ''){
             // emit('updateHoverVariant', hoveredVariantId.value.split('-').slice(0, 2))
+            // console.log(typeof hoveredVariantId); 
+            // console.log(Array.isArray(hoveredVariantId));
             emit('updateHoverVariant', hoveredVariantId)
           }
         }

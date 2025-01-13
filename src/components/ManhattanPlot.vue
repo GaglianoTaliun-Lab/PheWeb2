@@ -1,6 +1,6 @@
 <script setup>
 import axios from 'axios';
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import * as d3 from 'd3';
 import d3Tip from 'd3-tip';
@@ -13,8 +13,10 @@ const point_radius = 2.3;
 const props = defineProps({
     data: {
         String: {String : Object, String : Object}
-    }
+    },
+    hoverVariant: null,
 });
+window.gwasPlotUtils = {};
 
 const info = ref(null);
 const manhattanPlotContainer = ref(null)
@@ -292,6 +294,33 @@ function create_manhattan_plot(variant_bins, unbinned_variants, variants = "filt
             .html('Significance Threshold: 5E-8')
             .offset([-8,0]);
         gwas_svg.call(significance_threshold_tooltip);
+        // Vertical indication line HX
+        var verticalLine = gwas_svg.append("line")
+        .attr("id", "vertical-line")
+        .attr("x1", 0)
+        .attr("x2", 0)
+        .attr("y1", 0)
+        .attr("y2", svg_height)
+        .attr("stroke", "red")
+        .attr("stroke-width", 2)
+        .attr("stroke-dasharray", "4,4")
+        .style("display", "none");
+        
+        function updateVerticalLine(hoverVariant) {
+            if (!hoverVariant || hoverVariant==='None') {
+                verticalLine.style("display", "none");
+                return;
+            }
+            const [chrom, pos] = hoverVariant.split("-").slice(0, 2);
+            const genomicPosition = parseInt(pos) + get_chrom_offsets.value().chrom_offsets[chrom];
+            // console.log(genomicPosition)
+            verticalLine
+                .attr("x1", x_scale.value(genomicPosition))
+                .attr("x2", x_scale.value(genomicPosition))
+                .style("display", "block")
+                .attr("transform", utils.fmt("translate({0},{1})", plot_margin.left, plot_margin.top));
+        }
+        window.gwasPlotUtils.updateVerticalLine = updateVerticalLine;
 
         var genomic_position_extent = (function() {
             var extent1 = d3.extent(variant_bins, get_genomic_position);
@@ -775,6 +804,13 @@ function reset_for_manhattan_plot() {
     </svg>
     `
 }
+
+watch(
+    () => props.hoverVariant,
+    (newHoverVariant) => {
+        window.gwasPlotUtils.updateVerticalLine(newHoverVariant);
+    }
+);
 
 </script>
 
