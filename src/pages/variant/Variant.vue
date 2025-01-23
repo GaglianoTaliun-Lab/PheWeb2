@@ -28,6 +28,8 @@ const errorMessage = ref('');
 const headers = ref([
   { title: 'Category', key: 'category' },
   { title: 'Phenotype', key: 'phenostring' },
+  { title: 'Sex', key: 'sex' },
+  { title: 'Ancestry', key: 'ancestry' },
   { title: 'P-value', key: 'pval' },
   { title: 'Effect Size (se)', key: 'beta_se' },
   { title: 'Number of Samples', key: 'num_samples' },
@@ -71,6 +73,7 @@ async function fetchPhewasPlottingData(stratification_list) {
     }
   }
   variant_list.value = temp_variant_list;
+  //console.log(variant_list.value)
   return variant_list.value;
 }
 
@@ -79,6 +82,8 @@ const formattedVariantList = computed(() =>
     v.phenos.map((pheno) => ({
       category: pheno.category,
       phenostring: pheno.phenostring,
+      sex: pheno.stratification.sex,
+      ancestry: pheno.stratification.ancestry,
       pval: pheno.pval,
       beta_se: `${pheno.beta} (${pheno.sebeta})`,
       num_samples: pheno.num_samples,
