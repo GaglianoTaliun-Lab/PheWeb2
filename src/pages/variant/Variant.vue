@@ -1,6 +1,6 @@
 <script setup name="Variant">
 import axios from 'axios';
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { maf_range } from './Variant.js';
@@ -21,6 +21,17 @@ const variant = ref(null);
 const rsids = ref(null);
 const variant_list = ref([]);
 const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URL;
+
+const isLoading = ref(false);
+const errorMessage = ref('');
+
+const headers = ref([
+  { title: 'Category', key: 'category' },
+  { title: 'Phenotype', key: 'phenostring' },
+  { title: 'P-value', key: 'pval' },
+  { title: 'Effect Size (se)', key: 'beta_se' },
+  { title: 'Number of Samples', key: 'num_samples' },
+]);
 
 onMounted(async () => {
   try {
@@ -62,6 +73,18 @@ async function fetchPhewasPlottingData(stratification_list) {
   variant_list.value = temp_variant_list;
   return variant_list.value;
 }
+
+const formattedVariantList = computed(() =>
+  variant_list.value.flatMap((v) =>
+    v.phenos.map((pheno) => ({
+      category: pheno.category,
+      phenostring: pheno.phenostring,
+      pval: pheno.pval,
+      beta_se: `${pheno.beta} (${pheno.sebeta})`,
+      num_samples: pheno.num_samples,
+    }))
+  )
+);
 </script>
 
 <template>
@@ -136,33 +159,27 @@ async function fetchPhewasPlottingData(stratification_list) {
           <PhewasPlot :variantList="variant_list" />
         </div>
 
-        <!-- Add a table below the plots -->
-        <div v-if="variant_list.length > 0" class="mt-4">
-          <table class="table-auto border-collapse border border-gray-400 w-full text-left">
-            <thead>
-              <tr class="bg-gray-200">
-                <th class="border border-gray-400 px-4 py-2">Category</th>
-                <th class="border border-gray-400 px-4 py-2">Phenotype</th>
-                <th class="border border-gray-400 px-4 py-2">P-value</th>
-                <th class="border border-gray-400 px-4 py-2">Effect Size (se)</th>
-                <th class="border border-gray-400 px-4 py-2">Number of Samples</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                v-for="(pheno, index) in variant_list.flatMap((v) => v.phenos)"
-                :key="index"
-              >
-                <td class="border border-gray-400 px-4 py-2">{{ pheno.category }}</td>
-                <td class="border border-gray-400 px-4 py-2">{{ pheno.phenostring }}</td>
-                <td class="border border-gray-400 px-4 py-2">{{ pheno.pval }}</td>
-                <td class="border border-gray-400 px-4 py-2">
-                  {{ pheno.beta }} ({{ pheno.sebeta }})
-                </td>
-                <td class="border border-gray-400 px-4 py-2">{{ pheno.num_samples }}</td>
-              </tr>
-            </tbody>
-          </table>
+<!-- Updated Table -->
+<div v-if="formattedVariantList.length > 0" class="mt-4">
+          <v-card elevation="5">
+            <v-data-table
+              :items="formattedVariantList"
+              :headers="headers"
+              height="700"
+              fixed-header
+              :items-per-page="100"
+              :loading="isLoading"
+              hover
+            >
+              <template v-slot:item.phenostring="{ item }">
+                <router-link :to="`/phenotypes/${item.phenocode}`">{{ item.phenostring }}</router-link>
+              </template>
+
+              <template v-slot:item.pval="{ item }">
+                <span style="white-space: nowrap;">{{ item.pval }}</span>
+              </template>
+            </v-data-table>
+          </v-card>
         </div>
       </div>
     </v-main>
