@@ -12,6 +12,7 @@ import QQPlot from '../../components/QQPlot.vue';
 import GWASTable from '../../components/GWASTable.vue';
 import InteractionManhattanPlot from '../../components/InteractionManhattanPlot.vue'
 import InteractionMiamiPlot from '../../components/InteractionMiamiPlot.vue'
+import InteractionTable from '../../components/InteractionTable.vue';
 
 import * as functions from './Pheno.js';
 
@@ -66,6 +67,13 @@ const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URL
 const chosenVariant = ref('');
 
 const isInteractionChecked = ref(false); // Initialize it to false or true based on your needs
+
+const hoverVariant = ref([])
+const updateHoverVariantMethod = (variant) => {
+  // console.log('Hovered variant:', variant.value);
+  hoverVariant.value = variant.value;
+  // console.log(`Hovered Variant updated: ${hoverVariant.value}`);
+};
 
 onMounted(async () => {
     try {
@@ -248,6 +256,7 @@ const handleInteractionRadioChange = () => {
     manhattanInteractionData.value = {}
     miamiInteractionToggle.value = false;
     manhattanInteractionData.value[selectedInteractionStratification1.value] = allInteractionPlottingData.value[selectedInteractionStratification1.value];
+    console.log(manhattanInteractionData)
 
     qqInteractionSubset.value = {};
     qqInteractionSubset.value[selectedInteractionStratification1.value] = qqInteractionData.value[selectedInteractionStratification1.value];
@@ -297,54 +306,44 @@ function returnExtraInfoLabel(pheno) {
   return extraInfoLabel;
 }
 
+
 const downloadAll = () => {
   var downloads = []
 
-  // get all phenocodes api calls
-  for (const pheno of info.value){
-    var phenocode = pheno.phenocode + returnExtraInfoString(pheno)
+  for (const pheno of info.value) {
+    var phenocode = pheno.phenocode + returnExtraInfoString(pheno);
     var api_link = `${api}/phenotypes/${pheno.phenocode}/${returnExtraInfoString(pheno)}/download`;
-    downloads.push({url:api_link, filename : phenocode})
-  };
+    downloads.push({ url: api_link, filename: phenocode });
+  }
 
-  for (const pheno of infoInteraction.value){
-    var phenocode = pheno.phenocode + returnExtraInfoString(pheno)
+  for (const pheno of infoInteraction.value) {
+    var phenocode = pheno.phenocode + returnExtraInfoString(pheno);
     var api_link = `${api}/phenotypes/${pheno.phenocode}/${returnExtraInfoString(pheno)}/download`;
-    downloads.push({url:api_link, filename : phenocode})
-  };
+    downloads.push({ url: api_link, filename: phenocode });
+  }
 
-  //without slowing it down the website would jsut download the last of the list. maybe can use async await here
-  downloads.forEach((file, index) => {
-    setTimeout(() => {
+  // Open one download at a time with a slight delay
+  let index = 0;
+  function openNextDownload() {
+    if (index < downloads.length) {
+      const file = downloads[index];
       const a = document.createElement('a');
       a.href = file.url;
       a.download = file.filename;
+      a.target = '_blank'; // Open in a new tab
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-    }, index * 500);
-  });
-};
-
-// Streaming download setup using fetch
-const currentDownloadSetup = async (file) => {
-    const response = await fetch(file.url);
-    if (!response.ok) {
-        throw new Error(`Failed to download file: ${file.filename || "unknown"}`);
+      index++;
+      setTimeout(openNextDownload, 500); // Delay before opening the next one
+    } else {
+      console.log('All downloads have been triggered.');
     }
+  }
 
-    const blob = await response.blob();
-    const a = document.createElement('a');
-    const objectURL = URL.createObjectURL(blob);
-    a.href = objectURL;
-    a.download = file.filename || 'downloaded_file';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(objectURL); // Free up memory
+  openNextDownload(); // Start the process
 };
 
-// Handle the download logic
 const downloadCurrent = async () => {
     const downloads = [];
 
@@ -381,14 +380,27 @@ const downloadCurrent = async () => {
         addDownload(selectedInteractionStratification2.value, 'interaction');
     }
 
-    for (const file of downloads) {
-        try {
-            await currentDownloadSetup(file);
-        } catch (error) {
-            console.error(error.message);
-        }
+  let index = 0;
+  function openNextDownload() {
+    if (index < downloads.length) {
+      const file = downloads[index];
+      const a = document.createElement('a');
+      a.href = file.url;
+      a.download = file.filename;
+      a.target = '_blank'; // Open in a new tab
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      index++;
+      setTimeout(openNextDownload, 500); // Delay before opening the next one
+    } else {
+      console.log('All downloads have been triggered.');
     }
+  }
+
+  openNextDownload(); // Start the process
 };
+
 
 const populateDataPreview = () => {
   try {
@@ -565,26 +577,39 @@ function onInteractionCheckboxChange() {
                     <button class="btn btn-primary btn-drop">  Download Summary Statistics  <span class="arrow-container"><span class="arrow-down"></span></span></button>
                     <div class="dropdown-menu dropdown-menu-right p-1" id="dropdown-content-sumstats">
                       <button class="btn btn-secondary w-100 mt-1 mb-1"  id="download-all-button" @click="downloadAll">Download All</button>
-                      <button class="btn btn-secondary w-100 mt-1 mb-1"  id="download-current-button" @click="downloadCurrent">Download Current Selection</button>
+                      <button class="btn btn-secondary w-100 mt-1 mb-1"  id="download-current-button" @click="downloadCurrent">Download Plotted Variants</button>
                     </div>
                   </div>
             </div> 
             <div v-if="miamiToggle && Object.keys(miamiData).length > 0">
-                <MiamiPlot :key="refreshKey" :data="miamiData" @updateFilteringParams="updateFilteringParameters" @updateChosenVariant="updateChosenVariantMehod"/>
-            </div>
+                <MiamiPlot :key="refreshKey" :data="miamiData" :hoverVariant="hoverVariant" @updateFilteringParams="updateFilteringParameters" @updateChosenVariant="updateChosenVariantMehod"/>
+                <GWASTable
+                  :selectedStratification1= "selectedStratification1"
+                  :selectedStratification2= "selectedStratification2"
+                  :phenocode= "phenocode"
+                  :minFreq="minFreq"
+                  :maxFreq="maxFreq"
+                  :selectedType= "selectedType"
+                  :miamiData="miamiData"
+                  :chosenVariant="chosenVariant"
+                  @updateHoverVariant="updateHoverVariantMethod"
+                />
+              </div>
             <div v-else-if="!miamiToggle && Object.keys(manhattanData).length > 0">
-                <ManhattanPlot :key="refreshKey" :data="manhattanData"  @updateFilteringParams="updateFilteringParameters"/>
-            </div>
-            <GWASTable 
-              :selectedStratification1= "selectedStratification1"
-              :selectedStratification2= "selectedStratification2"
-              :phenocode= "phenocode"
-              :minFreq="minFreq"
-              :maxFreq="maxFreq"
-              :selectedType= "selectedType"
-              :miamiData="miamiData"
-              :chosenVariant="chosenVariant"
-            />
+                <ManhattanPlot :key="refreshKey" :data="manhattanData" :hoverVariant="hoverVariant"  @updateFilteringParams="updateFilteringParameters" @updateChosenVariant="updateChosenVariantMehod"/>
+                <GWASTable
+                  :selectedStratification1= "selectedStratification1"
+                  :selectedStratification2= "selectedStratification2"
+                  :phenocode= "phenocode"
+                  :minFreq="minFreq"
+                  :maxFreq="maxFreq"
+                  :selectedType= "selectedType"
+                  :miamiData="manhattanData"
+                  :chosenVariant="chosenVariant"
+                  @updateHoverVariant="updateHoverVariantMethod"
+                />
+              </div>
+            
             <br>
             <div v-if="qqData && dimension" class="mt-10 mb-5"> 
                 <h2> QQ Plot(s): </h2>
@@ -636,7 +661,7 @@ function onInteractionCheckboxChange() {
                     </div>
                   </div>
 
-                  <div class="dropdown float-right" id="dropdown-sumstats">
+                  <div class="dropdown p-1 float-right" id="dropdown-sumstats">
                     <button class="btn btn-primary btn-drop">  Download Summary Statistics  <span class="arrow-container"><span class="arrow-down"></span></span></button>
                     <div class="dropdown-menu dropdown-menu-right p-1" id="dropdown-content-sumstats">
                       <button class="btn btn-secondary w-100 mt-1 mb-1"  id="download-all-button" @click="downloadAll">Download All</button>
@@ -645,11 +670,32 @@ function onInteractionCheckboxChange() {
                   </div>
             </div> 
             <div v-if="miamiInteractionToggle && Object.keys(miamiInteractionData).length > 0">
-                <InteractionMiamiPlot :key="refreshKey" :data="miamiInteractionData" />
+                <InteractionMiamiPlot :key="refreshKey" :data="miamiInteractionData" @updateChosenVariant="updateChosenVariantMehod"/>
+                <InteractionTable 
+                  :selectedStratification1= "selectedInteractionStratification1"
+                  :selectedStratification2= "selectedInteractionStratification2"
+                  :phenocode= "phenocode"
+                  :minFreq="minFreq"
+                  :maxFreq="maxFreq"
+                  :selectedType= "selectedType"
+                  :miamiData="miamiInteractionData"
+                  :chosenVariant="chosenVariant"
+                />
             </div>
             <div v-else-if="!miamiInteractionToggle && Object.keys(manhattanInteractionData).length > 0">
-                <InteractionManhattanPlot :key="refreshKey" :data="manhattanInteractionData"  />
+                <InteractionManhattanPlot :key="refreshKey" :data="manhattanInteractionData" @updateChosenVariant="updateChosenVariantMehod"/>
+                <InteractionTable 
+                  :selectedStratification1= "selectedInteractionStratification1"
+                  :selectedStratification2= "selectedInteractionStratification2"
+                  :phenocode= "phenocode"
+                  :minFreq="minFreq"
+                  :maxFreq="maxFreq"
+                  :selectedType= "selectedType"
+                  :miamiData="manhattanInteractionData"
+                  :chosenVariant="chosenVariant"
+                />
             </div>
+
               <div v-if="qqInteractionData && dimensionInteraction" class="mt-10 mb-5"> 
                   <h2> QQ Plot(s): </h2>
                   <div class="qq-container">

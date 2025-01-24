@@ -40,7 +40,8 @@ const y_scale_data = ref(null)
 
 const pheno = ref(null)
 
-const emit = defineEmits(['updateFilteringParams']) 
+const emit = defineEmits(['updateFilteringParams', 'updateChosenVariant']) 
+const chosenVariant = ref(null);
 
 const toggleExpanded = () => {
   showExpandedClick.value = !showExpandedClick.value;
@@ -450,6 +451,9 @@ function create_manhattan_plot(variant_bins, unbinned_variants, variants = "filt
             .on('mouseover', function(d) {
                 //Note: once a tooltip has been explicitly placed once, it must be explicitly placed forever after.
                 point_tooltip.value.show(d, this);
+                chosenVariant.value = `${d.chrom}-${d.pos}-${d.ref}-${d.alt}`;
+                    // console.log(chosenVariant.value)
+                emit('updateChosenVariant', chosenVariant)
             })
             .on('mouseout', point_tooltip.value.hide);
         }

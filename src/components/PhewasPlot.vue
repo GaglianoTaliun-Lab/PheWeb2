@@ -93,14 +93,13 @@ function generatePlot(variant_list){
     variant_list = JSON.parse(JSON.stringify(variant_list))
 
     // TODO: accept an argument for order of plots maybe, right now assume : Combined, Female, Male:
-    var order = ['.european.both', '.european.female', '.european.male']
+    var order = ['.European.Combined', '.European.Female', '.European.Male']
 
     variant_list = reorderListByValues(variant_list, order, 'stratification')
 
     var best_neglog10_pval = 0;
 
     variant_list.forEach(variant => {
-
         var value = d3.max(variant.phenos.map(function(x) { return LocusZoom.TransformationFunctions.get('neglog10')(x.pval); }));
         if (value > best_neglog10_pval){
             best_neglog10_pval = value
@@ -296,7 +295,7 @@ function generatePlot(variant_list){
                             }
                             return ret;
                         })(),
-                        "behaviors.onclick": [{action:"link", href:window.location.origin+"/phenotypes/{{phewas_code}}"}],
+                        "behaviors.onclick": [{action:"link", href:api+"/pheno/{{phewas_code}}"}],
                     }),
                 ],
     
