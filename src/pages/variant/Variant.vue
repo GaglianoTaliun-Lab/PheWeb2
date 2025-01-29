@@ -15,6 +15,7 @@ const route = useRoute();
 
 const variantCode = route.params.variant_id;
 const stratification_list = ref(null);
+const selectedStratifications = ref([])
 const variantList = ref([]); // TODO: fix this (self-made) mess... why are there two variantLists??
 const maf_text = ref(null);
 const variant = ref(null);
@@ -24,6 +25,8 @@ const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URL;
 
 const isLoading = ref(false);
 const errorMessage = ref('');
+const refreshKey = ref(0)
+
 
 const headers = ref([
   { title: 'Category', key: 'category' },
@@ -46,9 +49,12 @@ onMounted(async () => {
       stratification_list.value.map((stratification) => stratification)
     );
 
+    console.log(stratification_list.value)
+
     maf_text.value = maf_range(variantList.value); // TODO only taking the first one here, should be some kind of combination of all stratifications
     variant.value = variantList.value[0];
     rsids.value = variant.value.rsids ? variant.value.rsids.split(',') : [];
+
   } catch (error) {
     console.log(error);
   }
@@ -73,8 +79,23 @@ async function fetchPhewasPlottingData(stratification_list) {
     }
   }
   variant_list.value = temp_variant_list;
+
+  console.log(variant_list.value)
   //console.log(variant_list.value)
   return variant_list.value;
+}
+
+const keyToLabel = (stratification) => {
+  var label = stratification.split(".").join(", ")
+  return label
+}
+
+const handleCheckboxChange = () => {
+  console.log("checkbox change")
+  console.log(selectedStratifications.value)
+  refreshKey.value += 1;
+
+  //TODO : update plotting
 }
 
 const formattedVariantList = computed(() =>
@@ -90,6 +111,7 @@ const formattedVariantList = computed(() =>
     }))
   )
 );
+
 </script>
 
 <template>
@@ -160,12 +182,35 @@ const formattedVariantList = computed(() =>
             <span style="font-weight: bold" id="clinvar-link"></span>
           </p>
         </div>
+        
+
+        <!-- buttons go here ... -->
+        <div>
+          <div class="pheno-info col-12 mt-0">
+            <div v-if="stratification_list && stratification_list.length > 0" class="dropdown p-1" id="dropdown-data1">
+                <button class="btn btn-primary btn-drop" id="button-data1"> Choose Displayed Stratifications <span class="arrow-container"><span class="arrow-down"></span></span></button>
+                <div class="dropdown-menu" id="dropdown-content-data1">
+                    <label v-for="(stratification, index) in stratification_list">
+                        <input 
+                        type="checkbox" 
+                        :value="stratification" 
+                        :name="stratification" 
+                        v-model="selectedStratifications"
+                        @change="handleCheckboxChange">
+                        {{ keyToLabel(stratification) }} 
+                    </label> 
+                </div>
+              </div>
+            </div>
+        </div> 
+
+
         <div v-if="variant_list.length > 0">
-          <PhewasPlot :variantList="variant_list" />
+          <PhewasPlot :key="refreshKey" :variantList="variant_list" />
         </div>
 
-<!-- Updated Table -->
-<div v-if="formattedVariantList.length > 0" class="mt-4">
+        <!-- Updated Table -->
+        <div v-if="formattedVariantList.length > 0" class="mt-4">
           <v-card elevation="5">
             <v-data-table
               :items="formattedVariantList"
@@ -190,3 +235,93 @@ const formattedVariantList = computed(() =>
     </v-main>
   </v-app>
 </template>
+
+<style lang="scss" scoped>
+
+.arrow-container {
+  float: left;
+  margin-right: 10px;
+  margin-bottom: 0px;
+  padding-top:3px
+}
+
+.arrow-up, .arrow-down {
+  display: block;
+  padding: 3px;
+  margin-left: 0px;
+  margin-right: 0px;
+}
+.arrow-down {
+  border: solid black;
+  border-width: 0px 2px 2px 0px;
+  transform: rotate(45deg);
+  -webkit-transform: rotate(45deg);
+}
+
+.arrow-container:hover {
+  cursor: pointer;
+  background-color: grey;
+}
+
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  background-color: #f9f9f9;
+  min-width: 200px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  padding: 12px 16px;
+  z-index: 5;
+}
+
+.dropdown-menu-right {
+  display: none;
+  position: absolute;
+  background-color: #f9f9f9;
+  min-width: 200px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  padding: 12px 16px;
+  z-index: 1;
+  text-align: right; 
+  right: 0; 
+}
+
+.dropdown-menu label {
+  display: block;
+}
+
+.dropdown-menu-right a {
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+  font-weight:bold;
+}
+
+.dropdown:hover .dropdown-menu {
+  display: block;
+  z-index: 5;
+} 
+
+.dropdown:hover .dropdown-menu-right {
+  display: block;
+}
+
+.dropdown-menu-right a:hover {
+  background-color: #ddd;
+}
+
+.btn-primary {
+  color: black;
+  background-color: lightgrey;
+  border: lightgrey;
+}
+
+.btn-primary:hover {
+  background-color: darkgrey !important;
+  color: black;
+}
+</style>

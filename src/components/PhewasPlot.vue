@@ -31,6 +31,7 @@ const props = defineProps({
         type : Array,
         required : true,
     },
+    
 });
 
 function custom_LocusZoom_Layouts_get(layout_type, layout_name, customizations) {
@@ -52,32 +53,6 @@ function custom_LocusZoom_Layouts_get(layout_type, layout_name, customizations) 
     return layout;
 }
 
-LocusZoom.TransformationFunctions.add("percent", function(x) {
-    if (x === 1) { return "100%"; }
-    x = (x * 100).toPrecision(2);
-    if (x.indexOf('.') !== -1) { x = x.replace(/0+$/, ''); }
-    if (x.endsWith('.')) { x = x.substr(0, x.length-1); }
-    return x + '%';
-});
-
-LocusZoom.ScaleFunctions.add("effect_direction", function(parameters, input){
-    if (typeof input === "undefined"){
-        return null;
-    } else if (!isNaN(input.beta)) {
-        if (!isNaN(input.sebeta)) {
-            if      (input.beta - 2*input.sebeta > 0) { return parameters['+'] || null; }
-            else if (input.beta + 2*input.sebeta < 0) { return parameters['-'] || null; }
-        } else {
-            if      (input.beta > 0) { return parameters['+'] || null; }
-            else if (input.beta < 0) { return parameters['-'] || null; }
-        }
-    } else if (!isNaN(input.or)) {
-        if      (input.or > 0) { return parameters['+'] || null; }
-        else if (input.or < 0) { return parameters['-'] || null; }
-    }
-    return null;
-});
-
 function reorderListByValues(dictList, orderedValues, key ) {
     const dictMap = dictList.reduce((map, obj) => {
         map[obj[key]] = obj;
@@ -93,7 +68,13 @@ function generatePlot(variant_list){
     variant_list = JSON.parse(JSON.stringify(variant_list))
 
     // TODO: accept an argument for order of plots maybe, right now assume : Combined, Female, Male:
-    var order = ['.European.Combined', '.European.Female', '.European.Male']
+    // var order = ['.European.Combined', '.European.Female', '.European.Male']
+
+    var order = []
+
+    variant_list.forEach((variant) => {
+        order.push(variant.stratification)
+    });
 
     variant_list = reorderListByValues(variant_list, order, 'stratification')
 
@@ -110,13 +91,19 @@ function generatePlot(variant_list){
         if (x === 0) return best_neglog10_pval * 1.1;
         return -Math.log(x) / Math.LN10;
     };
-    LocusZoom.TransformationFunctions.add("neglog10_handle0", neglog10_handle0);
+
+    if (!LocusZoom.TransformationFunctions._items.has("neglog10_handle0")){
+        LocusZoom.TransformationFunctions.add("neglog10_handle0", neglog10_handle0);
+
+    }
+
 
     var global_panels = [];
 
     // Define data sources object
     // TODO: Can this be replaced with StaticSource + deepcopy?
-    LocusZoom.Adapters.extend('PheWASLZ', 'PheWebSource', {
+    if (!LocusZoom.Adapters._items.has('PheWebSource')){
+        LocusZoom.Adapters.extend('PheWASLZ', 'PheWebSource', {
         getData: function(state, fields, outnames, trans) {
 
             var list = Object.keys(state);
@@ -149,6 +136,7 @@ function generatePlot(variant_list){
 
         }
     });
+    }
 
     var neglog10_significance_threshold_list = []
 
@@ -336,6 +324,37 @@ function generatePlot(variant_list){
 }
 
 onMounted(() => {
+
+    if (!LocusZoom.TransformationFunctions._items.has("percent")){
+        LocusZoom.TransformationFunctions.add("percent", function(x) {
+            if (x === 1) { return "100%"; }
+            x = (x * 100).toPrecision(2);
+            if (x.indexOf('.') !== -1) { x = x.replace(/0+$/, ''); }
+            if (x.endsWith('.')) { x = x.substr(0, x.length-1); }
+            return x + '%';
+        });
+    }
+
+    if (!LocusZoom.ScaleFunctions._items.has("effect_direction")){
+        LocusZoom.ScaleFunctions.add("effect_direction", function(parameters, input){
+        if (typeof input === "undefined"){
+            return null;
+        } else if (!isNaN(input.beta)) {
+            if (!isNaN(input.sebeta)) {
+                if      (input.beta - 2*input.sebeta > 0) { return parameters['+'] || null; }
+                else if (input.beta + 2*input.sebeta < 0) { return parameters['-'] || null; }
+            } else {
+                if      (input.beta > 0) { return parameters['+'] || null; }
+                else if (input.beta < 0) { return parameters['-'] || null; }
+            }
+        } else if (!isNaN(input.or)) {
+            if      (input.or > 0) { return parameters['+'] || null; }
+            else if (input.or < 0) { return parameters['-'] || null; }
+        }
+        return null;
+    });
+    }
+
     generatePlot(props.variantList)
 });
 

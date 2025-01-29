@@ -271,7 +271,6 @@ const handleInteractionRadioChange = () => {
     qqInteractionSubset.value[selectedInteractionStratification1.value] = qqInteractionData.value[selectedInteractionStratification1.value];
     qqInteractionSubset.value[selectedInteractionStratification2.value] = qqInteractionData.value[selectedInteractionStratification2.value];
 
-
   }
 
   refreshKey.value += 1;
@@ -573,7 +572,7 @@ function onInteractionCheckboxChange() {
                     </div>
                   </div>
 
-                  <div class="dropdown float-right" id="dropdown-sumstats">
+                  <div class="dropdown p-1 float-right" id="dropdown-sumstats">
                     <button class="btn btn-primary btn-drop">  Download Summary Statistics  <span class="arrow-container"><span class="arrow-down"></span></span></button>
                     <div class="dropdown-menu dropdown-menu-right p-1" id="dropdown-content-sumstats">
                       <button class="btn btn-secondary w-100 mt-1 mb-1"  id="download-all-button" @click="downloadAll">Download All</button>
@@ -626,7 +625,7 @@ function onInteractionCheckboxChange() {
             </div>
             <div v-else class="interaction">
               <div class="pheno-info col-12 mt-0">
-                <div class="dropdown p-1" id="dropdown-data1">
+                  <div class="dropdown p-1" id="dropdown-data1">
                     <button class="btn btn-primary btn-drop" id="button-data1">{{keyToLabel(selectedInteractionStratification1) + " (" + sampleSizeInteractionLabel[selectedInteractionStratification1] + ")"}}<span class="arrow-container"><span class="arrow-down"></span></span></button>
                     <div class="dropdown-menu" id="dropdown-content-data1">
                         <label v-for="(pheno, index) in infoInteraction">
@@ -836,3 +835,5 @@ function onInteractionCheckboxChange() {
   }
 
 </style>
+
+
