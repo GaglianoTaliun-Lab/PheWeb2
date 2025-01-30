@@ -27,6 +27,17 @@ const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URL;
 const isLoading = ref(false);
 const errorMessage = ref('');
 const refreshKey = ref(0)
+const search = ref('');
+
+const totalCodes = computed(() => formattedVariantList.value.length);
+const matchingCodes = computed(() => {
+  if (!search.value) return totalCodes.value;
+  return formattedVariantList.value.filter((item) =>
+    Object.values(item).some((val) =>
+      String(val).toLowerCase().includes(search.value.toLowerCase())
+    )
+  ).length;
+});
 
 
 const headers = ref([
@@ -62,10 +73,13 @@ onMounted(async () => {
     handleCheckboxChange();
   } catch (error) {
     console.log(error);
+  } finally {
+    isLoading.value = false; // Stop loading
   }
 });
 
 async function fetchPhewasPlottingData(stratification_list) {
+  isLoading.value = true; // Start loading
   var temp_variant_list = [];
   for (var stratification of stratification_list) {
     var result;
@@ -86,6 +100,7 @@ async function fetchPhewasPlottingData(stratification_list) {
   variant_list.value = temp_variant_list;
 
   console.log(variant_list.value)
+  isLoading.value = false; // Stop loading
   //console.log(variant_list.value)
   return variant_list.value;
 }
@@ -132,6 +147,15 @@ const formattedVariantList = computed(() =>
   <v-app>
     <Navbar2 />
     <v-main>
+      <!-- Loading Bar -->
+    <v-progress-linear
+      v-if="isLoading"
+      indeterminate
+      color="primary"
+      height="5"
+    ></v-progress-linear>
+
+
       <div class="ml-4 mt-2">
         <h1 class="mb-0">{{ variantCode }}</h1>
         <!-- why does variant_list here work but not variantList ???-->
@@ -223,10 +247,34 @@ const formattedVariantList = computed(() =>
           <PhewasPlot :key="refreshKey" :variantList="chosen_variants" />
         </div>
 
-        <!-- Updated Table -->
-        <div v-if="formattedVariantList.length > 0" class="mt-4">
-          <v-card elevation="5">
+<!-- Updated Table -->
+<div v-if="formattedVariantList.length > 0" class="mt-4">
+  <v-card elevation="5">
+  <!-- 🔍 Search & Row Count Indicator -->
+  <div class="d-flex justify-space-between align-center px-4 mt-2">
+    <v-text-field
+      v-model="search"
+      label="Search... 'diabetes', 'laboratory'"
+      variant="outlined"
+      prepend-inner-icon="mdi-magnify"
+      clearable
+      class="mr-4"
+      style="max-width: 50%;"
+    ></v-text-field>
+
+    <!-- Row Count Indicator -->
+  <span
+    class="px-2 py-1 rounded font-weight-bold text-white"
+    style="background-color: #337bb7;"
+  >
+    {{ search ? `${matchingCodes} matching codes` : `${totalCodes} total codes` }}
+  </span>
+</div>
+
+            
+            <!-- Updated Table with Search -->
             <v-data-table
+              v-model:search="search"
               :items="formattedVariantList"
               :headers="headers"
               height="700"
@@ -234,6 +282,7 @@ const formattedVariantList = computed(() =>
               :items-per-page="100"
               :loading="isLoading"
               hover
+              :sort-by="[{ key: 'pval', order: 'asc' }]" 
             >
               <template v-slot:item.phenostring="{ item }">
                 <router-link :to="`/phenotypes/${item.phenocode}`">{{ item.phenostring }}</router-link>
