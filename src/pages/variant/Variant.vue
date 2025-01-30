@@ -224,6 +224,7 @@ const formattedVariantList = computed(() =>
               :items-per-page="100"
               :loading="isLoading"
               hover
+              :sort-by="[{ key: 'pval', order: 'asc' }]" 
             >
               <template v-slot:item.phenostring="{ item }">
                 <router-link :to="`/phenotypes/${item.phenocode}`">{{ item.phenostring }}</router-link>
