@@ -9,14 +9,15 @@ import Navbar2 from '../../components/Navbar2.vue';
 import PhewasPlot from '../../components/PhewasPlot.vue';
 
 // TODO: remove this eventually, should be global or only 38 allowed, or something.
-var HG_BUILD_NUMBER = "38";
+import { HG_BUILD_NUMBER, PRIORITY_STRATIFICATIONS } from "../../config.js";
 
 const route = useRoute();
 
 const variantCode = route.params.variant_id;
 const stratification_list = ref(null);
 const selectedStratifications = ref([])
-const variantList = ref([]); // TODO: fix this (self-made) mess... why are there two variantLists??
+
+const chosen_variants = ref([]);
 const maf_text = ref(null);
 const variant = ref(null);
 const rsids = ref(null);
@@ -45,16 +46,20 @@ onMounted(async () => {
     stratification_list.value = JSON.parse(JSON.stringify(response.data));
 
     // we need to map here to get rid of the proxy
-    variantList.value = await fetchPhewasPlottingData(
+    await fetchPhewasPlottingData(
       stratification_list.value.map((stratification) => stratification)
     );
 
     console.log(stratification_list.value)
 
-    maf_text.value = maf_range(variantList.value); // TODO only taking the first one here, should be some kind of combination of all stratifications
-    variant.value = variantList.value[0];
+    maf_text.value = maf_range(variant_list.value); // TODO only taking the first one here, should be some kind of combination of all stratifications
+    variant.value = variant_list.value[0];
     rsids.value = variant.value.rsids ? variant.value.rsids.split(',') : [];
 
+    // set chosen variants to be male and female automatically
+    selectedStratifications.value = PRIORITY_STRATIFICATIONS
+
+    handleCheckboxChange();
   } catch (error) {
     console.log(error);
   }
@@ -93,9 +98,18 @@ const keyToLabel = (stratification) => {
 const handleCheckboxChange = () => {
   console.log("checkbox change")
   console.log(selectedStratifications.value)
-  refreshKey.value += 1;
+  console.log(variant_list.value)
 
-  //TODO : update plotting
+  chosen_variants.value = JSON.parse(JSON.stringify(
+  variant_list.value.filter((variant) => 
+    selectedStratifications.value.includes(variant.stratification.slice(1)) // remove first period
+  )
+));
+
+
+  console.log(chosen_variants.value)
+
+  refreshKey.value += 1;
 }
 
 const formattedVariantList = computed(() =>
@@ -187,7 +201,7 @@ const formattedVariantList = computed(() =>
         <!-- buttons go here ... -->
         <div>
           <div class="pheno-info col-12 mt-0">
-            <div v-if="stratification_list && stratification_list.length > 0" class="dropdown p-1" id="dropdown-data1">
+            <div v-if="stratification_list && stratification_list.length > 0" class="dropdown pt-4" id="dropdown-data1">
                 <button class="btn btn-primary btn-drop" id="button-data1"> Choose Displayed Stratifications <span class="arrow-container"><span class="arrow-down"></span></span></button>
                 <div class="dropdown-menu" id="dropdown-content-data1">
                     <label v-for="(stratification, index) in stratification_list">
@@ -205,8 +219,8 @@ const formattedVariantList = computed(() =>
         </div> 
 
 
-        <div v-if="variant_list.length > 0">
-          <PhewasPlot :key="refreshKey" :variantList="variant_list" />
+        <div v-if="chosen_variants.length > 0">
+          <PhewasPlot :key="refreshKey" :variantList="chosen_variants" />
         </div>
 
         <!-- Updated Table -->

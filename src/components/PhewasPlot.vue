@@ -76,7 +76,13 @@ function generatePlot(variant_list){
         order.push(variant.stratification)
     });
 
+    console.log(order)
+
+    console.log("0 : ", variant_list);
+
     variant_list = reorderListByValues(variant_list, order, 'stratification')
+
+    console.log("1 : ", variant_list)
 
     var best_neglog10_pval = 0;
 
@@ -86,6 +92,8 @@ function generatePlot(variant_list){
             best_neglog10_pval = value
         }
     })
+
+    console.log("2 : ", variant_list)
 
     var neglog10_handle0 = function(x) {
         if (x === 0) return best_neglog10_pval * 1.1;
@@ -102,8 +110,11 @@ function generatePlot(variant_list){
 
     // Define data sources object
     // TODO: Can this be replaced with StaticSource + deepcopy?
-    if (!LocusZoom.Adapters._items.has('PheWebSource')){
-        LocusZoom.Adapters.extend('PheWASLZ', 'PheWebSource', {
+    if(LocusZoom.Adapters._items.has('PheWebSource')){
+        LocusZoom.Adapters._items.delete('PheWebSource');
+    }
+
+    LocusZoom.Adapters.extend('PheWASLZ', 'PheWebSource', {
         getData: function(state, fields, outnames, trans) {
 
             var list = Object.keys(state);
@@ -120,6 +131,7 @@ function generatePlot(variant_list){
             trans = trans || [];
 
             var panel_int = +panel;
+
             var data = JSON.parse(JSON.stringify(variant_list[panel_int].phenos)); //otherwise LZ adds attributes I don't want to the original data.
             data.forEach(function(d, i) {
                 data[i].x = i;
@@ -136,7 +148,6 @@ function generatePlot(variant_list){
 
         }
     });
-    }
 
     var neglog10_significance_threshold_list = []
 
@@ -278,7 +289,7 @@ function generatePlot(variant_list){
                                 {field:"pval|neglog10_handle0", operator:">", value:neglog10_significance_threshold_list[i] * 3/4},
                                 {field:"pval|neglog10_handle0", operator:">", value:best_neglog10_pval / 4}
                             ];
-                            if (variant_list[1].phenos.length > 10) {
+                            if (variant_list[0].phenos.length > 10) {
                                 ret.push({field:"pval", operator:"<", value:_.sortBy(variant_list[i].phenos.map(_.property('pval')))[10]});
                             }
                             return ret;
