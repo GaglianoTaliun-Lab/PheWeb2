@@ -51,10 +51,13 @@ onMounted(async () => {
     rsids.value = variant.value.rsids ? variant.value.rsids.split(',') : [];
   } catch (error) {
     console.log(error);
+  } finally {
+    isLoading.value = false; // Stop loading
   }
 });
 
 async function fetchPhewasPlottingData(stratification_list) {
+  isLoading.value = true; // Start loading
   var temp_variant_list = [];
   for (var stratification of stratification_list) {
     var result;
@@ -73,6 +76,7 @@ async function fetchPhewasPlottingData(stratification_list) {
     }
   }
   variant_list.value = temp_variant_list;
+  isLoading.value = false; // Stop loading
   //console.log(variant_list.value)
   return variant_list.value;
 }
@@ -96,6 +100,15 @@ const formattedVariantList = computed(() =>
   <v-app>
     <Navbar2 />
     <v-main>
+      <!-- Loading Bar -->
+    <v-progress-linear
+      v-if="isLoading"
+      indeterminate
+      color="primary"
+      height="5"
+    ></v-progress-linear>
+
+
       <div class="ml-4 mt-2">
         <h1 class="mb-0">{{ variantCode }}</h1>
         <!-- why does variant_list here work but not variantList ???-->
