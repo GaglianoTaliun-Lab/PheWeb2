@@ -24,6 +24,7 @@ const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URL;
 
 const isLoading = ref(false);
 const errorMessage = ref('');
+const search = ref('');
 
 const headers = ref([
   { title: 'Category', key: 'category' },
@@ -180,7 +181,19 @@ const formattedVariantList = computed(() =>
 <!-- Updated Table -->
 <div v-if="formattedVariantList.length > 0" class="mt-4">
           <v-card elevation="5">
+            <!-- 🔍 Search -->
+            <v-text-field
+              v-model="search"
+              label="Search... 'diabetes', 'laboratory'"
+              variant="outlined"
+              prepend-inner-icon="mdi-magnify"
+              class="mx-4 mt-2"
+              clearable
+            ></v-text-field>
+            
+            <!-- Updated Table with Search -->
             <v-data-table
+              v-model:search="search"
               :items="formattedVariantList"
               :headers="headers"
               height="700"
