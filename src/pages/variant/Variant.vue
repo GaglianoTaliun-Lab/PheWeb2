@@ -200,14 +200,19 @@ const formattedVariantList = computed(() =>
       variant="outlined"
       prepend-inner-icon="mdi-magnify"
       clearable
-      class="flex-grow-1"
+      class="mr-4"
+      style="max-width: 50%;"
     ></v-text-field>
 
-    <span class="text-caption font-weight-bold">
-      {{ search ? `${matchingCodes} matching codes` : `${totalCodes} total codes` }}
-    </span>
-  </div>
-  
+    <!-- Row Count Indicator -->
+  <span
+    class="px-2 py-1 rounded font-weight-bold text-white"
+    style="background-color: #337bb7;"
+  >
+    {{ search ? `${matchingCodes} matching codes` : `${totalCodes} total codes` }}
+  </span>
+</div>
+
             
             <!-- Updated Table with Search -->
             <v-data-table
