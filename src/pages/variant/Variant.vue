@@ -26,6 +26,17 @@ const isLoading = ref(false);
 const errorMessage = ref('');
 const search = ref('');
 
+const totalCodes = computed(() => formattedVariantList.value.length);
+const matchingCodes = computed(() => {
+  if (!search.value) return totalCodes.value;
+  return formattedVariantList.value.filter((item) =>
+    Object.values(item).some((val) =>
+      String(val).toLowerCase().includes(search.value.toLowerCase())
+    )
+  ).length;
+});
+
+
 const headers = ref([
   { title: 'Category', key: 'category' },
   { title: 'Phenotype', key: 'phenostring' },
@@ -180,16 +191,23 @@ const formattedVariantList = computed(() =>
 
 <!-- Updated Table -->
 <div v-if="formattedVariantList.length > 0" class="mt-4">
-          <v-card elevation="5">
-            <!-- 🔍 Search -->
-            <v-text-field
-              v-model="search"
-              label="Search... 'diabetes', 'laboratory'"
-              variant="outlined"
-              prepend-inner-icon="mdi-magnify"
-              class="mx-4 mt-2"
-              clearable
-            ></v-text-field>
+  <v-card elevation="5">
+  <!-- 🔍 Search & Row Count Indicator -->
+  <div class="d-flex justify-space-between align-center px-4 mt-2">
+    <v-text-field
+      v-model="search"
+      label="Search... 'diabetes', 'laboratory'"
+      variant="outlined"
+      prepend-inner-icon="mdi-magnify"
+      clearable
+      class="flex-grow-1"
+    ></v-text-field>
+
+    <span class="text-caption font-weight-bold">
+      {{ search ? `${matchingCodes} matching codes` : `${totalCodes} total codes` }}
+    </span>
+  </div>
+  
             
             <!-- Updated Table with Search -->
             <v-data-table
