@@ -31,6 +31,7 @@ const props = defineProps({
         type : Array,
         required : true,
     },
+    
 });
 
 function custom_LocusZoom_Layouts_get(layout_type, layout_name, customizations) {
@@ -52,32 +53,6 @@ function custom_LocusZoom_Layouts_get(layout_type, layout_name, customizations) 
     return layout;
 }
 
-LocusZoom.TransformationFunctions.add("percent", function(x) {
-    if (x === 1) { return "100%"; }
-    x = (x * 100).toPrecision(2);
-    if (x.indexOf('.') !== -1) { x = x.replace(/0+$/, ''); }
-    if (x.endsWith('.')) { x = x.substr(0, x.length-1); }
-    return x + '%';
-});
-
-LocusZoom.ScaleFunctions.add("effect_direction", function(parameters, input){
-    if (typeof input === "undefined"){
-        return null;
-    } else if (!isNaN(input.beta)) {
-        if (!isNaN(input.sebeta)) {
-            if      (input.beta - 2*input.sebeta > 0) { return parameters['+'] || null; }
-            else if (input.beta + 2*input.sebeta < 0) { return parameters['-'] || null; }
-        } else {
-            if      (input.beta > 0) { return parameters['+'] || null; }
-            else if (input.beta < 0) { return parameters['-'] || null; }
-        }
-    } else if (!isNaN(input.or)) {
-        if      (input.or > 0) { return parameters['+'] || null; }
-        else if (input.or < 0) { return parameters['-'] || null; }
-    }
-    return null;
-});
-
 function reorderListByValues(dictList, orderedValues, key ) {
     const dictMap = dictList.reduce((map, obj) => {
         map[obj[key]] = obj;
@@ -93,30 +68,52 @@ function generatePlot(variant_list){
     variant_list = JSON.parse(JSON.stringify(variant_list))
 
     // TODO: accept an argument for order of plots maybe, right now assume : Combined, Female, Male:
-    var order = ['.european.both', '.european.female', '.european.male']
+    // var order = ['.European.Combined', '.European.Female', '.European.Male']
+
+    var order = []
+
+    variant_list.forEach((variant) => {
+        order.push(variant.stratification)
+    });
+
+    console.log(order)
+
+    console.log("0 : ", variant_list);
 
     variant_list = reorderListByValues(variant_list, order, 'stratification')
+
+    console.log("1 : ", variant_list)
 
     var best_neglog10_pval = 0;
 
     variant_list.forEach(variant => {
-
         var value = d3.max(variant.phenos.map(function(x) { return LocusZoom.TransformationFunctions.get('neglog10')(x.pval); }));
         if (value > best_neglog10_pval){
             best_neglog10_pval = value
         }
     })
 
+    console.log("2 : ", variant_list)
+
     var neglog10_handle0 = function(x) {
         if (x === 0) return best_neglog10_pval * 1.1;
         return -Math.log(x) / Math.LN10;
     };
-    LocusZoom.TransformationFunctions.add("neglog10_handle0", neglog10_handle0);
+
+    if (!LocusZoom.TransformationFunctions._items.has("neglog10_handle0")){
+        LocusZoom.TransformationFunctions.add("neglog10_handle0", neglog10_handle0);
+
+    }
+
 
     var global_panels = [];
 
     // Define data sources object
     // TODO: Can this be replaced with StaticSource + deepcopy?
+    if(LocusZoom.Adapters._items.has('PheWebSource')){
+        LocusZoom.Adapters._items.delete('PheWebSource');
+    }
+
     LocusZoom.Adapters.extend('PheWASLZ', 'PheWebSource', {
         getData: function(state, fields, outnames, trans) {
 
@@ -134,6 +131,7 @@ function generatePlot(variant_list){
             trans = trans || [];
 
             var panel_int = +panel;
+
             var data = JSON.parse(JSON.stringify(variant_list[panel_int].phenos)); //otherwise LZ adds attributes I don't want to the original data.
             data.forEach(function(d, i) {
                 data[i].x = i;
@@ -291,12 +289,12 @@ function generatePlot(variant_list){
                                 {field:"pval|neglog10_handle0", operator:">", value:neglog10_significance_threshold_list[i] * 3/4},
                                 {field:"pval|neglog10_handle0", operator:">", value:best_neglog10_pval / 4}
                             ];
-                            if (variant_list[1].phenos.length > 10) {
+                            if (variant_list[0].phenos.length > 10) {
                                 ret.push({field:"pval", operator:"<", value:_.sortBy(variant_list[i].phenos.map(_.property('pval')))[10]});
                             }
                             return ret;
                         })(),
-                        "behaviors.onclick": [{action:"link", href:window.location.origin+"/phenotypes/{{phewas_code}}"}],
+                        "behaviors.onclick": [{action:"link", href:api+"/pheno/{{phewas_code}}"}],
                     }),
                 ],
     
@@ -337,6 +335,37 @@ function generatePlot(variant_list){
 }
 
 onMounted(() => {
+
+    if (!LocusZoom.TransformationFunctions._items.has("percent")){
+        LocusZoom.TransformationFunctions.add("percent", function(x) {
+            if (x === 1) { return "100%"; }
+            x = (x * 100).toPrecision(2);
+            if (x.indexOf('.') !== -1) { x = x.replace(/0+$/, ''); }
+            if (x.endsWith('.')) { x = x.substr(0, x.length-1); }
+            return x + '%';
+        });
+    }
+
+    if (!LocusZoom.ScaleFunctions._items.has("effect_direction")){
+        LocusZoom.ScaleFunctions.add("effect_direction", function(parameters, input){
+        if (typeof input === "undefined"){
+            return null;
+        } else if (!isNaN(input.beta)) {
+            if (!isNaN(input.sebeta)) {
+                if      (input.beta - 2*input.sebeta > 0) { return parameters['+'] || null; }
+                else if (input.beta + 2*input.sebeta < 0) { return parameters['-'] || null; }
+            } else {
+                if      (input.beta > 0) { return parameters['+'] || null; }
+                else if (input.beta < 0) { return parameters['-'] || null; }
+            }
+        } else if (!isNaN(input.or)) {
+            if      (input.or > 0) { return parameters['+'] || null; }
+            else if (input.or < 0) { return parameters['-'] || null; }
+        }
+        return null;
+    });
+    }
+
     generatePlot(props.variantList)
 });
 
