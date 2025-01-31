@@ -1,6 +1,6 @@
 <script setup>
 import LocusZoom from 'locuszoom';
-import {onMounted, ref} from 'vue'
+import {onMounted, ref, watch} from 'vue'
 import { useRoute } from 'vue-router';
 
 
@@ -9,7 +9,7 @@ import * as utils from '../pages/region/Region.js'
 const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URL
 
 const props = defineProps({
-    data: {},
+    data: Array,
     region:{
         type : String
     },
@@ -97,8 +97,7 @@ if (!LocusZoom.TransformationFunctions._items.has('percent')){
     });
 }
 
-onMounted(() => {
-
+const fetchData = async () => {
     info.value = props.data
 
     if (info.value[0].stratification){
@@ -176,7 +175,7 @@ onMounted(() => {
                         style: {'font-size': '14px'},
                         y : 15,
                         x : 50,
-                     },
+                    },
                     toolbar: {
                         widgets: [
                             {
@@ -351,7 +350,7 @@ onMounted(() => {
     }
 
 
-    
+
     // This outer call to Layouts.get() will ensure that namespaces are applied, and the returned result is a concrete 
     //   layout ready for use in drawing a plot with specific data sets. 
     var layout_new = LocusZoom.Layouts.get('plot', 'association_catalog', { // Override select fields of a pre-made layout 
@@ -473,8 +472,17 @@ onMounted(() => {
             });
         }
     })
-})
+}
 
+onMounted(() => {
+    fetchData();
+})
+watch(
+    () => props.data,
+    (newValue) => {
+        fetchData();
+    },
+);
 
 </script>
 

@@ -387,7 +387,10 @@
 
     // filters
     const selectedSex = ref('All');
-    const sexOptions = ref(['All', 'Combined', 'Male', 'Female']);
+    const sexOptions = computed(() => {
+      const sex = phenotypes.value.map(item => item.sex);
+      return ['All', ...new Set(sex)];
+    });
 
     const selectedAncestry = ref('All');
     const ancestryOptions = computed(() => {

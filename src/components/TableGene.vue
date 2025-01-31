@@ -3,17 +3,96 @@
     elevation="0"
     class="mt-4"
   >
-    <p>Phenotypes with the most-significant associations for this locus:</p>
+    <!-- <p>Phenotypes with the most-significant associations for this locus:</p> -->
     <v-data-table
       :loading="isLoading"
       :headers="headers"
       :items="phenotypes"
+      :items-per-page="5"
+      :sort-by="sortBy"
+      must-sort
+      dense
       hover
-      hide-default-footer>
-
-      <template v-slot:item.phenocode="{ item }">
-        <router-link :to="`/phenotypes/${item.phenocode}`">{{ item.phenocode }}</router-link>
+    >
+      <template v-slot:body="{ items }"> 
+        <tr v-for="item in items"
+          :key="item.phenocode" 
+          :class="{ 'selected-row': item.phenocode === chosenPhenocode }"
+          @click="chosenPhenocode = item.phenocode"
+        >
+          <td style="white-space: nowrap;">
+            <span v-if="item.is_in_real_range === true">
+              <v-icon medium color="success" class="ml-2">mdi-check-outline</v-icon>
+              within the gene
+            </span>
+            <span v-else>
+              <v-row no-gutters >
+                <v-col>
+                  <span v-if="item.distance_to_true_start<0">
+                    {{ item.distance_to_true_start }} bp
+                  </span>
+                  <v-progress-linear 
+                    v-if="item.distance_to_true_start<0"
+                    v-model="item.pos_distance"
+                    color="blue"
+                    :max="100000"
+                    reverse
+                  ></v-progress-linear>
+                </v-col>
+                <v-col>
+                  <span v-if="item.distance_to_true_start>0">
+                    {{ item.distance_to_true_start }} bp
+                  </span>
+                  <v-progress-linear 
+                    v-if="item.distance_to_true_start>0"
+                    v-model="item.distance_to_true_start"
+                    color="blue"
+                    :max="100000"
+                  ></v-progress-linear>
+                </v-col>
+              </v-row>
+              <div style="position: absolute; left: 50%; transform: translateX(-50%);">
+                0
+              </div>
+              <div style="display: flex; justify-content: space-between">
+                <span>-</span>
+                <span>+</span>
+              </div>
+            </span>
+          </td>
+          <td>
+            {{ item.pval }}
+          </td>
+          <td>
+            <router-link :to="`/phenotypes/${item.phenocode_router}`">{{ item.phenostring }}</router-link>
+          </td>
+          <td>
+            {{ item.ancestry }}
+          </td>
+          <td>
+            {{ item.sex}}
+          </td>
+        </tr>
       </template>
+
+      <template v-slot:header.pval="{ column, isSorted, getSortIcon }">
+          <div style="display: flex; ">
+            <span style="white-space: nowrap;">{{ column.title }}</span>
+            <v-tooltip location="top">
+              <template v-slot:activator="{ props }">
+                <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
+              </template>
+              <span style="white-space: normal;">
+                P-value significant threshold: 5e-8 <br>
+                green: significant <br>
+                grey: unsignificant <br>
+              </span>
+            </v-tooltip>
+            <template v-if="isSorted(column)">
+              <v-icon :icon="getSortIcon(column)"></v-icon>
+            </template>
+          </div>
+        </template>
 
       <template v-slot:loading>
         <v-skeleton-loader type="table-row@3"></v-skeleton-loader>
@@ -31,30 +110,58 @@
   const isLoading = ref(false);
   const props = defineProps({
     geneName: String,
-    data: [],
+    data: Array,
   });
   const currentPhenocode = ref(props.phenocode) ;
+  const sortBy = ref([{ key: 'pval', order: 'asc' }]);
+  const chosenPhenocode = ref('')
+  const emit = defineEmits(['updateChosenPheno']);
 
   const headers = ref([
-    { title: 'Top p-value in gene', value: 'pval' },
+    { title: 'Top hit location', value: 'is_in_real_range' },
+    { title: 'Top p-value of phenotype in the range', value: 'pval' },
     { title: 'Phenotype', value: 'phenocode' },
     { title: 'Ancestry', value: 'ancestry' },
     { title: 'Sex', value: 'sex' }
   ]);
 
-  onMounted( () => {
+  const fetchData = async () => {
+    // console.log(props.data)
     phenotypes.value = props.data.map(item => ({
         ...item,
-        phenocode: item.phenocode.split('.').slice(0, 1).join('.') ,
+        phenocode_router: item.phenocode.split('.').slice(0, 1).join('.') ,
         ancestry: `${item.stratification.ancestry}`, // TODO: don't hardcode these
         sex: `${item.stratification.sex}`,
+        pos_distance: -item.distance_to_true_start
       }));
+  }
+
+  onMounted( () => {
+    fetchData();
   });
 
   watch(
     () => props.phenocode,
     (newPhenocode) => {
       currentPhenocode.value = newPhenocode;
+    }
+  );
+  watch(
+    () => props.data,
+    (newValue) => {
+      // console.log(`Chosen data updated: ${newValue}`);
+      fetchData();
+    },
+    // { deep: true }
+  );
+  watch(
+    chosenPhenocode,
+    (newPhenocode) => {
+      console.log(newPhenocode)
+      fetchData();
+      if (newPhenocode != ''){
+            emit('updateChosenPheno', chosenPhenocode)
+          }
     }
   );
 
@@ -66,6 +173,7 @@
     font-size: 1.2rem; 
     color: #333; 
   }
-
+  .selected-row {
+    background-color: #fab9d4; 
+  }
 </style>
-

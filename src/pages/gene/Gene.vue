@@ -49,6 +49,7 @@
         <TableGene 
           :geneName="geneName"
           :data="geneData"
+          @updateChosenPheno="updateChosenPhenoMethod"
         />
       </div>
       <div class="pt-5 pb-5" v-if="plottingData && geneChrom && geneStart && geneStop">
@@ -59,7 +60,7 @@
 </template>
 
 <script setup name="Gene">
-import { ref, computed } from 'vue';
+import { ref, computed, watch} from 'vue';
 import { useRoute } from 'vue-router';
 import Navbar2 from '../../components/Navbar2.vue';
 import TableGene from '../../components/TableGene.vue';
@@ -73,8 +74,8 @@ const route = useRoute();
 const geneName = route.params.gene;
 const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URL;
 const phenocode = computed(() => route.params.phenocode);
-const geneData = ref(null)
-const plottingData = ref(null)
+const geneData = ref(null);
+const plottingData = ref(null);
 
 const geneChrom = ref(null);
 const geneStart = ref(null);
@@ -87,35 +88,62 @@ const ensemblGeneUrl = computed(() => `https://www.ensembl.org/Homo_sapiens/Gene
 const opentargetGeneUrl = computed(() => `https://platform.opentargets.org/search?q=${geneName}&page=1`);
 const geneCardsUrl = computed(() => `https://www.genecards.org/cgi-bin/carddisp.pl?gene=${geneName}`);
 
+const chosenPheno = ref('')
+const updateChosenPhenoMethod = (pheno) => {
+  console.log('Clicked pheno:', pheno.value);
+  chosenPheno.value = pheno.value;
+};
 
-onMounted(async () => {
-
+const fetchData = async () => {
   try {
     const gene_response = await axios.get(`${api}/gene/${geneName}`);
 
-    geneData.value = gene_response.data.data
+    geneData.value = gene_response.data.data;
+    console.log(geneData)
 
     // copy as to not override geneData when deleting stratification
-    plottingData.value = JSON.parse(JSON.stringify(geneData.value));
+    let tempData = JSON.parse(JSON.stringify(geneData.value));
 
-    plottingData.value.forEach((pheno) => {
+    tempData.forEach((pheno) => {
       delete pheno.stratification
     })
 
-    console.log(plottingData)
+    if (chosenPheno.value === '') {
+      if (tempData.length > 0) {
+        const minPvalEntry = tempData.reduce((min, curr) => (curr.pval < min.pval ? curr : min), tempData[0]);
+        plottingData.value = [minPvalEntry];
+      } else {
+        plottingData.value = [];
+      }
+    } else {
+      plottingData.value = tempData.filter((pheno) => pheno.phenocode === chosenPheno.value);
+    }
+
+    // console.log(plottingData)
 
     const genpos_response = await axios.get(`${api}/gene/${geneName}/gene_position`)
 
     geneChrom.value = genpos_response.data[0]
-    geneStart.value = genpos_response.data[1]
-    geneStop.value = genpos_response.data[2]
+    geneStart.value = genpos_response.data[1]-100000
+    geneStop.value = genpos_response.data[2]+100000
 
     region.value = geneChrom.value.toString() + ":" + geneStart.value.toString() + "-" + geneStop.value.toString()
 
   } catch (error) {
     console.log(error)
   }
-})
+}
+
+onMounted( () => {
+  fetchData();
+});
+
+watch(
+  chosenPheno,
+  (newPhenocode) => {
+    fetchData();
+  }
+);
 
 </script>
 
