@@ -88,10 +88,11 @@ const ensemblGeneUrl = computed(() => `https://www.ensembl.org/Homo_sapiens/Gene
 const opentargetGeneUrl = computed(() => `https://platform.opentargets.org/search?q=${geneName}&page=1`);
 const geneCardsUrl = computed(() => `https://www.genecards.org/cgi-bin/carddisp.pl?gene=${geneName}`);
 
-const chosenPheno = ref('')
+const chosenPheno = ref([]);
 const updateChosenPhenoMethod = (pheno) => {
-  console.log('Clicked pheno:', pheno.value);
-  chosenPheno.value = pheno.value;
+  // chosenPheno.value = pheno.value;
+  chosenPheno.value = [...pheno.value];
+  console.log('Clicked pheno:', chosenPheno.value);
 };
 
 const fetchData = async () => {
@@ -99,7 +100,7 @@ const fetchData = async () => {
     const gene_response = await axios.get(`${api}/gene/${geneName}`);
 
     geneData.value = gene_response.data.data;
-    console.log(geneData)
+    // console.log(geneData)
 
     // copy as to not override geneData when deleting stratification
     let tempData = JSON.parse(JSON.stringify(geneData.value));
@@ -108,7 +109,8 @@ const fetchData = async () => {
       delete pheno.stratification
     })
 
-    if (chosenPheno.value === '') {
+    // console.log(chosenPheno.value.length)
+    if (chosenPheno.value.length === 0) {
       if (tempData.length > 0) {
         const minPvalEntry = tempData.reduce((min, curr) => (curr.pval < min.pval ? curr : min), tempData[0]);
         plottingData.value = [minPvalEntry];
@@ -116,10 +118,11 @@ const fetchData = async () => {
         plottingData.value = [];
       }
     } else {
-      plottingData.value = tempData.filter((pheno) => pheno.phenocode === chosenPheno.value);
+      // plottingData.value = tempData.filter((pheno) => pheno.phenocode === chosenPheno.value);
+      plottingData.value = tempData.filter((pheno) => chosenPheno.value.includes(pheno.phenocode));
     }
 
-    // console.log(plottingData)
+    console.log(plottingData)
 
     const genpos_response = await axios.get(`${api}/gene/${geneName}/gene_position`)
 

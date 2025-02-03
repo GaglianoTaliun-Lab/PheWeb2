@@ -517,7 +517,7 @@ function onInteractionCheckboxChange() {
                 
                 <div class="interaction">
                     <div v-if="Object.keys(allInteractionPlottingData).length > 0">
-                      <h3><label for="interactionCheckbox" class="mr-2" >Show SNPxSex Interaction Results</label>
+                      <h3><label for="interactionCheckbox" class="mr-2" >Show Genotypes x Sex Interaction Results</label>
                         <input 
                         type="checkbox" 
                         id="interactionCheckbox" 
