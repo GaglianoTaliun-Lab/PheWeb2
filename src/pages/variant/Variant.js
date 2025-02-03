@@ -11,7 +11,7 @@ function fmt(format) {
 
 export function maf_range(data){
 
-    var text;
+    var text = "";
 
     // turn proxy dict into plain dict
     data = JSON.parse(JSON.stringify(data))
@@ -34,8 +34,8 @@ export function maf_range(data){
         if (afs.length == data[i].phenos.length) {
             // Every pheno has AF
             let af_range = d3.extent(afs).map(two_digit_format);
-            if (af_range[0] === af_range[1]) { text = fmt('AF: {0}', af_range[0]); }
-            else { text = fmt('AF ranges from {0} to {1}', af_range[0], af_range[1]); }
+            if (af_range[0] === af_range[1]) { text += (keyToLabel(data[i].stratification) + " " + fmt('AF: {0}\n', af_range[0])); }
+            else { text += (keyToLabel(data[i].stratification) + " " +  fmt('AF: ranges from {0} to {1}\n', af_range[0], af_range[1])) ; }
             return;
         }
     })
@@ -44,9 +44,9 @@ export function maf_range(data){
     data.forEach(variant => {
         var mafs = variant.phenos.map(function(v) {
             if (isnum(v.maf))  { return v.maf; }
-            else if (isnum(v.af)) { return minor(v.af); }
+            //else if (isnum(v.af)) { return minor(v.af); }
             else if (isnum(v.mac) && isnum(v.num_samples)) { return v.mac / (2*v.num_samples) }
-            else if (isnum(v.ac) && isnum(v.num_samples)) { return minor(v.ac / (2*v.num_samples)); }
+            //else if (isnum(v.ac) && isnum(v.num_samples)) { return minor(v.ac / (2*v.num_samples)); }
             else { return undefined; }
         }).filter(isnum);
 
@@ -56,15 +56,30 @@ export function maf_range(data){
         if (mafs.length === data[i].phenos.length) {
             // Every pheno has a MAF
             let maf_range = d3.extent(mafs).map(two_digit_format);
-            if (maf_range[0] === maf_range[1]) { text = fmt('MAF: {0}', maf_range[0]); }
-            else { text = fmt('MAF ranges from {0} to {1}', maf_range[0], maf_range[1]); }
+            if (maf_range[0] === maf_range[1]) { text += (keyToLabel(data[i].stratification) + " " + fmt('EAF: {0}', maf_range[0])); }
+            else { text += (keyToLabel(data[i].stratification) + " " + fmt('EAF: ranges from {0} to {1}', maf_range[0], maf_range[1])); }
         } else if (mafs.length) {
             // Show the range of MAFs for the phenotypes that have a MAF
             var maf_range = d3.extent(mafs).map(two_digit_format);
-            if (maf_range[0] === maf_range[1]) { text  = fmt('MAF: {0} for phenotypes where it is defined', maf_range[0]); }
-            else { text = fmt('MAF ranges from {0} to {1} for phenotypes where it is defined', maf_range[0], maf_range[1]); }
+            if (maf_range[0] === maf_range[1]) { text  += (keyToLabel(data[i].stratification) + " " + fmt('EAF: {0} for phenotypes where it is defined', maf_range[0])); }
+            else { text += (keyToLabel(data[i].stratification) + " " + fmt('EAF: ranges from {0} to {1} for phenotypes where it is defined', maf_range[0], maf_range[1])); }
         }
     })
 
     return text
+}
+
+function keyToLabel(phenoLabel){
+    console.log("label :", phenoLabel)
+
+    var label = phenoLabel.split(".").slice(1)
+    if (label.length < 1){
+        return []
+    }
+    console.log("label 2 :", label)
+    if (label[0].includes("interaction-")){
+        label[0] = "Interaction: " + label[0].split("-")[1]
+    }
+
+    return label.join(', ')
 }

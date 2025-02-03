@@ -18,7 +18,6 @@ const stratification_list = ref(null);
 const selectedStratifications = ref([])
 
 const chosen_variants = ref([]);
-const maf_text = ref(null);
 const variant = ref(null);
 const rsids = ref(null);
 const variant_list = ref([]);
@@ -41,7 +40,7 @@ onMounted(async () => {
 
     console.log(stratification_list.value)
 
-    maf_text.value = maf_range(variant_list.value); // TODO only taking the first one here, should be some kind of combination of all stratifications
+    //maf_text.value = maf_range(variant_list.value).replace(/\n/g, "<br>");
     variant.value = variant_list.value[0];
     rsids.value = variant.value.rsids ? variant.value.rsids.split(',') : [];
 
@@ -54,6 +53,10 @@ onMounted(async () => {
   } finally {
     isLoading.value = false; // Stop loading
   }
+});
+
+const maf_text = computed(() => {
+    return maf_range(chosen_variants.value).replace(/\n/g, "<br>");
 });
 
 async function fetchPhewasPlottingData(stratification_list) {
@@ -123,7 +126,7 @@ const handleCheckboxChange = () => {
         <!-- why does variant_list here work but not variantList ???-->
         <div v-if="variant">
           <p class="mb-0"> Nearest genes: <i>{{ variant.nearest_genes }}</i></p>
-          <p class="mb-0"> {{ maf_text }} </p>
+          <p class="mb-0" v-html="maf_text"></p>
           <p class="mb-0">
             View on
             <a
