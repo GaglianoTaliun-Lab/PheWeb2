@@ -7,8 +7,8 @@ import { maf_range } from './Variant.js';
 
 import Navbar2 from '../../components/Navbar2.vue';
 import PhewasPlot from '../../components/PhewasPlot.vue';
+import VariantTable from '../../components/VariantTable.vue';
 
-// TODO: remove this eventually, should be global or only 38 allowed, or something.
 import { HG_BUILD_NUMBER, PRIORITY_STRATIFICATIONS } from "../../config.js";
 
 const route = useRoute();
@@ -25,30 +25,8 @@ const variant_list = ref([]);
 const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URL;
 
 const isLoading = ref(false);
-const errorMessage = ref('');
 const refreshKey = ref(0)
-const search = ref('');
 
-const totalCodes = computed(() => formattedVariantList.value.length);
-const matchingCodes = computed(() => {
-  if (!search.value) return totalCodes.value;
-  return formattedVariantList.value.filter((item) =>
-    Object.values(item).some((val) =>
-      String(val).toLowerCase().includes(search.value.toLowerCase())
-    )
-  ).length;
-});
-
-
-const headers = ref([
-  { title: 'Category', key: 'category' },
-  { title: 'Phenotype', key: 'phenostring' },
-  { title: 'Sex', key: 'sex' },
-  { title: 'Ancestry', key: 'ancestry' },
-  { title: 'P-value', key: 'pval' },
-  { title: 'Effect Size (se)', key: 'beta_se' },
-  { title: 'Number of Samples', key: 'num_samples' },
-]);
 
 onMounted(async () => {
   try {
@@ -101,7 +79,6 @@ async function fetchPhewasPlottingData(stratification_list) {
 
   console.log(variant_list.value)
   isLoading.value = false; // Stop loading
-  //console.log(variant_list.value)
   return variant_list.value;
 }
 
@@ -116,30 +93,15 @@ const handleCheckboxChange = () => {
   console.log(variant_list.value)
 
   chosen_variants.value = JSON.parse(JSON.stringify(
-  variant_list.value.filter((variant) => 
-    selectedStratifications.value.includes(variant.stratification.slice(1)) // remove first period
-  )
-));
-
+    variant_list.value.filter((variant) => 
+      selectedStratifications.value.includes(variant.stratification.slice(1)) // remove first period
+    )
+  ));
 
   console.log(chosen_variants.value)
 
   refreshKey.value += 1;
 }
-
-const formattedVariantList = computed(() =>
-  variant_list.value.flatMap((v) =>
-    v.phenos.map((pheno) => ({
-      category: pheno.category,
-      phenostring: pheno.phenostring,
-      sex: pheno.stratification.sex,
-      ancestry: pheno.stratification.ancestry,
-      pval: pheno.pval,
-      beta_se: `${pheno.beta} (${pheno.sebeta})`,
-      num_samples: pheno.num_samples,
-    }))
-  )
-);
 
 </script>
 
@@ -160,7 +122,7 @@ const formattedVariantList = computed(() =>
         <h1 class="mb-0">{{ variantCode }}</h1>
         <!-- why does variant_list here work but not variantList ???-->
         <div v-if="variant">
-          <p class="mb-0"> Nearest genes: {{ variant.nearest_genes }}</p>
+          <p class="mb-0"> Nearest genes: <i>{{ variant.nearest_genes }}</i></p>
           <p class="mb-0"> {{ maf_text }} </p>
           <p class="mb-0">
             View on
@@ -247,55 +209,10 @@ const formattedVariantList = computed(() =>
           <PhewasPlot :key="refreshKey" :variantList="chosen_variants" />
         </div>
 
-<!-- Updated Table -->
-<div v-if="formattedVariantList.length > 0" class="mt-4">
-  <v-card elevation="5">
-  <!-- 🔍 Search & Row Count Indicator -->
-  <div class="d-flex justify-space-between align-center px-4 mt-2">
-    <v-text-field
-      v-model="search"
-      label="Search... 'diabetes', 'laboratory'"
-      variant="outlined"
-      prepend-inner-icon="mdi-magnify"
-      clearable
-      class="mr-4"
-      style="max-width: 50%;"
-    ></v-text-field>
+        <VariantTable :key="refreshKey" :selectedStratifications="selectedStratifications" :variantList="variant_list"></VariantTable>
 
-    <!-- Row Count Indicator -->
-  <span
-    class="px-2 py-1 rounded font-weight-bold text-white"
-    style="background-color: #337bb7;"
-  >
-    {{ search ? `${matchingCodes} matching codes` : `${totalCodes} total codes` }}
-  </span>
-</div>
-
-            
-            <!-- Updated Table with Search -->
-            <v-data-table
-              v-model:search="search"
-              :items="formattedVariantList"
-              :headers="headers"
-              height="700"
-              fixed-header
-              :items-per-page="100"
-              :loading="isLoading"
-              hover
-              :sort-by="[{ key: 'pval', order: 'asc' }]" 
-            >
-              <template v-slot:item.phenostring="{ item }">
-                <router-link :to="`/phenotypes/${item.phenocode}`">{{ item.phenostring }}</router-link>
-              </template>
-
-              <template v-slot:item.pval="{ item }">
-                <span style="white-space: nowrap;">{{ item.pval }}</span>
-              </template>
-            </v-data-table>
-          </v-card>
-        </div>
       </div>
-    </v-main>
+    </v-main> 
   </v-app>
 </template>
 
