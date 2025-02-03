@@ -280,8 +280,8 @@ function generatePlot(variant_list){
                         "tooltip.closable": false,
                         "tooltip.html": ("<div><strong>{{phewas_string}}</strong></div>\n" +
                                           "<div><strong style='color:{{color}}'>{{category_name}}</strong></div>\n" +
-                                          lz_template),
-    
+                                          lz_template + "<br>" + 
+                                          "<a href=\"" + window.location.origin + "/phenotypes/{{phewas_code}}\"" + ">Go to Pheno Page</a>"),
                         // Show labels that are: in the top 10, and (by neglog10) >=75% of sig threshold, and >=25% of best
                         "label.text": "{{phewas_string}}",
                         "label.filters": (function() {
@@ -294,7 +294,7 @@ function generatePlot(variant_list){
                             }
                             return ret;
                         })(),
-                        "behaviors.onclick": [{action:"link", href:api+"/pheno/{{phewas_code}}"}],
+                        //"behaviors.onclick": [{action:"link", href:window.location.origin+"/phenotypes/{{phewas_code}}"}],
                     }),
                 ],
     
