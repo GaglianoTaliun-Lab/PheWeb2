@@ -160,6 +160,14 @@
         </div>
       </template>
 
+      <template v-slot:item.pval="{ item }">
+        <span>
+          <v-chip v-if="item.pval !== 'NA'" :color="getColour(item.pval)">
+                {{ item.pval }}
+              </v-chip>
+        </span>
+      </template>
+
       <template v-slot:item.phenostring="{ item }">
         <span>
           <router-link :to="`/phenotypes/${item.phenocode_router}`">{{ item.phenostring }}</router-link>
@@ -210,6 +218,12 @@
         pos_distance: -item.distance_to_true_start
       }));
   }
+
+  const getColour = (pval) => {
+    if (pval < 5e-8 && pval !== null) return 'green';
+    else if (pval === "NA") return null;
+    return '#grey';
+  };
 
   onMounted( () => {
     fetchData();

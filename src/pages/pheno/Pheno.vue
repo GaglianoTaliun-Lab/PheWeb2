@@ -75,11 +75,13 @@ const updateHoverVariantMethod = (variant) => {
   // console.log(`Hovered Variant updated: ${hoverVariant.value}`);
 };
 
+const isLoading = ref(false);
+
 onMounted(async () => {
     try {
       // const response = await axios.get(`${api}/phenotypes/phenotypes_list/` + phenocode);
       // const responseInteraction = await axios.get(`${api}/phenotypes/interaction_list/` + phenocode);
-
+      isLoading.value = true;
       const response = await axios.get(`${api}/phenotypes/${phenocode}/phenotypes_list`);
       const responseInteraction = await axios.get(`${api}/phenotypes/${phenocode}/interaction_list`);
 
@@ -143,6 +145,9 @@ onMounted(async () => {
     }
     catch (error) {
       console.log(error);
+    }
+    finally {
+      isLoading.value = false; // Stop loading
     }
 });
 
@@ -513,6 +518,12 @@ function onInteractionCheckboxChange() {
             <div>
               <h1 v-if="phenostring">{{phenocode}}: {{phenostring}}</h1>
               <h1 v-else>{{phenocode}}</h1>
+              <v-progress-linear
+                v-if="isLoading"
+                indeterminate
+                color="primary"
+                height="5"
+              ></v-progress-linear>
               <div class="links m-1">
                 
                 <div class="interaction">
@@ -669,7 +680,7 @@ function onInteractionCheckboxChange() {
                   </div>
             </div> 
             <div v-if="miamiInteractionToggle && Object.keys(miamiInteractionData).length > 0">
-                <InteractionMiamiPlot :key="refreshKey" :data="miamiInteractionData" @updateChosenVariant="updateChosenVariantMehod"/>
+                <InteractionMiamiPlot :key="refreshKey" :data="miamiInteractionData" :hoverVariant="hoverVariant" @updateChosenVariant="updateChosenVariantMehod"/>
                 <InteractionTable 
                   :selectedStratification1= "selectedInteractionStratification1"
                   :selectedStratification2= "selectedInteractionStratification2"
@@ -679,10 +690,11 @@ function onInteractionCheckboxChange() {
                   :selectedType= "selectedType"
                   :miamiData="miamiInteractionData"
                   :chosenVariant="chosenVariant"
+                  @updateHoverVariant="updateHoverVariantMethod"
                 />
             </div>
             <div v-else-if="!miamiInteractionToggle && Object.keys(manhattanInteractionData).length > 0">
-                <InteractionManhattanPlot :key="refreshKey" :data="manhattanInteractionData" @updateChosenVariant="updateChosenVariantMehod"/>
+                <InteractionManhattanPlot :key="refreshKey" :data="manhattanInteractionData" :hoverVariant="hoverVariant" @updateChosenVariant="updateChosenVariantMehod"/>
                 <InteractionTable 
                   :selectedStratification1= "selectedInteractionStratification1"
                   :selectedStratification2= "selectedInteractionStratification2"
@@ -692,6 +704,7 @@ function onInteractionCheckboxChange() {
                   :selectedType= "selectedType"
                   :miamiData="manhattanInteractionData"
                   :chosenVariant="chosenVariant"
+                  @updateHoverVariant="updateHoverVariantMethod"
                 />
             </div>
 
