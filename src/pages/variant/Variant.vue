@@ -133,30 +133,35 @@ const handleCheckboxChange = () => {
               :href="`http://genome.ucsc.edu/cgi-bin/hgTracks?db=hg${HG_BUILD_NUMBER}&highlight=hg${HG_BUILD_NUMBER}.chr${variant.chrom}%3A${variant.pos}-${variant.pos}&position=chr${variant.chrom}%3A${variant.pos - 200000}-${variant.pos + 200000}`"
               target="_blank"
               rel="noopener noreferrer"
+              class="variant-link"
               >UCSC</a
             >,
             <a
               :href="`https://www.ncbi.nlm.nih.gov/snp/?term=${variant.chrom}%5BChromosome%5D+AND+${variant.pos}%5BCHRPOS%5D`"
               target="_blank"
               rel="noopener noreferrer"
+              class="variant-link"
               >dbSNP</a
             >,
             <a
               :href="`https://useast.ensembl.org/Homo_sapiens/Location/Variant/Table?r=${variant.chrom}:${variant.pos}-${variant.pos}`"
               target="_blank"
               rel="noopener noreferrer"
+              class="variant-link"
               >Ensembl</a
             >,
             <a
               :href="`https://genetics.opentargets.org/Variant/${variant.chrom}_${variant.pos}_${variant.ref}_${variant.alt}/associations`"
               target="_blank"
               rel="noopener noreferrer"
+              class="variant-link"
               >Open Targets Genetics</a
             >,
             <a
               :href="`https://gnomad.broadinstitute.org/variant/${variant.chrom}-${variant.pos}-${variant.ref}-${variant.alt}?dataset=gnomad_r4`"
               target="_blank"
               rel="noopener noreferrer"
+              class="variant-link"
               >gnomAD</a
             >
 
@@ -306,5 +311,16 @@ const handleCheckboxChange = () => {
 .btn-primary:hover {
   background-color: darkgrey !important;
   color: black;
+}
+
+.variant-link {
+  display: inline-block;
+  /* margin-right: 12px; */
+  color: #1e88e5;
+  text-decoration: none;
+}
+
+.variant-link:hover {
+  text-decoration: underline;
 }
 </style>

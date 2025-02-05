@@ -2,6 +2,12 @@
   <v-app>
     <Navbar2 />
     <v-main>      
+      <v-progress-linear
+        v-if="isLoading"
+        indeterminate
+        color="primary"
+        height="5"
+      ></v-progress-linear>
       <div v-if="geneChrom && geneStart && geneStop">
         <h2 style="font-weight: bold;"><i>{{ geneName }}</i> ({{ geneChrom }}:{{ geneStart }}-{{ geneStop }})</h2>
       </div>
@@ -10,6 +16,7 @@
       </div>
       <!-- External links for the gene -->
       <div class="gene-links">
+        View on
         <a 
           :href="ncbiGeneUrl" 
           target="_blank" 
@@ -17,7 +24,7 @@
           class="gene-link"
         >
           NCBI
-        </a>
+        </a>,
         <a 
           :href="ensemblGeneUrl" 
           target="_blank" 
@@ -25,7 +32,7 @@
           class="gene-link"
         >
           Ensembl
-        </a>
+        </a>,
         <a 
           :href="opentargetGeneUrl" 
           target="_blank" 
@@ -33,7 +40,7 @@
           class="gene-link"
         >
           Open Targets
-        </a>
+        </a>,
         <a 
           :href="geneCardsUrl" 
           target="_blank" 
@@ -92,11 +99,14 @@ const chosenPheno = ref([]);
 const updateChosenPhenoMethod = (pheno) => {
   // chosenPheno.value = pheno.value;
   chosenPheno.value = [...pheno.value];
-  console.log('Clicked pheno:', chosenPheno.value);
+  // console.log('Clicked pheno:', chosenPheno.value);
+  // console.log(chosenPheno.value.length)
 };
+const isLoading = ref(false);
 
 const fetchData = async () => {
   try {
+    isLoading.value = true;
     const gene_response = await axios.get(`${api}/gene/${geneName}`);
 
     geneData.value = gene_response.data.data;
@@ -122,7 +132,7 @@ const fetchData = async () => {
       plottingData.value = tempData.filter((pheno) => chosenPheno.value.includes(pheno.phenocode));
     }
 
-    console.log(plottingData)
+    // console.log(plottingData)
 
     const genpos_response = await axios.get(`${api}/gene/${geneName}/gene_position`)
 
@@ -134,6 +144,8 @@ const fetchData = async () => {
 
   } catch (error) {
     console.log(error)
+  } finally {
+    isLoading.value = false; // Stop loading
   }
 }
 
@@ -157,7 +169,7 @@ watch(
 
 .gene-link {
   display: inline-block;
-  margin-right: 12px;
+  /* margin-right: 12px; */
   color: #1e88e5;
   text-decoration: none;
 }
