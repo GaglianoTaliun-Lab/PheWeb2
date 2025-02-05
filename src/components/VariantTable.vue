@@ -45,6 +45,7 @@ import { ref, computed } from 'vue';
 const props = defineProps({
     selectedStratifications: Object,
     variantList: Object,
+    categoryList : Object,
 });
 
 const headers = ref([
@@ -74,22 +75,21 @@ const matchingCodes = computed(() => {
 const formattedVariantList = computed(() => {
     return props.variantList?.flatMap((v) => {
 
-        console.log(props.selectedStratifications)
-        console.log(v.stratification)
-
-        if (!props.selectedStratifications.includes(v.stratification.slice(1))) return []; // Skip if not matching
+        if (!props.selectedStratifications.includes(v.stratification.slice(1))) return [];
 
         totalCodes.value = totalCodes.value + v.phenos.length;
 
-        return v.phenos.map((pheno) => ({
-            category: pheno.category,
-            phenostring: pheno.phenostring,
-            sex: pheno.stratification.sex,
-            ancestry: pheno.stratification.ancestry,
-            pval: pheno.pval,
-            beta_se: `${pheno.beta} (${pheno.sebeta})`,
-            num_samples: pheno.num_samples,
-        }));
+        return v.phenos
+            .filter((pheno) => props.categoryList.includes(pheno.category))
+            .map((pheno) => ({
+                category: pheno.category,
+                phenostring: pheno.phenostring,
+                sex: pheno.stratification.sex,
+                ancestry: pheno.stratification.ancestry,
+                pval: pheno.pval,
+                beta_se: `${pheno.beta} (${pheno.sebeta})`,
+                num_samples: pheno.num_samples,
+            }));
     })
 });
 

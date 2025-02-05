@@ -30,8 +30,7 @@ const props = defineProps({
     variantList: {
         type : Array,
         required : true,
-    },
-    
+    }
 });
 
 function custom_LocusZoom_Layouts_get(layout_type, layout_name, customizations) {
@@ -64,11 +63,7 @@ function reorderListByValues(dictList, orderedValues, key ) {
 
 function generatePlot(variant_list){
 
-
     variant_list = JSON.parse(JSON.stringify(variant_list))
-
-    // TODO: accept an argument for order of plots maybe, right now assume : Combined, Female, Male:
-    // var order = ['.European.Combined', '.European.Female', '.European.Male']
 
     var order = []
 
@@ -76,13 +71,7 @@ function generatePlot(variant_list){
         order.push(variant.stratification)
     });
 
-    console.log(order)
-
-    console.log("0 : ", variant_list);
-
     variant_list = reorderListByValues(variant_list, order, 'stratification')
-
-    console.log("1 : ", variant_list)
 
     var best_neglog10_pval = 0;
 
@@ -92,8 +81,6 @@ function generatePlot(variant_list){
             best_neglog10_pval = value
         }
     })
-
-    console.log("2 : ", variant_list)
 
     var neglog10_handle0 = function(x) {
         if (x === 0) return best_neglog10_pval * 1.1;
