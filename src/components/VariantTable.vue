@@ -1,42 +1,34 @@
 <template>
-    <div v-if="formattedVariantList.length > 0" class="mt-4">
-        <v-card elevation="5">
-            <div class="d-flex justify-space-between align-center px-4 mt-2">
-                <v-text-field
-                    v-model="search"
-                    label="Search... 'diabetes', 'laboratory'"
-                    variant="outlined"
-                    prepend-inner-icon="mdi-magnify"
-                    clearable
-                    class="mr-4"
-                    style="max-width: 50%;"
-                ></v-text-field>
-                <span class="px-2 py-1 rounded font-weight-bold text-white" style="background-color: #337bb7;">
-                    {{ search ? `${matchingCodes} matching codes` : `${totalCodes} total codes` }}
-                </span>
-            </div>
-                    
-            <!-- Updated Table with Search -->
-            <v-data-table
-                v-model:search="search"
-                :items="formattedVariantList"
-                :headers="headers"
-                height="700"
-                fixed-header
-                :items-per-page="100"
-                hover
-                :sort-by="[{ key: 'pval', order: 'asc' }]"
-            >
-                <template v-slot:item.phenostring="{ item }">
-                    <router-link :to="`/phenotypes/${item.phenocode}`">{{ item.phenostring }}</router-link>
-                </template>
+<div v-if="formattedVariantList.length > 0" class="mt-4">
+    <v-card elevation="5">
+        <v-data-table
+            :items="formattedVariantList"
+            :headers="headers"
+            height="700"
+            fixed-header
+            :items-per-page="100"
+            hover
+            :sort-by="[{ key: 'pval', order: 'asc' }]"
+        >
+            <!-- Top slot for the summary span -->
+            <template v-slot:top>
+                <div class="d-flex justify-end px-4 mt-2">
+                    <span class="px-2 py-1 rounded font-weight-bold text-white" style="background-color: #337bb7;">
+                        {{ search ? `${matchingCodes} matching codes` : `${totalCodes} total codes` }}
+                    </span>
+                </div>
+            </template>
 
-                <template v-slot:item.pval="{ item }">
-                    <span style="white-space: nowrap;">{{ item.pval }}</span>
-                </template>
-            </v-data-table>
-        </v-card>
-    </div>
+            <template v-slot:item.phenostring="{ item }">
+                <router-link :to="`/phenotypes/${item.phenocode}`">{{ item.phenostring }}</router-link>
+            </template>
+
+            <template v-slot:item.pval="{ item }">
+                <span style="white-space: nowrap;">{{ item.pval }}</span>
+            </template>
+        </v-data-table>
+    </v-card>
+</div>
 </template>
     
 <script setup>
