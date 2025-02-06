@@ -1,5 +1,6 @@
 <template>
     <div v-if="formattedVariantList.length > 0" class="mt-4">
+      <!-- Previous template code remains the same until the category search field -->
       <v-card elevation="5">
         <v-data-table
           :items="filteredVariantList"
@@ -10,7 +11,7 @@
           hover
           :sort-by="[{ key: 'pval', order: 'asc' }]"
         >
-          <!-- Top slot for the summary count -->
+          <!-- Top slot remains the same -->
           <template v-slot:top>
             <div class="d-flex justify-end px-4 mt-2">
               <span class="px-2 py-1 rounded font-weight-bold text-white" style="background-color: #337bb7;">
@@ -41,7 +42,7 @@
                   <v-text-field
                     v-model="selectedCategory"
                     label="Enter category"
-                    hint="Try Diseases"
+                    :hint="firstCategory"
                     style="width: 400px;"
                     variant="outlined"
                     density="compact"
@@ -99,7 +100,7 @@
                   <v-text-field
                     v-model="selectedPheno"
                     label="Enter phenotype"
-                    hint="Try Type 1 Diabetes"
+                    :hint="firstPhenotype"
                     style="width: 400px;"
                     variant="outlined"
                     density="compact"
@@ -135,6 +136,7 @@
             </div>
           </template>
   
+          <!-- Other template slots remain the same -->
           <template v-slot:item.phenostring="{ item }">
             <router-link :to="`/phenotypes/${item.phenocode}`">{{ item.phenostring }}</router-link>
           </template>
@@ -155,6 +157,7 @@
     variantList: Object,
   });
   
+  // ... Previous header definitions and other refs remain the same ...
   const headers = ref([
     { 
       title: 'Category', 
@@ -193,17 +196,43 @@
     },
   ]);
   
-  // Search menu states
   const categoryMenu = ref(false);
   const phenoMenu = ref(false);
-  
-  // Search input values
   const selectedCategory = ref('');
   const selectedPheno = ref('');
   const filteredCategory = ref('All');
   const filteredPheno = ref('All');
   
-  // Filter functions
+  // Format variant list (same as before)
+  const formattedVariantList = computed(() => {
+    return props.variantList?.flatMap((v) => {
+      if (!props.selectedStratifications.includes(v.stratification.slice(1))) return [];
+  
+      return v.phenos.map((pheno) => ({
+        category: pheno.category,
+        phenocode: pheno.phenocode,
+        phenostring: pheno.phenostring,
+        sex: pheno.stratification.sex,
+        ancestry: pheno.stratification.ancestry,
+        pval: pheno.pval,
+        beta_se: `${pheno.beta} (${pheno.sebeta})`,
+        num_samples: pheno.num_samples,
+      }));
+    }) || [];
+  });
+  
+  // New computed properties for dynamic hints
+  const firstCategory = computed(() => {
+    const firstItem = formattedVariantList.value[0];
+    return firstItem ? `Try "${firstItem.category}"` : 'Enter category';
+  });
+  
+  const firstPhenotype = computed(() => {
+    const firstItem = formattedVariantList.value[0];
+    return firstItem ? `Try "${firstItem.phenostring}"` : 'Enter phenotype';
+  });
+  
+  // Filter functions remain the same
   const filterCategory = () => {
     filteredCategory.value = selectedCategory.value;
     categoryMenu.value = false;
@@ -226,25 +255,7 @@
     phenoMenu.value = false;
   };
   
-  // Format and filter variant list
-  const formattedVariantList = computed(() => {
-    return props.variantList?.flatMap((v) => {
-      if (!props.selectedStratifications.includes(v.stratification.slice(1))) return [];
-  
-      return v.phenos.map((pheno) => ({
-        category: pheno.category,
-        phenocode: pheno.phenocode,
-        phenostring: pheno.phenostring,
-        sex: pheno.stratification.sex,
-        ancestry: pheno.stratification.ancestry,
-        pval: pheno.pval,
-        beta_se: `${pheno.beta} (${pheno.sebeta})`,
-        num_samples: pheno.num_samples,
-      }));
-    }) || [];
-  });
-  
-  // Apply filters to the formatted list
+  // Filtered list computation remains the same
   const filteredVariantList = computed(() => {
     return formattedVariantList.value.filter(item => {
       const categoryMatch = filteredCategory.value === 'All' || 
