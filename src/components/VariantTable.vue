@@ -77,10 +77,10 @@ const formattedVariantList = computed(() => {
 
         if (!props.selectedStratifications.includes(v.stratification.slice(1))) return [];
 
-        totalCodes.value = totalCodes.value + v.phenos.length;
 
-        return v.phenos
+        var phenos = v.phenos
             .filter((pheno) => props.categoryList.includes(pheno.category))
+            .filter((pheno) => pheno.pval < 1)
             .map((pheno) => ({
                 category: pheno.category,
                 phenostring: pheno.phenostring,
@@ -90,6 +90,10 @@ const formattedVariantList = computed(() => {
                 beta_se: `${pheno.beta} (${pheno.sebeta})`,
                 num_samples: pheno.num_samples,
             }));
+
+        totalCodes.value = totalCodes.value + phenos.length;
+
+        return phenos
     })
 });
 

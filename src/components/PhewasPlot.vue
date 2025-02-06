@@ -229,7 +229,9 @@ function generatePlot(variant_list){
                 },
                 id: i.toString(),
                 min_width: 640, // feels reasonable to me
-                margin: { top: 40, right: 40, bottom: 80, left: 50 },
+                min_height : 200,
+                height : 260,
+                margin: { top: 40, right: 40, bottom: 20, left: 50 },
                 data_layers: [
                     LocusZoom.Layouts.get('data_layer', 'significance', {
                         unnamespaced: true,
@@ -284,21 +286,24 @@ function generatePlot(variant_list){
                         //"behaviors.onclick": [{action:"link", href:window.location.origin+"/phenotypes/{{phewas_code}}"}],
                     }),
                 ],
-    
-                // Use categories as x ticks.
-                "axes.x.ticks": first_of_each_category_list[i].map(function(pheno) {
+
+                "axes.y1.label": "-log\u2081\u2080(p-value)",
+            }),
+        )
+    });
+
+    // add x axis labels to last panel
+    panel_list[panel_list.length -1]["axes"]["x"]["ticks"] = first_of_each_category_list[panel_list.length -1].map(function(pheno) {
                     return {
                         style: {fill: pheno.color, "font-size":"11px", "font-weight":"bold", "text-anchor":"start"},
                         transform: "translate(15, 0) rotate(50)",
                         text: pheno.category,
                         x: pheno.idx
                     };
-                }),
-    
-                "axes.y1.label": "-log\u2081\u2080(p-value)",
-            }),
-        )
-    });
+                })
+
+    panel_list[panel_list.length -1]['margin']['bottom'] = 100
+    panel_list[panel_list.length -1]['height'] += 100
 
     var layout = {
         state: {
@@ -310,7 +315,6 @@ function generatePlot(variant_list){
                 {type: "download_png", position: "right"},
             ],
         },
-        min_height: 400,
         responsive_resize: true,
         mouse_guide: false,
         panels: panel_list,

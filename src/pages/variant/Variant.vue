@@ -104,7 +104,7 @@ const handleCheckboxChange = () => {
       ...variant,
       phenos: variant.phenos.filter((pheno) => selectedCategories.value.includes(pheno.category))
     }))
-));
+  ));
 
   refreshKey.value += 1;
 }
