@@ -1,156 +1,132 @@
 <template>
-    <div v-if="formattedVariantList.length > 0" class="mt-4">
-      <!-- Previous template code remains the same until the category search field -->
-      <v-card elevation="5">
-        <v-data-table
-          :items="filteredVariantList"
-          :headers="headers"
-          height="700"
-          fixed-header
-          :items-per-page="100"
-          hover
-          :sort-by="[{ key: 'pval', order: 'asc' }]"
-        >
-          <!-- Top slot remains the same -->
-          <template v-slot:top>
-            <div class="d-flex justify-end px-4 mt-2">
-              <span class="px-2 py-1 rounded font-weight-bold text-white" style="background-color: #337bb7;">
-                {{ filteredVariantList.length }} {{ filteredVariantList.length === 1 ? 'result' : 'results' }}
-              </span>
-            </div>
-          </template>
-  
-          <template v-slot:header.category="{ column }">
-            <div style="display: flex; align-items: center;">
-              <span style="white-space: nowrap;">{{ column.title }}</span>
-              <v-menu
-                open-on-hover
-                v-model="categoryMenu"
-                :close-on-content-click="false"
-                location="bottom"
-              >
-                <template v-slot:activator="{ props }">
-                  <v-icon 
-                    small 
-                    color="primary" 
-                    v-bind="props" 
-                    class="ml-2"
-                    :icon="filteredCategory === 'All' ? 'mdi-feature-search-outline' : 'mdi-feature-search'"
-                  ></v-icon>
-                </template>
-                <v-card class="pa-3">
-                  <v-text-field
-                    v-model="selectedCategory"
-                    label="Enter category"
-                    :hint="firstCategory"
-                    style="width: 400px;"
-                    variant="outlined"
-                    density="compact"
-                    elevation="2"
-                    rounded
-                    prepend-inner-icon="mdi-magnify"
-                    @keydown.enter="filterCategory"
-                  ></v-text-field>
-                  <v-row justify="end">
-                    <v-col cols="auto">
-                      <v-btn 
-                        @click="clearCategory" 
-                        color="primary" 
-                        class="mt-3"
-                        variant="outlined"
-                      >
-                        Clear
-                      </v-btn>
-                    </v-col>
-                    <v-col cols="auto">
-                      <v-btn 
-                        @click="filterCategory" 
-                        color="primary" 
-                        class="mt-3"
-                        variant="outlined"
-                      >
-                        Save
-                      </v-btn>
-                    </v-col>
-                  </v-row>
-                </v-card>
-              </v-menu>
-            </div>
-          </template>
-  
-          <template v-slot:header.phenostring="{ column }">
-            <div style="display: flex; align-items: center;">
-              <span style="white-space: nowrap;">{{ column.title }}</span>
-              <v-menu
-                open-on-hover
-                v-model="phenoMenu"
-                :close-on-content-click="false"
-                location="bottom"
-              >
-                <template v-slot:activator="{ props }">
-                  <v-icon 
-                    small 
-                    color="primary" 
-                    v-bind="props" 
-                    class="ml-2"
-                    :icon="filteredPheno === 'All' ? 'mdi-feature-search-outline' : 'mdi-feature-search'"
-                  ></v-icon>
-                </template>
-                <v-card class="pa-3">
-                  <v-text-field
-                    v-model="selectedPheno"
-                    label="Enter phenotype"
-                    :hint="firstPhenotype"
-                    style="width: 400px;"
-                    variant="outlined"
-                    density="compact"
-                    elevation="2"
-                    rounded
-                    prepend-inner-icon="mdi-magnify"
-                    @keydown.enter="filterPheno"
-                  ></v-text-field>
-                  <v-row justify="end">
-                    <v-col cols="auto">
-                      <v-btn 
-                        @click="clearPheno" 
-                        color="primary" 
-                        class="mt-3"
-                        variant="outlined"
-                      >
-                        Clear
-                      </v-btn>
-                    </v-col>
-                    <v-col cols="auto">
-                      <v-btn 
-                        @click="filterPheno" 
-                        color="primary" 
-                        class="mt-3"
-                        variant="outlined"
-                      >
-                        Save
-                      </v-btn>
-                    </v-col>
-                  </v-row>
-                </v-card>
-              </v-menu>
-            </div>
-          </template>
-  
-          <!-- Other template slots remain the same -->
-          <template v-slot:item.phenostring="{ item }">
-            <router-link :to="`/phenotypes/${item.phenocode}`">{{ item.phenostring }}</router-link>
-          </template>
-  
-          <template v-slot:item.pval="{ item }">
-            <span style="white-space: nowrap;">{{ item.pval }}</span>
-          </template>
-        </v-data-table>
-      </v-card>
-    </div>
-  </template>
+  <div v-if="formattedVariantList.length > 0" class="mt-4">
+    <!-- Previous template code remains the same until the category search field -->
+    <v-card elevation="5">
+      <v-data-table :items="filteredVariantList" :headers="headers" height="700" fixed-header :items-per-page="100"
+        hover :sort-by="[{ key: 'pval', order: 'asc' }]">
+        <!-- Top slot remains the same -->
+        <template v-slot:top>
+          <div class="d-flex align-center justify-end px-4 mt-2">
+            <v-btn color="primary" variant="outlined" class="mr-4" prepend-icon="mdi-download" @click="downloadTable">
+              Download Table
+            </v-btn>
+            <span class="px-2 py-1 rounded font-weight-bold text-white" style="background-color: #337bb7;">
+              {{ filteredVariantList.length }} {{ filteredVariantList.length === 1 ? 'result' : 'results' }}
+            </span>
+          </div>
+        </template>
+
+        <template v-slot:header.category="{ column }">
+          <div style="display: flex; align-items: center;">
+            <span style="white-space: nowrap;">{{ column.title }}</span>
+            <v-menu open-on-hover v-model="categoryMenu" :close-on-content-click="false" location="bottom">
+              <template v-slot:activator="{ props }">
+                <v-icon small color="primary" v-bind="props" class="ml-2"
+                  :icon="filteredCategory === 'All' ? 'mdi-feature-search-outline' : 'mdi-feature-search'"></v-icon>
+              </template>
+              <v-card class="pa-3">
+                <v-text-field v-model="selectedCategory" label="Enter category" :hint="firstCategory"
+                  style="width: 400px;" variant="outlined" density="compact" elevation="2" rounded
+                  prepend-inner-icon="mdi-magnify" @keydown.enter="filterCategory"></v-text-field>
+                <v-row justify="end">
+                  <v-col cols="auto">
+                    <v-btn @click="clearCategory" color="primary" class="mt-3" variant="outlined">
+                      Clear
+                    </v-btn>
+                  </v-col>
+                  <v-col cols="auto">
+                    <v-btn @click="filterCategory" color="primary" class="mt-3" variant="outlined">
+                      Save
+                    </v-btn>
+                  </v-col>
+                </v-row>
+              </v-card>
+            </v-menu>
+          </div>
+        </template>
+
+        <template v-slot:header.phenostring="{ column }">
+          <div style="display: flex; align-items: center;">
+            <span style="white-space: nowrap;">{{ column.title }}</span>
+            <v-menu open-on-hover v-model="phenoMenu" :close-on-content-click="false" location="bottom">
+              <template v-slot:activator="{ props }">
+                <v-icon small color="primary" v-bind="props" class="ml-2"
+                  :icon="filteredPheno === 'All' ? 'mdi-feature-search-outline' : 'mdi-feature-search'"></v-icon>
+              </template>
+              <v-card class="pa-3">
+                <v-text-field v-model="selectedPheno" label="Enter phenotype" :hint="firstPhenotype"
+                  style="width: 400px;" variant="outlined" density="compact" elevation="2" rounded
+                  prepend-inner-icon="mdi-magnify" @keydown.enter="filterPheno"></v-text-field>
+                <v-row justify="end">
+                  <v-col cols="auto">
+                    <v-btn @click="clearPheno" color="primary" class="mt-3" variant="outlined">
+                      Clear
+                    </v-btn>
+                  </v-col>
+                  <v-col cols="auto">
+                    <v-btn @click="filterPheno" color="primary" class="mt-3" variant="outlined">
+                      Save
+                    </v-btn>
+                  </v-col>
+                </v-row>
+              </v-card>
+            </v-menu>
+          </div>
+        </template>
+
+        <!-- Other template slots remain the same -->
+        <template v-slot:item.phenostring="{ item }">
+          <router-link :to="`/phenotypes/${item.phenocode}`">{{ item.phenostring }}</router-link>
+        </template>
+
+        <template v-slot:item.pval="{ item }">
+          <span style="white-space: nowrap;">{{ item.pval }}</span>
+        </template>
+      </v-data-table>
+    </v-card>
+  </div>
+</template>
   
   <script setup>
   import { ref, computed } from 'vue';
+
+  // Add this function in your script setup
+const downloadTable = () => {
+  // Convert the filtered data to CSV format
+  const headers = [
+    'Category',
+    'Phenotype',
+    'Sex',
+    'Ancestry',
+    'P-value',
+    'Effect Size (se)',
+    'Number of Samples'
+  ];
+  
+  const csvContent = [
+    headers.join(','),
+    ...filteredVariantList.value.map(item => [
+      item.category,
+      item.phenostring,
+      item.sex,
+      item.ancestry,
+      item.pval,
+      item.beta_se,
+      item.num_samples
+    ].join(','))
+  ].join('\n');
+
+  // Create and trigger download
+  const blob = new Blob([csvContent], { type: 'text/csv' });
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.setAttribute('download', 'variant_data.csv');
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  window.URL.revokeObjectURL(url);
+};
   
   const props = defineProps({
     selectedStratifications: Object,
