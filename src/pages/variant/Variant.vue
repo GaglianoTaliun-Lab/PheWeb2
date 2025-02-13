@@ -1,4 +1,5 @@
 <script setup name="Variant">
+import DownloadButton from '../../components/DownloadButton.vue'; 
 import axios from 'axios';
 import { ref, onMounted, computed } from 'vue';
 import { useRoute } from 'vue-router';
@@ -119,6 +120,11 @@ const handleCheckboxChange = () => {
       color="primary"
       height="5"
     ></v-progress-linear>
+
+    <!-- Add this div for the download button -->
+    <div class="d-flex justify-end px-4 pt-2">
+        <DownloadButton />
+    </div>
 
 
       <div class="ml-4 mt-2">
