@@ -30,6 +30,10 @@ const props = defineProps({
     variantList: {
         type : Array,
         required : true,
+    },
+    uniqueCategoriesList : {
+        type: Array,
+        required : false,
     }
 });
 
@@ -143,7 +147,7 @@ function generatePlot(variant_list){
     })
 
     var panel_list = []
-    var unique_categories_list = []
+
 
     variant_list.forEach(variant => {
         // sort phenotypes
@@ -193,13 +197,26 @@ function generatePlot(variant_list){
       });
     })
 
-    var unique_categories_list = []
+    var unique_categories_list = [];
 
-    variant_list.forEach((variant, i) => {
-      unique_categories_list.push(
-        d3.set(variant.phenos.map(_.property('category'))).values()
-      )
-    })
+    if (!props.uniqueCategoriesList){
+
+        variant_list.forEach((variant, i) => {
+            unique_categories_list.push(
+                d3.set(variant.phenos.map(_.property('category'))).values()
+            )
+        })
+
+    } else {
+
+        variant_list.forEach((variant, i ) => {
+            unique_categories_list.push(
+                JSON.parse(JSON.stringify(props.uniqueCategoriesList))
+            )
+        })
+        console.log(unique_categories_list)
+    }
+
     const category20 = d3.schemeCategory10.concat(d3.schemeCategory10);  /* d3 removed category20, so I make this terrible version */
 
     var largest_number_of_categories = unique_categories_list.reduce((a, b) => (b.length > a.length ? b : a));
@@ -293,6 +310,8 @@ function generatePlot(variant_list){
     });
 
     // add x axis labels to last panel
+    console.log(panel_list[panel_list.length -1])
+
     panel_list[panel_list.length -1]["axes"]["x"]["ticks"] = first_of_each_category_list[panel_list.length -1].map(function(pheno) {
                     return {
                         style: {fill: pheno.color, "font-size":"11px", "font-weight":"bold", "text-anchor":"start"},

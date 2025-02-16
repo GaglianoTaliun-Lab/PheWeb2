@@ -21,9 +21,9 @@
                 v-model:search="search"
                 :items="formattedVariantList"
                 :headers="headers"
-                height="700"
+                height="300"
                 fixed-header
-                :items-per-page="100"
+                :items-per-page="5"
                 hover
                 :sort-by="[{ key: 'pval', order: 'asc' }]"
             >
@@ -80,7 +80,7 @@ const formattedVariantList = computed(() => {
 
         var phenos = v.phenos
             .filter((pheno) => props.categoryList.includes(pheno.category))
-            .filter((pheno) => pheno.pval < 1)
+            .filter((pheno) => pheno.pval > 0)
             .map((pheno) => ({
                 category: pheno.category,
                 phenostring: pheno.phenostring,
