@@ -4,7 +4,6 @@
       <v-col cols="12" md="6">
         <v-card
           max-width="600"
-          subtitle="Phenotypes"
           hover
           density="compact"
         >
@@ -37,7 +36,6 @@
       <v-col cols="12" md="4">
         <v-card
           max-width="500"
-          subtitle="Stratification"
           hover
           density="compact"
         >  

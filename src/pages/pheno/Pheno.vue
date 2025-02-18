@@ -514,7 +514,7 @@ function onInteractionCheckboxChange() {
 <template>
     <v-app>
         <Navbar2 />
-        <v-main class="pt-10">
+        <v-main class="responsive-main">
             <div>
               <h1 v-if="phenostring">{{phenocode}}: {{phenostring}}</h1>
               <h1 v-else>{{phenocode}}</h1>
@@ -846,7 +846,16 @@ function onInteractionCheckboxChange() {
     background-color: darkgrey !important;
     color: black;
   }
+  
+  .responsive-main {
+  padding-top: 4cap;
+}
 
+@media (max-width: 600px) {
+  .responsive-main {
+    padding-top: 6cap;
+  }
+}
 </style>
 
 

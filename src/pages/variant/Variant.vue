@@ -111,7 +111,7 @@ const handleCheckboxChange = () => {
 <template>
   <v-app>
     <Navbar2 />
-    <v-main>
+    <v-main class="responsive-main">
       <!-- Loading Bar -->
     <v-progress-linear
       v-if="isLoading"
@@ -120,8 +120,7 @@ const handleCheckboxChange = () => {
       height="5"
     ></v-progress-linear>
 
-
-      <div class="ml-4 mt-2">
+      <div class="ml-4">
         <h1 class="mb-0">{{ variantCode }}</h1>
         <!-- why does variant_list here work but not variantList ???-->
         <div v-if="variant">
@@ -225,6 +224,15 @@ const handleCheckboxChange = () => {
 </template>
 
 <style lang="scss" scoped>
+.responsive-main {
+  padding-top: 4cap;
+}
+
+@media (max-width: 600px) {
+  .responsive-main {
+    padding-top: 6cap;
+  }
+}
 
 .arrow-container {
   float: left;

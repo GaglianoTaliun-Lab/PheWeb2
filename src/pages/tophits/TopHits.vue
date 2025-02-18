@@ -4,7 +4,7 @@
         <v-main>
             <h2 style="font-weight: bold;">Top Hits</h2>
             <span style="font-weight: bold;">This page shows only the peaks with a p-value < 10-6. 
-                Variants are hidden if any variant within 500kb in the same phenotype has a smaller p-value.</span>
+                Variants are hidden if any variant within 500kb in the same phenotype has a more significant p-value.</span>
             <div style="margin-top: 2%;">
                 <TopHitsTable />
             </div>

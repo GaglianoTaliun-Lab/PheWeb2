@@ -1,7 +1,7 @@
 <template>
     <v-app>
         <Navbar2 />
-        <v-main>
+        <v-main class="responsive-main">
             <h2 style="font-weight: bold;">Phenotypes</h2>
             <!-- <p>{{ uniquePhenotypesCount }} of {{ totalPhenotypesCount }} phenotype(s) displayed</p> -->
             <div>
@@ -28,4 +28,13 @@
 </script>
 
 <style scoped>
+.responsive-main {
+  padding-top: 4cap;
+}
+
+@media (max-width: 600px) {
+  .responsive-main {
+    padding-top: 6cap;
+  }
+}
 </style>
