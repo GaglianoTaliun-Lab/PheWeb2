@@ -8,7 +8,7 @@
         <template v-slot:top>
           <div class="d-flex align-center justify-end px-4 mt-2">
             <v-btn color="primary" variant="outlined" class="mr-4" prepend-icon="mdi-download" @click="downloadTable">
-              Download Table
+              Download All Data
             </v-btn>
             <span class="px-2 py-1 rounded font-weight-bold text-white" style="background-color: #337bb7;">
               {{ filteredVariantList.length }} {{ filteredVariantList.length === 1 ? 'result' : 'results' }}
@@ -91,8 +91,8 @@
   import { ref, computed } from 'vue';
 
   // Add this function in your script setup
-const downloadTable = () => {
-  // Convert the filtered data to CSV format
+  const downloadTable = () => {
+  // Convert all data to CSV format (using formattedVariantList instead of filteredVariantList)
   const headers = [
     'Category',
     'Phenotype',
@@ -105,7 +105,7 @@ const downloadTable = () => {
   
   const csvContent = [
     headers.join(','),
-    ...filteredVariantList.value.map(item => [
+    ...formattedVariantList.value.map(item => [
       item.category,
       item.phenostring,
       item.sex,
@@ -126,8 +126,7 @@ const downloadTable = () => {
   link.click();
   document.body.removeChild(link);
   window.URL.revokeObjectURL(url);
-};
-  
+};  
   const props = defineProps({
     selectedStratifications: Object,
     variantList: Object,
