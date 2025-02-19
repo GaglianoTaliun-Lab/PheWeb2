@@ -30,7 +30,12 @@
         >
 
         <template v-slot:body="{ items }" >
-          <tr v-for="item in items" :key="item.variantid" :class="{ 'selected-row': item.variantid === props.chosenVariant }">
+          <tr v-for="item in items" 
+            :key="item.variantid" 
+            :class="{ 'selected-row': item.variantid === props.chosenVariant }"
+            @mouseover="hoveredVariantId = item.variantid"
+            @mouseleave="hoveredVariantId = 'None' "
+          >
             <td>
               <!-- variantid -->
               <a :href="`/variant/${item.variantid}`" style="white-space: pre-line;">{{ item.variantName }}</a>
@@ -365,6 +370,8 @@
       const isTableLoading = ref(true);
       const page = ref(3);
       const overlay = ref(false);
+      const hoveredVariantId = ref('None');
+      const emit = defineEmits(['updateHoverVariant']);
 
       const itemsPerPage = 7; 
       const sortBy = ref([{ key: 'pval_pheno1', order: 'asc' }]);
@@ -639,11 +646,21 @@
       watch(
         () => props.miamiData,
         (newValue) => {
-          // console.log(`Chosen data updated: ${newValue}`);
           fetchSampleData();
           updateOverlay();
         },
-        // { deep: true }
+      );
+      watch(
+        () => hoveredVariantId.value,
+        (newValue) => {
+          // console.log(`Hovered Variant updated`, hoveredVariantId.value.split('-').slice(0, 2));
+          if (newValue != ''){
+            // emit('updateHoverVariant', hoveredVariantId.value.split('-').slice(0, 2))
+            // console.log(hoveredVariantId); 
+            // console.log(Array.isArray(hoveredVariantId));
+            emit('updateHoverVariant', hoveredVariantId)
+          }
+        }
       );
   
   </script>
@@ -652,13 +669,6 @@
 .selected-row {
   background-color: #fab9d4; 
 };
-
-/* :deep() .v-table .v-table__wrapper > table > thead > tr > th:not(:nth-child(2), :nth-child(1), :nth-child(4), :nth-child(6)) {
-  border-right: thin solid rgba(var(--v-border-color), var(--v-border-opacity));
-}
-:deep() .v-table .v-table__wrapper > table > tbody > tr > td:not(:nth-child(2), :nth-child(1), :nth-child(4), :nth-child(6)), .v-table .v-table__wrapper > table > tbody > tr > th:not(:last-child) { 
-  border-right: thin solid rgba(var(--v-border-color), var(--v-border-opacity));
-} */
 </style>
   
   

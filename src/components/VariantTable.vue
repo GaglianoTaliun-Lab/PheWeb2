@@ -130,6 +130,7 @@
   const props = defineProps({
     selectedStratifications: Object,
     variantList: Object,
+    categoryList: Object,
   });
   
   // ... Previous header definitions and other refs remain the same ...
@@ -159,6 +160,10 @@
       key: 'pval',
       sortable: true
     },
+    { title: 'Effect Allele Frequency',
+      key: 'eaf',
+      sortable: false
+    },
     { 
       title: 'Effect Size (se)', 
       key: 'beta_se',
@@ -168,6 +173,14 @@
       title: 'Number of Samples', 
       key: 'num_samples',
       sortable: false 
+    },
+    { title: 'Number of Cases',
+      key: 'cases',
+      sortable: false
+    },
+    { title: 'Number of Controls',
+      key: 'controls',
+      sortable: false
     },
   ]);
   
@@ -181,20 +194,30 @@
   // Format variant list (same as before)
   const formattedVariantList = computed(() => {
     return props.variantList?.flatMap((v) => {
-      if (!props.selectedStratifications.includes(v.stratification.slice(1))) return [];
-  
-      return v.phenos.map((pheno) => ({
-        category: pheno.category,
-        phenocode: pheno.phenocode,
-        phenostring: pheno.phenostring,
-        sex: pheno.stratification.sex,
-        ancestry: pheno.stratification.ancestry,
-        pval: pheno.pval,
-        beta_se: `${pheno.beta} (${pheno.sebeta})`,
-        num_samples: pheno.num_samples,
-      }));
-    }) || [];
-  });
+
+        if (!props.selectedStratifications.includes(v.stratification.slice(1))) return [];
+
+        console.log(props.categoryList)
+
+        var phenos = v.phenos
+            .filter((pheno) => props.categoryList.includes(pheno.category))
+            .filter((pheno) => pheno.pval > 0)
+            .map((pheno) => ({
+                category: pheno.category,
+                phenostring: pheno.phenostring,
+                sex: pheno.stratification.sex,
+                ancestry: pheno.stratification.ancestry,
+                pval: pheno.pval,
+                eaf : pheno.af,
+                beta_se: `${pheno.beta} (${pheno.sebeta})`,
+                num_samples: pheno.num_samples,
+                cases: pheno.num_cases,
+                controls: pheno.num_controls,
+            }));
+
+        return phenos
+    })
+});
   
   // New computed properties for dynamic hints
   const firstCategory = computed(() => {

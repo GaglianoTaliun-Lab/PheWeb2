@@ -1,7 +1,13 @@
 <template>
   <v-app>
-    <Navbar2 />
-    <v-main>      
+    <Navbar2 /> 
+    <v-main class="responsive-main"> 
+      <v-progress-linear
+        v-if="isLoading"
+        indeterminate
+        color="primary"
+        height="5"
+      ></v-progress-linear>
       <div v-if="geneChrom && geneStart && geneStop">
         <h2 style="font-weight: bold;"><i>{{ geneName }}</i> ({{ geneChrom }}:{{ geneStart }}-{{ geneStop }})</h2>
       </div>
@@ -10,6 +16,7 @@
       </div>
       <!-- External links for the gene -->
       <div class="gene-links">
+        View on
         <a 
           :href="ncbiGeneUrl" 
           target="_blank" 
@@ -17,7 +24,7 @@
           class="gene-link"
         >
           NCBI
-        </a>
+        </a>,
         <a 
           :href="ensemblGeneUrl" 
           target="_blank" 
@@ -25,7 +32,7 @@
           class="gene-link"
         >
           Ensembl
-        </a>
+        </a>,
         <a 
           :href="opentargetGeneUrl" 
           target="_blank" 
@@ -33,7 +40,7 @@
           class="gene-link"
         >
           Open Targets
-        </a>
+        </a>,
         <a 
           :href="geneCardsUrl" 
           target="_blank" 
@@ -41,6 +48,14 @@
           class="gene-link"
         >
           GeneCards
+        </a>,
+        <a 
+          :href="gwasCatalogUrl" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          class="gene-link"
+        >
+          GWAS Catalog
         </a>
       </div>
 
@@ -52,7 +67,7 @@
           @updateChosenPheno="updateChosenPhenoMethod"
         />
       </div>
-      <div class="pt-5 pb-5" v-if="plottingData && geneChrom && geneStart && geneStop">
+      <div class="pb-5" v-if="plottingData && geneChrom && geneStart && geneStop">
         <RegionPlot :data="plottingData" :region="region"></RegionPlot>
       </div>
     </v-main>
@@ -87,16 +102,20 @@ const ncbiGeneUrl = computed(() => `https://www.ncbi.nlm.nih.gov/gene/?term=${ge
 const ensemblGeneUrl = computed(() => `https://www.ensembl.org/Homo_sapiens/Gene/Summary?g=${geneName}`);
 const opentargetGeneUrl = computed(() => `https://platform.opentargets.org/search?q=${geneName}&page=1`);
 const geneCardsUrl = computed(() => `https://www.genecards.org/cgi-bin/carddisp.pl?gene=${geneName}`);
+const gwasCatalogUrl = computed(() => `https://www.ebi.ac.uk/gwas/genes/${geneName}`);
 
 const chosenPheno = ref([]);
 const updateChosenPhenoMethod = (pheno) => {
   // chosenPheno.value = pheno.value;
   chosenPheno.value = [...pheno.value];
-  console.log('Clicked pheno:', chosenPheno.value);
+  // console.log('Clicked pheno:', chosenPheno.value);
+  // console.log(chosenPheno.value.length)
 };
+const isLoading = ref(false);
 
 const fetchData = async () => {
   try {
+    isLoading.value = true;
     const gene_response = await axios.get(`${api}/gene/${geneName}`);
 
     geneData.value = gene_response.data.data;
@@ -122,7 +141,7 @@ const fetchData = async () => {
       plottingData.value = tempData.filter((pheno) => chosenPheno.value.includes(pheno.phenocode));
     }
 
-    console.log(plottingData)
+    // console.log(plottingData)
 
     const genpos_response = await axios.get(`${api}/gene/${geneName}/gene_position`)
 
@@ -134,6 +153,8 @@ const fetchData = async () => {
 
   } catch (error) {
     console.log(error)
+  } finally {
+    isLoading.value = false; // Stop loading
   }
 }
 
@@ -150,19 +171,29 @@ watch(
 
 </script>
 
-<style>
+<style scoped>
 .gene-links {
-  margin-bottom: 16px;
+  margin-bottom: 0px;
 }
 
 .gene-link {
   display: inline-block;
-  margin-right: 12px;
+  /* margin-right: 12px; */
   color: #1e88e5;
   text-decoration: none;
 }
 
 .gene-link:hover {
   text-decoration: underline;
+}
+
+.responsive-main {
+  padding-top: 4cap;
+}
+
+@media (max-width: 600px) {
+  .responsive-main {
+    padding-top: 6cap;
+  }
 }
 </style>

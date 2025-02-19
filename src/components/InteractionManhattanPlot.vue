@@ -1,6 +1,6 @@
 <script setup>
 import axios from 'axios';
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import * as d3 from 'd3';
 import d3Tip from 'd3-tip';
@@ -13,8 +13,10 @@ const point_radius = 2.3;
 const props = defineProps({
     data: {
         String: {String : Object, String : Object}
-    }
+    },
+    hoverVariant: null,
 });
+window.gwasPlotUtils = {};
 
 const info = ref(null);
 const manhattanPlotContainer = ref(null)
@@ -41,6 +43,7 @@ const y_scale_data = ref(null)
 const pheno = ref(null)
 
 const emit = defineEmits(['updateFilteringParams', 'updateChosenVariant']) 
+const tooltip_showing = ref(false)
 const chosenVariant = ref(null);
 
 const toggleExpanded = () => {
@@ -60,6 +63,14 @@ const selectType = (type) => {
 onMounted(() => {
 
     info.value = props.data
+
+    document.addEventListener('click', function(event) {
+        if (tooltip_showing.value && !d3.select(event.target).classed('variant_point')) {
+            // Hide the tooltip if clicking outside a variant point
+            point_tooltip.value.hide();
+            tooltip_showing.value = false;
+        }
+    });
 
     createManhattan('all')
 
@@ -277,6 +288,34 @@ function create_manhattan_plot(variant_bins, unbinned_variants, variants = "filt
             .offset([-8,0]);
         gwas_svg.call(significance_threshold_tooltip);
 
+        // Vertical indication line HX
+        var verticalLine = gwas_svg.append("line")
+        .attr("id", "vertical-line")
+        .attr("x1", 0)
+        .attr("x2", 0)
+        .attr("y1", 0)
+        .attr("y2", svg_height)
+        .attr("stroke", "red")
+        .attr("stroke-width", 2)
+        .attr("stroke-dasharray", "4,4")
+        .style("display", "none");
+        
+        function updateVerticalLine(hoverVariant) {
+            if (!hoverVariant || hoverVariant==='None') {
+                verticalLine.style("display", "none");
+                return;
+            }
+            const [chrom, pos] = hoverVariant.split("-").slice(0, 2);
+            const genomicPosition = parseInt(pos) + get_chrom_offsets.value().chrom_offsets[chrom];
+            // console.log(genomicPosition)
+            verticalLine
+                .attr("x1", x_scale.value(genomicPosition))
+                .attr("x2", x_scale.value(genomicPosition))
+                .style("display", "block")
+                .attr("transform", utils.fmt("translate({0},{1})", plot_margin.left, plot_margin.top));
+        }
+        window.gwasPlotUtils.updateVerticalLine = updateVerticalLine;
+
         var genomic_position_extent = (function() {
             var extent1 = d3.extent(variant_bins, get_genomic_position);
             var extent2 = d3.extent(unbinned_variants, get_genomic_position);
@@ -433,7 +472,7 @@ function create_manhattan_plot(variant_bins, unbinned_variants, variants = "filt
             .enter()
             .append('a')
             .attr('class', 'variant_point')
-            .attr('xlink:href', get_link_to_LZ)
+            // .attr('xlink:href', get_link_to_LZ)
             .append('circle')
             .attr('id', function(d) {
                 return utils.fmt('variant-point-{0}-{1}-{2}-{3}', d.chrom, d.pos, d.ref, d.alt);
@@ -451,11 +490,25 @@ function create_manhattan_plot(variant_bins, unbinned_variants, variants = "filt
             .on('mouseover', function(d) {
                 //Note: once a tooltip has been explicitly placed once, it must be explicitly placed forever after.
                 point_tooltip.value.show(d, this);
-                chosenVariant.value = `${d.chrom}-${d.pos}-${d.ref}-${d.alt}`;
+                // chosenVariant.value = `${d.chrom}-${d.pos}-${d.ref}-${d.alt}`;
                     // console.log(chosenVariant.value)
-                emit('updateChosenVariant', chosenVariant)
+                // emit('updateChosenVariant', chosenVariant)
             })
-            .on('mouseout', point_tooltip.value.hide);
+            .on('mouseout', point_tooltip.value.hide)
+            .on('click', function (d) {
+                d3.event.stopPropagation();
+                chosenVariant.value = `${d.chrom}-${d.pos}-${d.ref}-${d.alt}`;
+                emit('updateChosenVariant', chosenVariant)
+                if (tooltip_showing.value) {
+                    // Hide the tooltip if it’s already showing and was clicked again
+                    point_tooltip.value.hide(d, this);
+                    tooltip_showing.value = false;
+                } else {
+                    // Show the tooltip and make it stay open
+                    point_tooltip.value.show(d, this);
+                    tooltip_showing.value = true;
+                }
+            });
         }
         pp2();
 
@@ -548,7 +601,7 @@ set_variants: function(variant_bins, unbinned_variants, weakest_pval) {
     point_selection.enter()
         .append('a')
         .attr('class', 'variant_point')
-        .attr('xlink:href', get_link_to_LZ)
+        // .attr('xlink:href', get_link_to_LZ)
         .append('circle')
         .attr('id', function(d) {
             return utils.fmt('filtered-variant-point-{0}-{1}-{2}-{3}', d.chrom, d.pos, d.ref, d.alt);
@@ -577,7 +630,7 @@ set_variants: function(variant_bins, unbinned_variants, weakest_pval) {
     hover_ring_selection.enter()
         .append('a')
         .attr('class', 'variant_hover_ring')
-        .attr('xlink:href', get_link_to_LZ)
+        // .attr('xlink:href', get_link_to_LZ)
         .append('circle')
         .attr('cx', function(d) {
             return x_scale.value(get_genomic_position(d));
@@ -723,6 +776,13 @@ function reset_for_manhattan_plot() {
     </svg>
     `
 }
+
+watch(
+    () => props.hoverVariant,
+    (newHoverVariant) => {
+        window.gwasPlotUtils.updateVerticalLine(newHoverVariant);
+    }
+);
 
 </script>
 
