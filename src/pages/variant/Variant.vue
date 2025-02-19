@@ -17,6 +17,11 @@ const variantCode = route.params.variant_id;
 const stratification_list = ref(null);
 const selectedStratifications = ref([])
 
+const category_list = ref(null);
+const selectedCategories = ref([]);
+
+const pheno_list = ref(null);
+
 const chosen_variants = ref([]);
 const variant = ref(null);
 const rsids = ref(null);
@@ -29,23 +34,31 @@ const refreshKey = ref(0)
 
 onMounted(async () => {
   try {
-    const response = await axios.get(`${api}/variant/stratification_list`);
+    const response_stratification = await axios.get(`${api}/variant/stratification_list`);
+    const response_category = await axios.get(`${api}/variant/category_list`);
+    const response_phenolist = await axios.get(`${api}/phenotypes/`)
 
-    stratification_list.value = JSON.parse(JSON.stringify(response.data));
+    stratification_list.value = JSON.parse(JSON.stringify(response_stratification.data));
+    category_list.value = JSON.parse(JSON.stringify(response_category.data))
+    pheno_list.value = JSON.parse(JSON.stringify(response_phenolist.data))
+
+    console.log("test")
+    console.log(category_list.value)
 
     // we need to map here to get rid of the proxy
     await fetchPhewasPlottingData(
       stratification_list.value.map((stratification) => stratification)
     );
 
-    console.log(stratification_list.value)
-
     //maf_text.value = maf_range(variant_list.value).replace(/\n/g, "<br>");
     variant.value = variant_list.value[0];
-    rsids.value = variant.value.rsids ? variant.value.rsids.split(',') : [];
+
+    console.log(variant.value)
+    rsids.value = variant.value.rsids ?  variant.value.rsids.split(',') : [];
 
     // set chosen variants to be male and female automatically
-    selectedStratifications.value = PRIORITY_STRATIFICATIONS
+    selectedStratifications.value = PRIORITY_STRATIFICATIONS;
+    selectedCategories.value = category_list.value;
 
     handleCheckboxChange();
   } catch (error) {
@@ -80,7 +93,6 @@ async function fetchPhewasPlottingData(stratification_list) {
   }
   variant_list.value = temp_variant_list;
 
-  console.log(variant_list.value)
   isLoading.value = false; // Stop loading
   return variant_list.value;
 }
@@ -90,18 +102,28 @@ const keyToLabel = (stratification) => {
   return label
 }
 
+const variantCodeToLabel = (variantCode) => {
+  var label_list = variantCode.split("-")
+  var returned_label = label_list[0] + ": " + new Intl.NumberFormat('en-US', { maximumSignificantDigits: 3 }).format(label_list[1]) + " " + label_list[2] + "/" + label_list[3]
+
+  if (rsids.value && rsids.value.length === 1){
+    returned_label = returned_label + " (" + rsids.value + ")"
+  }
+  return returned_label 
+}
+
 const handleCheckboxChange = () => {
-  console.log("checkbox change")
-  console.log(selectedStratifications.value)
-  console.log(variant_list.value)
 
   chosen_variants.value = JSON.parse(JSON.stringify(
-    variant_list.value.filter((variant) => 
-      selectedStratifications.value.includes(variant.stratification.slice(1)) // remove first period
+  variant_list.value
+    .filter((variant) => 
+      selectedStratifications.value.includes(variant.stratification.slice(1))
     )
+    .map((variant) => ({
+      ...variant,
+      phenos: variant.phenos.filter((pheno) => selectedCategories.value.includes(pheno.category))
+    }))
   ));
-
-  console.log(chosen_variants.value)
 
   refreshKey.value += 1;
 }
@@ -120,8 +142,9 @@ const handleCheckboxChange = () => {
       height="5"
     ></v-progress-linear>
 
-      <div class="ml-4">
-        <h1 class="mb-0">{{ variantCode }}</h1>
+
+      <div class="ml-4 mt-2">
+        <h1 class="mb-0">{{ variantCodeToLabel(variantCode) }}</h1>
         <!-- why does variant_list here work but not variantList ???-->
         <div v-if="variant">
           <p class="mb-0"> Nearest genes: <i>{{ variant.nearest_genes }}</i></p>
@@ -164,25 +187,39 @@ const handleCheckboxChange = () => {
               >gnomAD</a
             >
 
-            <template v-if="rsids.length === 1">
-              , <a :href="`https://www.ebi.ac.uk/gwas/search?query=${rsids[0]}`"
+            <template v-if="rsids.length === 1">,
+              <a               
+              target="_blank"
+              rel="noopener noreferrer"
+              class="variant-link"
+              :href="`https://www.ebi.ac.uk/gwas/search?query=${rsids[0]}`"
                 >GWAS Catalog</a
-              >,
-              <a
+              >
+              <!-- <a
+              target="_blank"
+              rel="noopener noreferrer"
+              class="variant-link"
                 :href="`http://www.ncbi.nlm.nih.gov/projects/SNP/snp_ref.cgi?searchType=adhoc_search&type=rs&rs=${rsids[0]}`"
                 >dbSNP</a
-              >
+              > -->
             </template>
 
             <template v-else>
-              <span v-for="rsid in rsids" :key="rsid">
-                , <a :href="`https://www.ebi.ac.uk/gwas/search?query=${rsid}`"
+              <span v-for="rsid in rsids" :key="rsid">, 
+                <a 
+                target="_blank"
+                rel="noopener noreferrer"
+                class="variant-link"
+                :href="`https://www.ebi.ac.uk/gwas/search?query=${rsid}`"
                   >GWAS Catalog for {{ rsid }}</a
-                >,
-                <a
+                >
+                <!-- <a
+                target="_blank"
+                rel="noopener noreferrer"
+                class="variant-link"
                   :href="`http://www.ncbi.nlm.nih.gov/projects/SNP/snp_ref.cgi?searchType=adhoc_search&type=rs&rs=${rsid}`"
                   >dbSNP for {{ rsid }}</a
-                >
+                > -->
               </span>
             </template>
             <span style="font-weight: bold" id="pubmed-link"></span>
@@ -192,31 +229,44 @@ const handleCheckboxChange = () => {
         
 
         <!-- buttons go here ... -->
-        <div>
-          <div class="pheno-info col-12 mt-0">
-            <div v-if="stratification_list && stratification_list.length > 0" class="dropdown pt-4" id="dropdown-data1">
-                <button class="btn btn-primary btn-drop" id="button-data1"> Choose Displayed Stratifications <span class="arrow-container"><span class="arrow-down"></span></span></button>
+
+        <div class="pheno-info col-12 mt-0">
+            <div v-if="category_list && category_list.length > 0" class="dropdown pt-4 mr-4" id="dropdown-data1">
+                <button class="btn btn-primary btn-drop" id="button-data1"> Choose Categories <span class="arrow-container"><span class="arrow-down"></span></span></button>
                 <div class="dropdown-menu" id="dropdown-content-data1">
-                    <label v-for="(stratification, index) in stratification_list">
-                        <input 
+                    <label v-for="(category, index) in category_list">
+                        <input  
                         type="checkbox" 
-                        :value="stratification" 
-                        :name="stratification" 
-                        v-model="selectedStratifications"
+                        :value="category" 
+                        :name="category" 
+                        v-model="selectedCategories"
                         @change="handleCheckboxChange">
-                        {{ keyToLabel(stratification) }} 
+                        {{ category }} 
                     </label> 
                 </div>
               </div>
+            <div v-if="stratification_list && stratification_list.length > 0" class="dropdown pt-4" id="dropdown-data1">
+              <button class="btn btn-primary btn-drop" id="button-data1"> Choose Displayed Stratifications <span class="arrow-container"><span class="arrow-down"></span></span></button>
+              <div class="dropdown-menu" id="dropdown-content-data1">
+                  <label v-for="(stratification, index) in stratification_list">
+                      <input 
+                      type="checkbox" 
+                      :value="stratification" 
+                      :name="stratification" 
+                      v-model="selectedStratifications"
+                      @change="handleCheckboxChange">
+                      {{ keyToLabel(stratification) }} 
+                  </label> 
+              </div>
             </div>
-        </div> 
+          </div>
 
+        <VariantTable class="mb-10" :key="refreshKey" :selectedStratifications="selectedStratifications" :variantList="variant_list" :categoryList="selectedCategories"></VariantTable>
 
         <div v-if="chosen_variants.length > 0">
-          <PhewasPlot :key="refreshKey" :variantList="chosen_variants" />
+          <PhewasPlot :key="refreshKey" :variantList="chosen_variants" :uniqueCategoriesList="category_list"/>
         </div>
 
-        <VariantTable :key="refreshKey" :selectedStratifications="selectedStratifications" :variantList="variant_list"></VariantTable>
 
       </div>
     </v-main> 

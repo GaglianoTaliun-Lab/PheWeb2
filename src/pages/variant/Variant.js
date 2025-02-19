@@ -17,10 +17,11 @@ export function maf_range(data){
     data = JSON.parse(JSON.stringify(data))
 
     function isnum(d) { return typeof d === "number"; }
-    function minor(frac) { return Math.min(frac, 1-frac); }
+    //function minor(frac) { return Math.min(frac, 1-frac); }
 
     // TODO: different af for all stratifications
     var afs_list = []
+
     data.forEach(variant => {
         var afs = variant.phenos.map(function(v) {
             if (isnum(v.af)) { return v.af; }
@@ -34,9 +35,14 @@ export function maf_range(data){
         if (afs.length == data[i].phenos.length) {
             // Every pheno has AF
             let af_range = d3.extent(afs).map(two_digit_format);
-            if (af_range[0] === af_range[1]) { text += (keyToLabel(data[i].stratification) + " " + fmt('AF: {0}\n', af_range[0])); }
-            else { text += (keyToLabel(data[i].stratification) + " " +  fmt('AF: ranges from {0} to {1}\n', af_range[0], af_range[1])) ; }
+            if (af_range[0] === af_range[1]) { text += (keyToLabel(data[i].stratification) + " " + fmt('EAF: {0}\n', af_range[0])); }
+            else { text += (keyToLabel(data[i].stratification) + " " +  fmt('EAF: ranges from {0} to {1}\n', af_range[0], af_range[1])) ; }
             return;
+        } else if (afs.length) {
+            // Show the range of MAFs for the phenotypes that have a MAF
+            var af_range = d3.extent(afs).map(two_digit_format);
+            if (af_range[0] === af_range[1]) { text  += (keyToLabel(data[i].stratification) + " " + fmt('EAF: {0} for phenotypes where it is defined\n', af_range[0])); }
+            else { text += (keyToLabel(data[i].stratification) + " " + fmt('EAF: ranges from {0} to {1} for phenotypes where it is defined\n', af_range[0], af_range[1])); }
         }
     })
 
@@ -56,27 +62,24 @@ export function maf_range(data){
         if (mafs.length === data[i].phenos.length) {
             // Every pheno has a MAF
             let maf_range = d3.extent(mafs).map(two_digit_format);
-            if (maf_range[0] === maf_range[1]) { text += (keyToLabel(data[i].stratification) + " " + fmt('EAF: {0}', maf_range[0])); }
-            else { text += (keyToLabel(data[i].stratification) + " " + fmt('EAF: ranges from {0} to {1}', maf_range[0], maf_range[1])); }
+            if (maf_range[0] === maf_range[1]) { text += (keyToLabel(data[i].stratification) + " " + fmt('MAF: {0}\n', maf_range[0])); }
+            else { text += (keyToLabel(data[i].stratification) + " " + fmt('MAF: ranges from {0} to {1}\n', maf_range[0], maf_range[1])); }
         } else if (mafs.length) {
             // Show the range of MAFs for the phenotypes that have a MAF
             var maf_range = d3.extent(mafs).map(two_digit_format);
-            if (maf_range[0] === maf_range[1]) { text  += (keyToLabel(data[i].stratification) + " " + fmt('EAF: {0} for phenotypes where it is defined', maf_range[0])); }
-            else { text += (keyToLabel(data[i].stratification) + " " + fmt('EAF: ranges from {0} to {1} for phenotypes where it is defined', maf_range[0], maf_range[1])); }
+            if (maf_range[0] === maf_range[1]) { text  += (keyToLabel(data[i].stratification) + " " + fmt('MAF: {0} for phenotypes where it is defined\n', maf_range[0])); }
+            else { text += (keyToLabel(data[i].stratification) + " " + fmt('MAF: ranges from {0} to {1} for phenotypes where it is defined\n', maf_range[0], maf_range[1])); }
         }
     })
-
     return text
 }
 
 function keyToLabel(phenoLabel){
-    console.log("label :", phenoLabel)
 
     var label = phenoLabel.split(".").slice(1)
     if (label.length < 1){
         return []
     }
-    console.log("label 2 :", label)
     if (label[0].includes("interaction-")){
         label[0] = "Interaction: " + label[0].split("-")[1]
     }

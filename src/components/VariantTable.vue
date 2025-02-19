@@ -21,9 +21,9 @@
                 v-model:search="search"
                 :items="formattedVariantList"
                 :headers="headers"
-                height="700"
+                height="300"
                 fixed-header
-                :items-per-page="100"
+                :items-per-page="5"
                 hover
                 :sort-by="[{ key: 'pval', order: 'asc' }]"
             >
@@ -45,6 +45,7 @@ import { ref, computed } from 'vue';
 const props = defineProps({
     selectedStratifications: Object,
     variantList: Object,
+    categoryList : Object,
 });
 
 const headers = ref([
@@ -53,8 +54,11 @@ const headers = ref([
     { title: 'Sex', key: 'sex' },
     { title: 'Ancestry', key: 'ancestry' },
     { title: 'P-value', key: 'pval' },
+    { title: 'Effect Allele Frequency', key: 'eaf'},
     { title: 'Effect Size (se)', key: 'beta_se' },
     { title: 'Number of Samples', key: 'num_samples' },
+    { title: 'Number of Cases', key: 'cases'},
+    { title: 'Number of Controls', key: 'controls'},
 ]);
 
 const search = ref('');
@@ -74,22 +78,29 @@ const matchingCodes = computed(() => {
 const formattedVariantList = computed(() => {
     return props.variantList?.flatMap((v) => {
 
-        console.log(props.selectedStratifications)
-        console.log(v.stratification)
+        if (!props.selectedStratifications.includes(v.stratification.slice(1))) return [];
 
-        if (!props.selectedStratifications.includes(v.stratification.slice(1))) return []; // Skip if not matching
+        console.log(v.phenos);
 
-        totalCodes.value = totalCodes.value + v.phenos.length;
+        var phenos = v.phenos
+            .filter((pheno) => props.categoryList.includes(pheno.category))
+            .filter((pheno) => pheno.pval > 0)
+            .map((pheno) => ({
+                category: pheno.category,
+                phenostring: pheno.phenostring,
+                sex: pheno.stratification.sex,
+                ancestry: pheno.stratification.ancestry,
+                pval: pheno.pval,
+                eaf : pheno.af,
+                beta_se: `${pheno.beta} (${pheno.sebeta})`,
+                num_samples: pheno.num_samples,
+                cases: pheno.num_cases,
+                controls: pheno.num_controls,
+            }));
 
-        return v.phenos.map((pheno) => ({
-            category: pheno.category,
-            phenostring: pheno.phenostring,
-            sex: pheno.stratification.sex,
-            ancestry: pheno.stratification.ancestry,
-            pval: pheno.pval,
-            beta_se: `${pheno.beta} (${pheno.sebeta})`,
-            num_samples: pheno.num_samples,
-        }));
+        totalCodes.value = totalCodes.value + phenos.length;
+
+        return phenos
     })
 });
 

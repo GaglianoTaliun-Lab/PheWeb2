@@ -31,7 +31,10 @@ const props = defineProps({
         type : Array,
         required : true,
     },
-    
+    uniqueCategoriesList : {
+        type: Array,
+        required : false,
+    }
 });
 
 function custom_LocusZoom_Layouts_get(layout_type, layout_name, customizations) {
@@ -64,11 +67,7 @@ function reorderListByValues(dictList, orderedValues, key ) {
 
 function generatePlot(variant_list){
 
-
     variant_list = JSON.parse(JSON.stringify(variant_list))
-
-    // TODO: accept an argument for order of plots maybe, right now assume : Combined, Female, Male:
-    // var order = ['.European.Combined', '.European.Female', '.European.Male']
 
     var order = []
 
@@ -76,13 +75,7 @@ function generatePlot(variant_list){
         order.push(variant.stratification)
     });
 
-    console.log(order)
-
-    console.log("0 : ", variant_list);
-
     variant_list = reorderListByValues(variant_list, order, 'stratification')
-
-    console.log("1 : ", variant_list)
 
     var best_neglog10_pval = 0;
 
@@ -92,8 +85,6 @@ function generatePlot(variant_list){
             best_neglog10_pval = value
         }
     })
-
-    console.log("2 : ", variant_list)
 
     var neglog10_handle0 = function(x) {
         if (x === 0) return best_neglog10_pval * 1.1;
@@ -156,7 +147,7 @@ function generatePlot(variant_list){
     })
 
     var panel_list = []
-    var unique_categories_list = []
+
 
     variant_list.forEach(variant => {
         // sort phenotypes
@@ -206,13 +197,26 @@ function generatePlot(variant_list){
       });
     })
 
-    var unique_categories_list = []
+    var unique_categories_list = [];
 
-    variant_list.forEach((variant, i) => {
-      unique_categories_list.push(
-        d3.set(variant.phenos.map(_.property('category'))).values()
-      )
-    })
+    if (!props.uniqueCategoriesList){
+
+        variant_list.forEach((variant, i) => {
+            unique_categories_list.push(
+                d3.set(variant.phenos.map(_.property('category'))).values()
+            )
+        })
+
+    } else {
+
+        variant_list.forEach((variant, i ) => {
+            unique_categories_list.push(
+                JSON.parse(JSON.stringify(props.uniqueCategoriesList))
+            )
+        })
+        console.log(unique_categories_list)
+    }
+
     const category20 = d3.schemeCategory10.concat(d3.schemeCategory10);  /* d3 removed category20, so I make this terrible version */
 
     var largest_number_of_categories = unique_categories_list.reduce((a, b) => (b.length > a.length ? b : a));
@@ -242,7 +246,9 @@ function generatePlot(variant_list){
                 },
                 id: i.toString(),
                 min_width: 640, // feels reasonable to me
-                margin: { top: 40, right: 40, bottom: 80, left: 50 },
+                min_height : 200,
+                height : 260,
+                margin: { top: 40, right: 40, bottom: 20, left: 50 },
                 data_layers: [
                     LocusZoom.Layouts.get('data_layer', 'significance', {
                         unnamespaced: true,
@@ -297,21 +303,26 @@ function generatePlot(variant_list){
                         //"behaviors.onclick": [{action:"link", href:window.location.origin+"/phenotypes/{{phewas_code}}"}],
                     }),
                 ],
-    
-                // Use categories as x ticks.
-                "axes.x.ticks": first_of_each_category_list[i].map(function(pheno) {
+
+                "axes.y1.label": "-log\u2081\u2080(p-value)",
+            }),
+        )
+    });
+
+    // add x axis labels to last panel
+    console.log(panel_list[panel_list.length -1])
+
+    panel_list[panel_list.length -1]["axes"]["x"]["ticks"] = first_of_each_category_list[panel_list.length -1].map(function(pheno) {
                     return {
                         style: {fill: pheno.color, "font-size":"11px", "font-weight":"bold", "text-anchor":"start"},
                         transform: "translate(15, 0) rotate(50)",
                         text: pheno.category,
                         x: pheno.idx
                     };
-                }),
-    
-                "axes.y1.label": "-log\u2081\u2080(p-value)",
-            }),
-        )
-    });
+                })
+
+    panel_list[panel_list.length -1]['margin']['bottom'] = 100
+    panel_list[panel_list.length -1]['height'] += 100
 
     var layout = {
         state: {
@@ -323,7 +334,6 @@ function generatePlot(variant_list){
                 {type: "download_png", position: "right"},
             ],
         },
-        min_height: 400,
         responsive_resize: true,
         mouse_guide: false,
         panels: panel_list,
