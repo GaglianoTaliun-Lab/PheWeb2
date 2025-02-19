@@ -54,8 +54,11 @@ const headers = ref([
     { title: 'Sex', key: 'sex' },
     { title: 'Ancestry', key: 'ancestry' },
     { title: 'P-value', key: 'pval' },
+    { title: 'Effect Allele Frequency', key: 'eaf'},
     { title: 'Effect Size (se)', key: 'beta_se' },
     { title: 'Number of Samples', key: 'num_samples' },
+    { title: 'Number of Cases', key: 'cases'},
+    { title: 'Number of Controls', key: 'controls'},
 ]);
 
 const search = ref('');
@@ -77,6 +80,7 @@ const formattedVariantList = computed(() => {
 
         if (!props.selectedStratifications.includes(v.stratification.slice(1))) return [];
 
+        console.log(v.phenos);
 
         var phenos = v.phenos
             .filter((pheno) => props.categoryList.includes(pheno.category))
@@ -87,8 +91,11 @@ const formattedVariantList = computed(() => {
                 sex: pheno.stratification.sex,
                 ancestry: pheno.stratification.ancestry,
                 pval: pheno.pval,
+                eaf : pheno.af,
                 beta_se: `${pheno.beta} (${pheno.sebeta})`,
                 num_samples: pheno.num_samples,
+                cases: pheno.num_cases,
+                controls: pheno.num_controls,
             }));
 
         totalCodes.value = totalCodes.value + phenos.length;
