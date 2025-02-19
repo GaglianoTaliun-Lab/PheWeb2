@@ -142,7 +142,6 @@ const handleCheckboxChange = () => {
       height="5"
     ></v-progress-linear>
 
-
       <div class="ml-4 mt-2">
         <h1 class="mb-0">{{ variantCodeToLabel(variantCode) }}</h1>
         <!-- why does variant_list here work but not variantList ???-->
