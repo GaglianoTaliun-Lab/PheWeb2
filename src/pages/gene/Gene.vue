@@ -1,7 +1,7 @@
 <template>
   <v-app>
-    <Navbar2 />
-    <v-main>      
+    <Navbar2 /> 
+    <v-main class="responsive-main"> 
       <v-progress-linear
         v-if="isLoading"
         indeterminate
@@ -48,6 +48,14 @@
           class="gene-link"
         >
           GeneCards
+        </a>,
+        <a 
+          :href="gwasCatalogUrl" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          class="gene-link"
+        >
+          GWAS Catalog
         </a>
       </div>
 
@@ -59,7 +67,7 @@
           @updateChosenPheno="updateChosenPhenoMethod"
         />
       </div>
-      <div class="pt-5 pb-5" v-if="plottingData && geneChrom && geneStart && geneStop">
+      <div class="pb-5" v-if="plottingData && geneChrom && geneStart && geneStop">
         <RegionPlot :data="plottingData" :region="region"></RegionPlot>
       </div>
     </v-main>
@@ -94,6 +102,7 @@ const ncbiGeneUrl = computed(() => `https://www.ncbi.nlm.nih.gov/gene/?term=${ge
 const ensemblGeneUrl = computed(() => `https://www.ensembl.org/Homo_sapiens/Gene/Summary?g=${geneName}`);
 const opentargetGeneUrl = computed(() => `https://platform.opentargets.org/search?q=${geneName}&page=1`);
 const geneCardsUrl = computed(() => `https://www.genecards.org/cgi-bin/carddisp.pl?gene=${geneName}`);
+const gwasCatalogUrl = computed(() => `https://www.ebi.ac.uk/gwas/genes/${geneName}`);
 
 const chosenPheno = ref([]);
 const updateChosenPhenoMethod = (pheno) => {
@@ -162,9 +171,9 @@ watch(
 
 </script>
 
-<style>
+<style scoped>
 .gene-links {
-  margin-bottom: 16px;
+  margin-bottom: 0px;
 }
 
 .gene-link {
@@ -176,5 +185,15 @@ watch(
 
 .gene-link:hover {
   text-decoration: underline;
+}
+
+.responsive-main {
+  padding-top: 4cap;
+}
+
+@media (max-width: 600px) {
+  .responsive-main {
+    padding-top: 6cap;
+  }
 }
 </style>

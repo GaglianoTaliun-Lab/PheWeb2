@@ -133,7 +133,7 @@ const handleCheckboxChange = () => {
 <template>
   <v-app>
     <Navbar2 />
-    <v-main>
+    <v-main class="responsive-main">
       <!-- Loading Bar -->
     <v-progress-linear
       v-if="isLoading"
@@ -274,6 +274,15 @@ const handleCheckboxChange = () => {
 </template>
 
 <style lang="scss" scoped>
+.responsive-main {
+  padding-top: 4cap;
+}
+
+@media (max-width: 600px) {
+  .responsive-main {
+    padding-top: 6cap;
+  }
+}
 
 .arrow-container {
   float: left;
