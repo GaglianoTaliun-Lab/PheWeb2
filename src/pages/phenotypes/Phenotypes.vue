@@ -7,6 +7,7 @@
             <div>
                 <PhenotypesTable 
                     @updateUniquePhenotypesCount="updateUniquePhenotypesMethod"
+                    :data="data"
                 />
             </div>
         </v-main>
@@ -15,16 +16,37 @@
 
 <script setup name="Phenotypes">
     import Navbar2 from '../../components/Navbar2.vue';
-    import { ref } from 'vue'
+    import { ref, onMounted } from 'vue'
     import PhenotypesTable from '../../components/PhenotypesTable.vue';
+    import axios from 'axios';
 
     const uniquePhenotypesCount = ref(0);
     const totalPhenotypesCount = ref(0);
+    const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URL
+    const data = ref([]);
+    const errorMessage = ref('');
+
+    const fetchData = async () => {
+      errorMessage.value = '';
+      try {
+        const response = await axios.get(`${api}/phenotypes`)
+        data.value = response.data;
+        console.log(data.value)
+      } catch (error) {
+        console.error("There was an error fetching the sample data:", error);
+        errorMessage.value = "Failed to load data. Please try again later.";
+      } 
+      
+    };
 
     function updateUniquePhenotypesMethod({ uniqueCount, totalCount }) {
         uniquePhenotypesCount.value = uniqueCount;
         totalPhenotypesCount.value = totalCount;
-    }
+    };
+
+    onMounted( () => {
+        fetchData();
+    });
 </script>
 
 <style scoped>
