@@ -187,7 +187,7 @@
           >
             <template v-slot:activator="{ props }">
                 <v-icon small color="primary" v-bind="props" class="ml-2" 
-                :icon="filteredGene === 'All' ? 'mdi-feature-search-outline' : 'mdi-feature-search'"></v-icon>
+                :icon="filteredGene === '' ? 'mdi-feature-search-outline' : 'mdi-feature-search'"></v-icon>
             </template>
             <v-card class="pa-3">
               <v-text-field
@@ -254,7 +254,7 @@
           >
             <template v-slot:activator="{ props }">
                 <v-icon small color="primary" v-bind="props" class="ml-2" 
-                :icon="filteredVariant === 'All' ? 'mdi-feature-search-outline' : 'mdi-feature-search'"></v-icon>
+                :icon="filteredVariant === '' ? 'mdi-feature-search-outline' : 'mdi-feature-search'"></v-icon>
             </template>
             <v-card class="pa-3">
               <v-text-field
@@ -428,8 +428,8 @@
       return ['All', ...[...new Set(variants)].sort((a, b) => a.localeCompare(b))];
     });
 
-    const filteredVariant = ref('All');
-    const filteredGene = ref('All');
+    const filteredVariant = ref('');
+    const filteredGene = ref('');
     const filterVariants = () => {
       variantSearchLoading.value = false;
       filteredVariant.value = selectedVariant.value;
@@ -439,11 +439,11 @@
     };
     const clearVariants = () => {
       selectedVariant.value = '';
-      filteredVariant.value = 'All';
+      filteredVariant.value = '';
     };
     const clearGene = () => {
       selectedGene.value = '';
-      filteredGene.value = 'All';
+      filteredGene.value = '';
     };
 
 
@@ -455,8 +455,16 @@
         const ancestryMatches = selectedAncestry.value === 'All' || item.ancestry === selectedAncestry.value;
         const categoryMatches = !selectedCategory.value || selectedCategory.value === 'All' || item.category === selectedCategory.value;
         const phenotypeMatches = !selectedPhenotype.value || selectedPhenotype.value === 'All' || item.phenostring === selectedPhenotype.value;
-        const variantMatches = !filteredVariant.value || filteredVariant.value === 'All' ||  item.rsids === filteredVariant.value || item.variantid === filteredVariant.value;
-        const geneMatches = !filteredGene.value || filteredGene.value === 'All' ||   item.nearest_genes.includes(filteredGene.value.toUpperCase());
+        // const variantMatches = !filteredVariant.value || filteredVariant.value === 'All' ||  item.rsids === filteredVariant.value || item.variantid === filteredVariant.value;
+        // const geneMatches = !filteredGene.value || filteredGene.value === 'All' ||   item.nearest_genes.includes(filteredGene.value.toUpperCase());
+        const variantMatches = !filteredVariant.value || filteredVariant.value === '' || 
+          (item.rsids && item.rsids.includes(filteredVariant.value)) ||
+          (item.variantid && item.variantid.includes(filteredVariant.value));
+        const geneMatches = !filteredGene.value || filteredGene.value === '' ||
+        (Array.isArray(item.nearest_genes) && item.nearest_genes.some(gene => 
+          gene.toUpperCase().includes(filteredGene.value.toUpperCase()))
+        )
+
         return sexMatches && ancestryMatches && categoryMatches && phenotypeMatches && variantMatches && geneMatches;
       });
     });
