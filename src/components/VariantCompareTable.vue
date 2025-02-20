@@ -7,9 +7,9 @@
         <!-- Top slot remains the same -->
         <template v-slot:top>
           <div class="d-flex align-center justify-end px-4 mt-2">
-            <v-btn color="primary" variant="outlined" class="mr-4" prepend-icon="mdi-download" @click="downloadTable">
+            <!-- <v-btn color="primary" variant="outlined" class="mr-4" prepend-icon="mdi-download" @click="downloadTable">
               Download All Data
-            </v-btn>
+            </v-btn> -->
             <span class="px-2 py-1 rounded font-weight-bold text-white" style="background-color: #337bb7;">
               {{ filteredVariantList.length }} {{ filteredVariantList.length === 1 ? 'result' : 'results' }}
             </span>
@@ -82,37 +82,49 @@
         <template v-slot:item.pval="{ item }">
           <span style="white-space: nowrap;">{{ item.pval }}</span>
         </template>
+
       </v-data-table>
     </v-card>
   </div>
 </template>
   
-  <script setup>
-  import { ref, computed } from 'vue';
+<script setup>
+import { onMounted } from 'vue';
+import { ref, computed } from 'vue';
 
   // Add this function in your script setup
   const downloadTable = () => {
   // Convert all data to CSV format (using formattedVariantList instead of filteredVariantList)
-  const headers = [
+
+  const variant1 = ref('');
+  const variant2 = ref('');
+
+  const csv_headers = [
     'Category',
     'Phenotype',
     'Sex',
     'Ancestry',
     'P-value',
+    'Effect Allele Frequency',
     'Effect Size (se)',
-    'Number of Samples'
+    'Number of Samples',
+    'Number of Cases',
+    'Number of Controls'
   ];
   
   const csvContent = [
-    headers.join(','),
+    csv_headers.join(','),
     ...formattedVariantList.value.map(item => [
       item.category,
       item.phenostring,
       item.sex,
       item.ancestry,
+      item.af,
       item.pval,
       item.beta_se,
-      item.num_samples
+      item.num_samples,
+      item.num_cases,
+      item.num_controls,
     ].join(','))
   ].join('\n');
 
@@ -128,17 +140,24 @@
   window.URL.revokeObjectURL(url);
 };  
   const props = defineProps({
-    selectedStratifications: Object,
+    selectedStratification1 : Object,
+    selectedStratification2 : Object,
     variantList: Object,
     categoryList: Object,
     compare: Boolean,
   });
+
+  onMounted(() => {
+    console.log("variantList")
+    console.log(props.variantList);
+  })
+
   
   // ... Previous header definitions and other refs remain the same ...
   const headers = ref([
     { 
       title: 'Category', 
-      key: 'category',
+      key: 'category_variant1',
       sortable: false 
     },
     { 
@@ -147,42 +166,55 @@
       sortable: false 
     },
     { 
-      title: 'Sex', 
-      key: 'sex',
-      sortable: false 
-    },
-    { 
-      title: 'Ancestry', 
-      key: 'ancestry',
-      sortable: false 
-    },
-    { 
       title: 'P-value', 
       key: 'pval',
-      sortable: true
+      children: [
+        { title: props.selectedStratification1.split('.').slice(-2).join(', '), key: 'pval_variant1' }, 
+        ...(props.selectedStratification2 !== props.selectedStratification1 && props.selectedStratification2 !== "No stratification"
+        ? [
+            { title: props.selectedStratification2.split('.').slice(-2).join(', '), key: 'pval_variant2' }, 
+          ]
+        : [])
+      ],
+      sortable: false
     },
     { title: 'Effect Allele Frequency',
       key: 'eaf',
+      children: [
+        { title: props.selectedStratification1.split('.').slice(-2).join(', '), key: 'eaf_variant1' }, 
+        ...(props.selectedStratification2 !== props.selectedStratification1 && props.selectedStratification2 !== "No stratification"
+        ? [
+            { title: props.selectedStratification2.split('.').slice(-2).join(', '), key: 'eaf_variant2' }, 
+          ]
+        : [])
+      ],
       sortable: false
     },
     { 
       title: 'Effect Size (se)', 
       key: 'beta_se',
+      children: [
+        { title: props.selectedStratification1.split('.').slice(-2).join(', '), key: 'beta_se_variant1' }, 
+        ...(props.selectedStratification2 !== props.selectedStratification1 && props.selectedStratification2 !== "No stratification"
+        ? [
+            { title: props.selectedStratification2.split('.').slice(-2).join(', '), key: 'beta_se_variant2' }, 
+          ]
+        : [])
+      ],
       sortable: false 
     },
     { 
       title: 'Number of Samples', 
       key: 'num_samples',
-      sortable: false 
-    },
-    { title: 'Number of Cases',
-      key: 'cases',
-      sortable: false
-    },
-    { title: 'Number of Controls',
-      key: 'controls',
-      sortable: false
-    },
+      children: [
+        { title: props.selectedStratification1.split('.').slice(-2).join(', '), key: 'num_samples_variant1' }, 
+        ...(props.selectedStratification2 !== props.selectedStratification1 && props.selectedStratification2 !== "No stratification"
+        ? [
+            { title: props.selectedStratification2.split('.').slice(-2).join(', '), key: 'num_samples_variant2' }, 
+          ]
+        : [])
+      ],
+      sortable: false    },
   ]);
   
   const categoryMenu = ref(false);
@@ -194,31 +226,77 @@
   
   // Format variant list (same as before)
   const formattedVariantList = computed(() => {
-    return props.variantList?.flatMap((v) => {
+    if (!props.variantList) return [];
 
-        if (!props.selectedStratifications.includes(v.stratification.slice(1))) return [];
+    // Flatten and filter phenos
+    const phenos = props.variantList.flatMap((v) => {
+        const strat = v.stratification.slice(1); // Extract stratification value
 
-        console.log(props.categoryList)
+        if (!props.selectedStratification1.includes(strat) && 
+            !props.selectedStratification2.includes(strat)) return [];
 
-        var phenos = v.phenos
-            .filter((pheno) => props.categoryList.includes(pheno.category))
-            .filter((pheno) => pheno.pval > 0)
-            .map((pheno) => ({
-                category: pheno.category,
-                phenostring: pheno.phenostring,
-                sex: pheno.stratification.sex,
-                ancestry: pheno.stratification.ancestry,
-                pval: pheno.pval,
-                eaf : pheno.af,
-                beta_se: `${pheno.beta} (${pheno.sebeta})`,
-                num_samples: pheno.num_samples,
-                cases: pheno.num_cases,
-                controls: pheno.num_controls,
-            }));
+        return v.phenos
+            .filter(pheno => props.categoryList.includes(pheno.category))
+            .map(pheno => {
+                const isPvalNegative = pheno.pval === -1;
+                
+                return {
+                    category: pheno.category,
+                    phenostring: pheno.phenostring,
+                    stratification: strat, 
+                    sex: isPvalNegative ? "" : pheno.stratification.sex,
+                    ancestry: isPvalNegative ? "" : pheno.stratification.ancestry,
+                    pval: isPvalNegative ? "" : pheno.pval,
+                    eaf: isPvalNegative ? "" : pheno.af,
+                    beta_se: isPvalNegative ? "" : `${pheno.beta} (${pheno.sebeta})`,
+                    num_samples: isPvalNegative ? "" : pheno.num_samples,
+                    cases: isPvalNegative ? "" : pheno.num_cases,
+                    controls: isPvalNegative ? "" : pheno.num_controls
+                };
+            });
+    });
 
-        return phenos
-    })
+    // Group by phenostring
+    const grouped = {};
+    phenos.forEach((pheno) => {
+        if (!grouped[pheno.phenostring]) {
+            grouped[pheno.phenostring] = { phenostring: pheno.phenostring, variants: [] };
+        }
+        grouped[pheno.phenostring].variants.push(pheno);
+    });
+
+    // Process groups, ensuring stratification order
+    const formattedList = Object.values(grouped).map(group => {
+        const sortedVariants = group.variants.sort((a, b) => {
+            return props.selectedStratification1.includes(a.stratification) ? -1 : 1;
+        });
+
+        const merged = { phenostring: group.phenostring };
+
+        sortedVariants.forEach((pheno, index) => {
+            const variantNum = `_variant${index + 1}`;
+            for (const [key, value] of Object.entries(pheno)) {
+                if (key !== 'phenostring' && key !== 'stratification') {
+                    merged[`${key}${variantNum}`] = value;
+                }
+            }
+        });
+
+        // Ensure missing variants are filled with empty values
+        const baseKeys = Object.keys(merged).filter(k => k !== "phenostring").map(k => k.replace(/_variant[12]$/, ''));
+        [...new Set(baseKeys)].forEach(key => {
+            if (!merged.hasOwnProperty(`${key}_variant1`)) merged[`${key}_variant1`] = "";
+            if (!merged.hasOwnProperty(`${key}_variant2`)) merged[`${key}_variant2`] = "";
+        });
+
+        return merged;
+    });
+
+    console.log("formattedList", formattedList);
+    return formattedList;
 });
+
+
   
   // New computed properties for dynamic hints
   const firstCategory = computed(() => {

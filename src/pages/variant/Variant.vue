@@ -3,11 +3,12 @@ import axios from 'axios';
 import { ref, onMounted, computed } from 'vue';
 import { useRoute } from 'vue-router';
 
-import { maf_range } from './Variant.js';
+import { maf_range, keyToLabel } from './Variant.js';
 
 import Navbar2 from '../../components/Navbar2.vue';
 import PhewasPlot from '../../components/PhewasPlot.vue';
 import VariantTable from '../../components/VariantTable.vue';
+import VariantCompareTable from '../../components/VariantCompareTable.vue';
 
 import { HG_BUILD_NUMBER, PRIORITY_STRATIFICATIONS } from "../../config.js";
 
@@ -16,6 +17,8 @@ const route = useRoute();
 const variantCode = route.params.variant_id;
 const stratification_list = ref(null);
 const selectedStratifications = ref([])
+const selectedStratification1 = ref(PRIORITY_STRATIFICATIONS[0])
+const selectedStratification2 = ref(PRIORITY_STRATIFICATIONS[1])
 
 const category_list = ref(null);
 const selectedCategories = ref([]);
@@ -31,6 +34,8 @@ const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URL;
 const isLoading = ref(false);
 const refreshKey = ref(0)
 
+const isDisplayAllChecked = ref(false);
+const isDisabled = ref(false);
 
 onMounted(async () => {
   try {
@@ -41,9 +46,6 @@ onMounted(async () => {
     stratification_list.value = JSON.parse(JSON.stringify(response_stratification.data));
     category_list.value = JSON.parse(JSON.stringify(response_category.data))
     pheno_list.value = JSON.parse(JSON.stringify(response_phenolist.data))
-
-    console.log("test")
-    console.log(category_list.value)
 
     // we need to map here to get rid of the proxy
     await fetchPhewasPlottingData(
@@ -57,10 +59,12 @@ onMounted(async () => {
     rsids.value = variant.value.rsids ?  variant.value.rsids.split(',') : [];
 
     // set chosen variants to be male and female automatically
-    selectedStratifications.value = PRIORITY_STRATIFICATIONS;
+    selectedStratifications.value = stratification_list.value;
     selectedCategories.value = category_list.value;
 
     handleCheckboxChange();
+    onDisplayChoiceChange();
+    
   } catch (error) {
     console.log(error);
   } finally {
@@ -68,9 +72,23 @@ onMounted(async () => {
   }
 });
 
-const maf_text = computed(() => {
-    return maf_range(chosen_variants.value).replace(/\n/g, "<br>");
-});
+
+// no longer needed
+// const maf_text = computed(() => {
+//     return maf_range(chosen_variants.value).replace(/\n/g, "<br>");
+// });
+
+function onDisplayChoiceChange(){
+  if (!isDisplayAllChecked.value){
+    isDisabled.value = true;
+    selectedStratifications.value = stratification_list.value;
+
+  } else {
+    isDisabled.value = false;
+    selectedStratifications.value = [selectedStratification1.value, selectedStratification2.value];
+  }
+  handleCheckboxChange();
+}
 
 async function fetchPhewasPlottingData(stratification_list) {
   isLoading.value = true; // Start loading
@@ -95,11 +113,6 @@ async function fetchPhewasPlottingData(stratification_list) {
 
   isLoading.value = false; // Stop loading
   return variant_list.value;
-}
-
-const keyToLabel = (stratification) => {
-  var label = stratification.split(".").join(", ")
-  return label
 }
 
 const variantCodeToLabel = (variantCode) => {
@@ -144,10 +157,8 @@ const handleCheckboxChange = () => {
 
       <div class="ml-4 mt-2">
         <h1 class="mb-0">{{ variantCodeToLabel(variantCode) }}</h1>
-        <!-- why does variant_list here work but not variantList ???-->
-        <div v-if="variant">
-          <p class="mb-0"> Nearest genes: <i>{{ variant.nearest_genes }}</i></p>
-          <p class="mb-0" v-html="maf_text"></p>
+        <div class="pt-0" v-if="variant">
+          <p class="mb-0"> Nearest gene(s): <i>{{ variant.nearest_genes }}</i></p>
           <p class="mb-0">
             View on
             <a
@@ -229,43 +240,87 @@ const handleCheckboxChange = () => {
 
         <!-- buttons go here ... -->
 
-        <div class="pheno-info col-12 mt-0">
-            <div v-if="category_list && category_list.length > 0" class="dropdown pt-4 mr-4" id="dropdown-data1">
-                <button class="btn btn-primary btn-drop" id="button-data1"> Choose Categories <span class="arrow-container"><span class="arrow-down"></span></span></button>
-                <div class="dropdown-menu" id="dropdown-content-data1">
-                    <label v-for="(category, index) in category_list">
-                        <input  
-                        type="checkbox" 
-                        :value="category" 
-                        :name="category" 
-                        v-model="selectedCategories"
-                        @change="handleCheckboxChange">
-                        {{ category }} 
-                    </label> 
-                </div>
-              </div>
-            <div v-if="stratification_list && stratification_list.length > 0" class="dropdown pt-4" id="dropdown-data1">
-              <button class="btn btn-primary btn-drop" id="button-data1"> Choose Displayed Stratifications <span class="arrow-container"><span class="arrow-down"></span></span></button>
-              <div class="dropdown-menu" id="dropdown-content-data1">
-                  <label v-for="(stratification, index) in stratification_list">
-                      <input 
-                      type="checkbox" 
-                      :value="stratification" 
-                      :name="stratification" 
-                      v-model="selectedStratifications"
-                      @change="handleCheckboxChange">
-                      {{ keyToLabel(stratification) }} 
-                  </label> 
-              </div>
+        <div class="d-flex align-items-center col-12 mt-2">
+          <div v-if="category_list && category_list.length > 0" class="dropdown mr-4 mt-3" id="dropdown-data1">
+            <button class="btn btn-primary btn-drop" id="button-data1"> Choose Categories <span class="arrow-container"><span class="arrow-down"></span></span></button>
+            <div class="dropdown-menu" id="dropdown-content-data1">
+                <label v-for="(category, index) in category_list">
+                    <input  
+                    type="checkbox" 
+                    :value="category" 
+                    :name="category" 
+                    v-model="selectedCategories"
+                    @change="handleCheckboxChange">
+                    {{ category }} 
+                </label> 
             </div>
           </div>
+            <div class="display-choice">
+              <h3><label class="mr-2 mt-4" >Compare Two Stratifications</label>
+                <input class="mr-4 custom-checkbox"
+                type="checkbox"
+                id="display-choice"
+                v-model="isDisplayAllChecked"
+                @change="onDisplayChoiceChange"
+                />
+              </h3>
+            </div>
 
-        <VariantTable class="mb-10" :key="refreshKey" :selectedStratifications="selectedStratifications" :variantList="variant_list" :categoryList="selectedCategories"></VariantTable>
+          </div>
+          <!-- <div v-if="stratification_list && stratification_list.length > 0" class="dropdown" id="dropdown-data1">
+            <button :disabled="isDisabled" class="btn btn-primary btn-drop" id="button-data1"> Choose Displayed Stratifications <span class="arrow-container"><span class="arrow-down"></span></span></button>
+            <div class="dropdown-menu" id="dropdown-content-data1">
+                <label v-for="(stratification, index) in stratification_list">
+                    <input 
+                    type="checkbox" 
+                    :value="stratification" 
+                    :name="stratification" 
+                    v-model="selectedStratifications"
+                    @change="handleCheckboxChange">
+                    {{ keyToLabel(stratification) }} 
+                </label> 
+            </div>
+          </div> -->
+          <div class="dropdown pt-1 pr-2" id="dropdown-data1">
+            <button :disabled="isDisabled"  class="btn btn-primary btn-drop" id="button-data1">{{keyToLabel(selectedStratification1)}}<span class="arrow-container"><span class="arrow-down"></span></span></button>
+            <div class="dropdown-menu" id="dropdown-content-data1">
+              <label v-for="(stratification, index) in stratification_list">
+                  <input 
+                  type="radio" 
+                  :value="stratification" 
+                  :name="stratification" 
+                  v-model="selectedStratification1"
+                  @change="onDisplayChoiceChange">
+                  {{ keyToLabel(stratification) }} 
+              </label> 
+            </div>
+          </div>
+          <div class="dropdown pt-1 pr-2" id="dropdown-data2">
+            <button :disabled="isDisabled"  v-if="selectedStratification2 == 'No stratification'" class="btn btn-primary btn-drop" id="button-data2"> No stratification <span class="arrow-container"><span class="arrow-down"></span></span></button>
+            <button :disabled="isDisabled"  v-else class="btn btn-primary btn-drop" id="button-data2"> {{keyToLabel(selectedStratification2)}} <span class="arrow-container"><span class="arrow-down"></span></span></button>
+            <div class="dropdown-menu" id="dropdown-content-data2">
+              <label v-for="(stratification, index) in stratification_list">
+                  <input 
+                  type="radio" 
+                  :value="stratification" 
+                  :name="stratification" 
+                  v-model="selectedStratification2"
+                  @change="onDisplayChoiceChange">
+                  {{ keyToLabel(stratification) }} 
+              </label> 
+            </div>
+          </div>
 
         <div v-if="chosen_variants.length > 0">
           <PhewasPlot :key="refreshKey" :variantList="chosen_variants" :uniqueCategoriesList="category_list"/>
         </div>
 
+        <div v-if="!isDisplayAllChecked">
+          <VariantTable class="mb-10" :key="refreshKey" :selectedStratifications="selectedStratifications" :variantList="variant_list" :categoryList="selectedCategories" :compare="isDisabled"></VariantTable>
+        </div>
+        <div v-else>
+          <VariantCompareTable class="mb-10" :key="refreshKey" :selectedStratification1="selectedStratifications[0]" :selectedStratification2="selectedStratifications[1]" :variantList="variant_list" :categoryList="selectedCategories" :compare="isDisabled"></VariantCompareTable>
+        </div>
 
       </div>
     </v-main> 
@@ -306,6 +361,21 @@ const handleCheckboxChange = () => {
 .arrow-container:hover {
   cursor: pointer;
   background-color: grey;
+}
+
+.custom-checkbox {
+  width: 20px;
+  height: 20px; 
+  cursor: pointer; 
+}
+
+.pheno-info {
+  align-items:center;
+}
+
+.display-choice {
+  position: relative;
+  display: inline-block;
 }
 
 .dropdown {
@@ -359,6 +429,23 @@ const handleCheckboxChange = () => {
   background-color: #ddd;
 }
 
+.btn-drop:disabled {
+  background-color: #ccc; 
+  cursor: not-allowed; 
+  opacity: 0.6; 
+}
+
+.btn-drop:disabled + .dropdown-menu {
+  display: none !important;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+
+.btn-drop:disabled:hover {
+  background-color: #ccc; 
+}
+
 .btn-primary {
   color: black;
   background-color: lightgrey;
@@ -372,7 +459,6 @@ const handleCheckboxChange = () => {
 
 .variant-link {
   display: inline-block;
-  /* margin-right: 12px; */
   color: #1e88e5;
   text-decoration: none;
 }

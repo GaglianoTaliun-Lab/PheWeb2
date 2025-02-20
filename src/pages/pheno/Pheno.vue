@@ -66,13 +66,11 @@ const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URL
 
 const chosenVariant = ref('');
 
-const isInteractionChecked = ref(false); // Initialize it to false or true based on your needs
+const isInteractionChecked = ref(false);
 
 const hoverVariant = ref([])
 const updateHoverVariantMethod = (variant) => {
-  // console.log('Hovered variant:', variant.value);
   hoverVariant.value = variant.value;
-  // console.log(`Hovered Variant updated: ${hoverVariant.value}`);
 };
 
 const isLoading = ref(false);
@@ -249,7 +247,6 @@ const handleRadioChange = () => {
     qqSubset.value[selectedStratification1.value] = qqData.value[selectedStratification1.value];
     qqSubset.value[selectedStratification2.value] = qqData.value[selectedStratification2.value];
 
-
   }
 
   refreshKey.value += 1;
@@ -261,7 +258,6 @@ const handleInteractionRadioChange = () => {
     manhattanInteractionData.value = {}
     miamiInteractionToggle.value = false;
     manhattanInteractionData.value[selectedInteractionStratification1.value] = allInteractionPlottingData.value[selectedInteractionStratification1.value];
-    console.log(manhattanInteractionData)
 
     qqInteractionSubset.value = {};
     qqInteractionSubset.value[selectedInteractionStratification1.value] = qqInteractionData.value[selectedInteractionStratification1.value];

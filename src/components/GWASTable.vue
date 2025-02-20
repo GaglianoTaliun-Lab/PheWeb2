@@ -94,7 +94,7 @@
                 1) Chromosome <br>
                 2) Position <br>
                 3) Reference allele <br>
-                4) Alternate allele <br> 
+                4) Effect allele <br> 
                 5) rsid (if applicable)
               </span>
             </v-tooltip>
@@ -374,7 +374,7 @@
         { title: 'EA', key: 'ea', sortable: false },
         { title: 'Nearest Gene(s)', key: 'nearest_genes', sortable: false },
         { 
-          title: 'AF', 
+          title: 'EAF', 
           key: 'af',
           children: [
             { title: pheno1.value.split('.').slice(-2).join(', '), key: 'af_pheno1' }, 
@@ -680,7 +680,7 @@
       watch(
         () => props.chosenVariant,
         (newValue) => {
-          console.log(`Chosen Variant updated: ${newValue}`);
+          //console.log(`Chosen Variant updated: ${newValue}`);
           page.value = chosenPage.value;
           // console.log(`Chosen Page updated: ${page.value}`);
           menu.value = true;

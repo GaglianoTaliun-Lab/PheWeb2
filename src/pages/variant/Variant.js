@@ -74,14 +74,14 @@ export function maf_range(data){
     return text
 }
 
-function keyToLabel(phenoLabel){
+export function keyToLabel(phenoLabel){
 
-    var label = phenoLabel.split(".").slice(1)
+    if (!phenoLabel){
+        return null
+    }
+    var label = phenoLabel.split(".")
     if (label.length < 1){
         return []
-    }
-    if (label[0].includes("interaction-")){
-        label[0] = "Interaction: " + label[0].split("-")[1]
     }
 
     return label.join(', ')
