@@ -159,7 +159,7 @@
       <template v-slot:header.num_peaks="{ column, isSorted, getSortIcon }">
         <div style="display: flex; align-items: center;">
           <span style="white-space: nowrap;">{{ column.title }}</span>
-          <v-tooltip text="# peaks" location="top">
+          <v-tooltip text="# significant peaks" location="top">
             <template v-slot:activator="{ props }">
               <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
             </template>
@@ -323,6 +323,20 @@
         </div>
       </template>
 
+      <template v-if="hasAF" v-slot:header.af="{ column }">
+        <div style="display: flex; align-items: center; justify-content: center; text-align: center;">
+          <span style="white-space: nowrap;">{{ "EAF" }}</span>
+          <v-tooltip location="top">
+            <template v-slot:activator="{ props }">
+              <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
+            </template>
+            <span style="white-space: normal;">
+              Effect allele frequency
+            </span>
+          </v-tooltip>
+        </div>
+      </template>
+
     </v-data-table>
   </v-card>
 
@@ -330,23 +344,23 @@
 
 <script setup>
     import { ref, onMounted, computed, watch } from 'vue';
-    import axios from 'axios';
-
-    const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URL
+    const props = defineProps({
+      data: Array,
+    });
     
     // main table
-    const headers = ref([
-      { title: 'Category', key: 'category' },
-      { title: 'Phenotype', key: 'phenostring' },
-      { title: 'Sex', key: 'sex' },
-      { title: 'Ancestry', key: 'ancestry' },
-      { title: '#Samples', key: 'num_samples' },
-      { title: '#Loci < 5e-8', key: 'num_peaks' },
-      { title: 'P-value', key: 'pval' },
-      { title: 'Top Variant', key: 'variantid', sortable: false },
-      { title: 'Nearest Gene(s)', key: 'nearest_genes', sortable: false },
-    ]);
-
+    // const headers = ref([
+    //   { title: 'Category', key: 'category' },
+    //   { title: 'Phenotype', key: 'phenostring' },
+    //   { title: 'Sex', key: 'sex' },
+    //   { title: 'Ancestry', key: 'ancestry' },
+    //   { title: '#Samples', key: 'num_samples' },
+    //   { title: '#Loci < 5e-8', key: 'num_peaks' },
+    //   { title: 'P-value', key: 'pval' },
+    //   { title: 'Top Variant', key: 'variantid', sortable: false },
+    //   { title: 'Nearest Gene(s)', key: 'nearest_genes', sortable: false },
+    // ]);
+    
     const phenotypes = ref([]);
     const isLoading = ref(false);
     const errorMessage = ref('');
@@ -354,14 +368,11 @@
     const search = ref('');
 
     // data
-    const fetchSampleData = async () => {
+    const fetchData = async () => {
       isLoading.value = true;
       errorMessage.value = '';
       try {
-        // console.log(`${api}/phenotypes`)
-        const response = await axios.get(`${api}/phenotypes`)
-        // console.log(response);
-        phenotypes.value = response.data.map(item => ({
+        phenotypes.value = props.data.map(item => ({
           ...item,
           variantid: `${item.chrom}-${item.pos}-${item.ref}-${item.alt}`,
           variantName: item.rsids 
@@ -382,6 +393,40 @@
       }
       
     };
+
+    const baseHeaders = [
+      { title: 'Category', key: 'category' },
+      { title: 'Phenotype', key: 'phenostring' },
+      { title: 'Sex', key: 'sex' },
+      { title: 'Ancestry', key: 'ancestry' },
+      { title: 'P-value', key: 'pval' },
+      { title: 'Top Variant', key: 'variantid', sortable: false },
+      { title: 'Nearest Gene(s)', key: 'nearest_genes', sortable: false },
+    ];
+    const hasAF = computed(() => props.data.some(item => item.hasOwnProperty('af')));
+    const headers = computed(() => {
+      const hasNumSamples = props.data.some(item => item.hasOwnProperty('num_samples'));
+      const hasNumPeaks = props.data.some(item => item.hasOwnProperty('num_peaks'));
+      // hasAF.value = props.data.some(item => item.hasOwnProperty('af'));
+      const hasNumSignificantInPeak = props.data.some(item => item.hasOwnProperty('num_significant_in_peak'));
+
+      let lociColumn = { title: '#Loci < 5e-8', key: hasNumPeaks ? 'num_peaks' : hasNumSignificantInPeak ? 'num_significant_in_peak' : '' };
+      let updatedHeaders = [...baseHeaders];
+
+      if (lociColumn.key) {
+        updatedHeaders.splice(4, 0, lociColumn); 
+      }
+
+      if (hasNumSamples) {
+        updatedHeaders.splice(4, 0, { title: '#Samples', key: 'num_samples' }); 
+      }
+
+      if (hasAF.value) {
+        updatedHeaders.splice(6, 0, { title: 'EAF', key: 'af' }); 
+      }
+
+      return updatedHeaders;
+    });
 
     // filters
     const selectedSex = ref('All');
@@ -512,8 +557,15 @@
     };
 
     onMounted(() => {
-      fetchSampleData();
+      fetchData();
     });
+
+    watch(
+      () => props.data,
+      (newValue) => {
+        fetchData();
+      },
+    );
 
     watch([displayedUniquePhenotypesCount, displayedTotalPhenotypesCount], ([newUniqueCount, newTotalCount]) => {
       emit('updateUniquePhenotypesCount', { uniqueCount: newUniqueCount, totalCount: newTotalCount });
