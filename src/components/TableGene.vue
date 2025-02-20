@@ -278,7 +278,7 @@
 
     const selectedPhenotype = ref();
     const phenotypeOptions = computed(() => {
-      if (selectedCategory.value !== 'All') {
+      if (selectedCategory.value && selectedCategory.value !== 'All' ) {
         const phenos = phenotypes.value
           .filter(item => item.category === selectedCategory.value)
           .map(item => item.phenostring);

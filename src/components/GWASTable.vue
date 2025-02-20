@@ -107,7 +107,7 @@
             >
               <template v-slot:activator="{ props }">
                   <v-icon small color="primary" v-bind="props" class="ml-2" 
-                  :icon="filteredVariant === 'All' ? 'mdi-feature-search-outline' : 'mdi-feature-search'"></v-icon>
+                  :icon="filteredVariant === '' ? 'mdi-feature-search-outline' : 'mdi-feature-search'"></v-icon>
               </template>
               <v-card class="pa-3">
                 <v-text-field
@@ -181,7 +181,7 @@
             >
               <template v-slot:activator="{ props }">
                   <v-icon small color="primary" v-bind="props" class="ml-2" 
-                  :icon="filteredGene === 'All' ? 'mdi-feature-search-outline' : 'mdi-feature-search'"></v-icon>
+                  :icon="filteredGene === '' ? 'mdi-feature-search-outline' : 'mdi-feature-search'"></v-icon>
               </template>
               <v-card class="pa-3">
                 <v-text-field
@@ -430,14 +430,11 @@
         isTableLoading.value = true;
         errorMessage.value = '';
         try {
-
           // instead of using API call, directly use plot data from parent page
-          // console.log("start to fetch data")
           tableInfo.value = await props.miamiData;
           var keys = Object.keys(tableInfo.value)
           pheno1.value = keys[0];
           pheno2.value = keys[1] || keys[0];
-          // console.log("pheno1&2", pheno1.value, pheno2.value);
           // TODO: make this more efficient when stratification2 is None 
 
           variants1.value = tableInfo.value[pheno1.value]?.unbinned_variants.map(item => ({
@@ -483,8 +480,6 @@
                 .map(variant2 => variant2.variantid)
                 .sort((a, b) => a.localeCompare(b))
             };
-
-            // console.log(unmatchedVariants)
             const apiUrl_post = `${api}/phenotypes/variants`;
             const response = await axios.post(apiUrl_post, unmatchedVariants, {
               headers: {
@@ -492,9 +487,6 @@
               }
             })
             .then(response => {
-              // console.log(response.data.data)
-              // console.log("vairants1 #: ", variants1.value.length);
-              // console.log("vairants2 #: ", variants2.value.length);
               const missingData1 = response.data.data[props.selectedStratification1].map(item => ({ 
                 ...item,
                 variantid: `${item.chrom}-${item.pos}-${item.ref}-${item.alt}`,
@@ -522,17 +514,10 @@
                 variants1.value.push(...missingData1);
                 variants2.value.push(...missingData2);
               }
-              // console.log("vairants1 after #: ", variants1.value.length);
-              // console.log("vairants2 after #: ", variants2.value.length);
-              // console.log(variants1)
-              // console.log(variants2.value.filter(variant2 => !variants1.value.some(variant1 => variant1.variantid === variant2.variantid)))
-              // console.log(variants1.value.filter(variant1 => !variants2.value.some(variant2 => variant1.variantid === variant2.variantid)))
-              
             })
             .catch(error => {
               console.error("Error fetching missing GWAS data:", error);
             });
-            // console.log(response.data.data)
           };
           const variants2Map2 = new Map(variants2.value.map(variant => [variant.variantid, variant]));
           mergedVariants.value = variants1.value.map(variant1 => {
@@ -591,8 +576,8 @@
           return false;
         }
       });
-      const filteredVariant = ref('All');
-      const filteredGene = ref('All');
+      const filteredVariant = ref('');
+      const filteredGene = ref('');
       const filterVariants = () => {
         // variantSearchLoading.value = false;
         filteredVariant.value = selectedVariant.value;
@@ -603,16 +588,25 @@
       };
       const clearVariants = () => {
         selectedVariant.value = '';
-        filteredVariant.value = 'All';
+        filteredVariant.value = '';
       };
       const clearGene = () => {
         selectedGene.value = '';
-        filteredGene.value = 'All';
+        filteredGene.value = '';
       };
       const filteredMergedVariants = computed(() => {
         return mergedVariants.value.filter(item => {
-          const variantMatches = !filteredVariant.value || filteredVariant.value === 'All' ||  item.rsids === filteredVariant.value || item.variantid === filteredVariant.value;
-          const geneMatches = !filteredGene.value || filteredGene.value === 'All' ||   item.nearest_genes.includes(filteredGene.value.toUpperCase());
+          // const variantMatches = !filteredVariant.value || filteredVariant.value === 'All' ||  item.rsids === filteredVariant.value || item.variantid === filteredVariant.value;
+          // const geneMatches = !filteredGene.value || filteredGene.value === 'All' ||   item.nearest_genes.includes(filteredGene.value.toUpperCase());
+          const variantMatches = !filteredVariant.value || filteredVariant.value === '' || 
+            (item.rsids && item.rsids.includes(filteredVariant.value)) ||
+            (item.variantid && item.variantid.includes(filteredVariant.value));
+
+          const geneMatches = !filteredGene.value || filteredGene.value === '' ||
+          (Array.isArray(item.nearest_genes) && item.nearest_genes.some(gene => 
+            gene.toUpperCase().includes(filteredGene.value.toUpperCase()))
+          )
+            
           return  variantMatches && geneMatches;
         });
       });
