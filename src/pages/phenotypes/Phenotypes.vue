@@ -31,7 +31,6 @@
       try {
         const response = await axios.get(`${api}/phenotypes`)
         data.value = response.data;
-        console.log(data.value)
       } catch (error) {
         console.error("There was an error fetching the sample data:", error);
         errorMessage.value = "Failed to load data. Please try again later.";

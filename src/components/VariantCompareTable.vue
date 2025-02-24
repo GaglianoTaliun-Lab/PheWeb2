@@ -1,20 +1,10 @@
 <template>
-  <div v-if="formattedVariantList.length > 0" class="mt-4">
+  <div v-if="formattedVariantList.length > 0" class="mt-1">
     <!-- Previous template code remains the same until the category search field -->
     <v-card elevation="5">
       <v-data-table :items="filteredVariantList" :headers="headers" fixed-header :items-per-page="100"
         hover :sort-by="[{ key: 'pval', order: 'asc' }]">
         <!-- Top slot remains the same -->
-        <template v-slot:top>
-          <div class="d-flex align-center justify-end px-4 mt-2">
-            <!-- <v-btn color="primary" variant="outlined" class="mr-4" prepend-icon="mdi-download" @click="downloadTable">
-              Download All Data
-            </v-btn> -->
-            <span class="px-2 py-1 rounded font-weight-bold text-white" style="background-color: #337bb7;">
-              {{ filteredVariantList.length }} {{ filteredVariantList.length === 1 ? 'result' : 'results' }}
-            </span>
-          </div>
-        </template>
 
         <template v-slot:header.category="{ column }">
           <div style="display: flex; align-items: center;">

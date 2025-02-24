@@ -424,7 +424,6 @@
         align: 'center', 
       };
 
-  
       // data
       const fetchSampleData = async () => {
         isTableLoading.value = true;
@@ -480,6 +479,7 @@
                 .map(variant2 => variant2.variantid)
                 .sort((a, b) => a.localeCompare(b))
             };
+
             const apiUrl_post = `${api}/phenotypes/variants`;
             const response = await axios.post(apiUrl_post, unmatchedVariants, {
               headers: {
@@ -511,6 +511,9 @@
               }));;
 
               if (missingData1 && Array.isArray(missingData1) && missingData2 && Array.isArray(missingData2)) {
+                // console.log("missingData")
+                // console.log(missingData1)
+                // console.log(missingData2)
                 variants1.value.push(...missingData1);
                 variants2.value.push(...missingData2);
               }
@@ -664,7 +667,7 @@
       watch(() => [props.selectedStratification1, props.selectedStratification2], (newSelectedStratification1, newSelectedStratification2) => {
         // console.log(`Selected value changed to: ${newSelectedStratification1}, ${newSelectedStratification2}`);
         // console.log(`here ${newChosenVariant}`)
-        fetchSampleData();
+        //fetchSampleData();
         page.value = chosenPage.value;
         
         // const unbinnedVariants = props.miamiData[props.selectedStratification1]["unbinned_variants"];

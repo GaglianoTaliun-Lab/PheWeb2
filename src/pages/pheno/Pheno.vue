@@ -582,8 +582,8 @@ function onInteractionCheckboxChange() {
                   <div class="dropdown p-1 float-right" id="dropdown-sumstats">
                     <button class="btn btn-primary btn-drop">  Download Summary Statistics  <span class="arrow-container"><span class="arrow-down"></span></span></button>
                     <div class="dropdown-menu dropdown-menu-right p-1" id="dropdown-content-sumstats">
-                      <button class="btn btn-secondary w-100 mt-1 mb-1"  id="download-all-button" @click="downloadAll">Download All</button>
-                      <button class="btn btn-secondary w-100 mt-1 mb-1"  id="download-current-button" @click="downloadCurrent">Download Plotted Variants</button>
+                      <button class="sec-button btn w-100 mt-1 mb-1"  id="download-all-button" @click="downloadAll">Download All</button>
+                      <button class="sec-button btn w-100 mt-1 mb-1"  id="download-current-button" @click="downloadCurrent">Download Plotted Variants</button>
                     </div>
                   </div>
             </div> 
@@ -670,8 +670,8 @@ function onInteractionCheckboxChange() {
                   <div class="dropdown p-1 float-right" id="dropdown-sumstats">
                     <button class="btn btn-primary btn-drop">  Download Summary Statistics  <span class="arrow-container"><span class="arrow-down"></span></span></button>
                     <div class="dropdown-menu dropdown-menu-right p-1" id="dropdown-content-sumstats">
-                      <button class="btn btn-secondary w-100 mt-1 mb-1"  id="download-all-button" @click="downloadAll">Download All</button>
-                      <button class="btn btn-secondary w-100 mt-1 mb-1"  id="download-current-button" @click="downloadCurrent">Download Current Selection</button>
+                      <button class="sec-button w-100 mt-1 mb-1"  id="download-all-button" @click="downloadAll">Download All</button>
+                      <button class="sec-button w-100 mt-1 mb-1"  id="download-current-button" @click="downloadCurrent">Download Plotted Variants</button>
                     </div>
                   </div>
             </div> 
@@ -841,6 +841,16 @@ function onInteractionCheckboxChange() {
   .btn-primary:hover {
     background-color: darkgrey !important;
     color: black;
+  }
+
+  .sec-button {
+    background-color:#0D47A1;
+    color:white;
+  }
+
+  .sec-button:hover {
+    background-color:#1565C0;
+    color:white;
   }
   
   .responsive-main {

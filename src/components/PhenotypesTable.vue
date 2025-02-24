@@ -82,18 +82,6 @@
 
   <v-card elevation="5">
 
-    <!-- <template v-slot:text>
-      <v-text-field 
-        v-model="search" 
-        label="Try 'Diseases', 'Type 2 Diabetes', '12: 121779004 A/G', etc."
-        prepend-inner-icon="mdi-magnify" 
-        variant="outlined" 
-        hide-details 
-        single-line
-        autocomplete="on"
-      ></v-text-field>
-    </template> -->
-
     <v-data-table 
       :items="filteredPhenotypes" 
       :headers="headers" 
