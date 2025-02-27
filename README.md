@@ -15,7 +15,8 @@ Node.js 20.*
 ## Before you run
 
 **You need to create a .env file**
-A .env file exists in the top level of the directory to store private options relating to your PheWeb website. Your .env file needs to include the port of your PheWeb backend in order to retrieve data.
+
+An .env file exists in the top level of the directory to store private options relating to your PheWeb website. Your .env file needs to include the port of your PheWeb backend in order to retrieve data.
 We have a sample .env file called sample-env. Copy the file, rename to '.env' and adjust the options to your needs in order for the changes to take effect.
 
 Please adjust the options within `src/config.js` to fit your needs. There are currently just placeholder options.
@@ -43,7 +44,11 @@ A development server allows users more flexibility and with their website. This 
 ## Production Setup
 A production server allows Vite to optimize deployement for faster page reload times and better security. In exchange, development features such as hot-reloading (automatic changes) are not available. This is the recommend set-up when deploying the public version of your Pheweb instance.
 While this is not a completely production-ready build. This version utilises the 'serve' package to bypass the need for root control (useful for HPC environments, for example).
+
 ### Install dependencies
 `npm run build`
-### Runs production-like server. The convention is port 8080, but you may change this.
+
+### Runs production-like server. 
+The convention is port 8080, but you may change this.
+
 `npx serve -s dist -l 8080`
