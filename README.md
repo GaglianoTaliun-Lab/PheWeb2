@@ -1,4 +1,7 @@
 # PheWeb 2.0
+![PheWeb 2.0 Screenshot](https://github.com/GaglianoTaliun-Lab/PheWeb2.0/tree/main/public/Screenshot.png)
+
+
 PheWeb 2.0 is a new version of the original [PheWeb](https://github.com/statgen/pheweb) tool for interactive querying, visualizing, and sharing summary-level results from GWAS/PheWAS studies. In PheWeb 2.0, we moved all the UI functionality to the Vue 3 and Vite frameworks, dramatically simplifying code readability, maintenance of old features, and development of new features. We also de-coupled UI from the underlying data model by introducing a separate [PheWeb 2.0 API](https://github.com/GaglianoTaliun-Lab/PheWeb2.0-API) server to allow their independent scaling and improve re-usability.
 
 As a result of this migration, PheWeb 2.0 allows the following:
@@ -25,10 +28,10 @@ Please adjust the options within `src/config.js` to fit your needs. There are cu
 ### Images
 In order to work with static images such as in the about page or acknowledgements in the home page, code modifications will be necessary. Images should be stored in `src/assets/`.
 
-Image at the top of web browser tab : `index.html`
-Header : `src/components/Navbar2.vue`
-Home page acknlowledgements : `src/componenets/AcknowledgeImage.vue`
-About page : `src/pages/about/About.vue`
+- Image at the top of web browser tab : `index.html`
+- Header : `src/components/Navbar2.vue`
+- Home page acknlowledgements : `src/componenets/AcknowledgeImage.vue`
+- About page : `src/pages/about/About.vue`
 
 ## Development Setup
 A development server allows users more flexibility and with their website. This is the best option when testing changes to the code.
