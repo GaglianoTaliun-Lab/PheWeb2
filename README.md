@@ -22,7 +22,7 @@ Please adjust the options within `src/config.js` to fit your needs. There are cu
 - VITE_APP_SUBTITLE1: The subtitle of your PheWeb that will be present on the title page. (Optional)
 - VITE_APP_DATE: The date of last update of your PheWeb. Will be present on the bottom of the page. (Optional)
 
-*** Images
+### Images
 In order to work with static images such as in the about page or acknowledgements in the home page, code modifications will be necessary. Images should be stored in `src/assets/`.
 
 Image at the top of web browser tab : `index.html`
