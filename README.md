@@ -43,7 +43,7 @@ A development server allows users more flexibility and with their website. This 
 
 ## Production Setup
 A production server allows Vite to optimize deployement for faster page reload times and better security. In exchange, development features such as hot-reloading (automatic changes) are not available. This is the recommend set-up when deploying the public version of your Pheweb instance.
-While this is not a completely production-ready build. This version utilises the 'serve' package to bypass the need for root control (useful for HPC environments, for example).
+While this is not a completely production-ready build, this version utilises the 'serve' package to bypass the need for root control (useful for HPC environments, for example).
 
 ### Install dependencies
 `npm run build`
