@@ -1,6 +1,6 @@
 <template>
     <v-app>
-        <Navbar2 />
+        <Navbar />
         <v-main class="responsive-main">
             <h2 style="font-weight: bold;">Phenotypes</h2>
             <!-- <p>{{ uniquePhenotypesCount }} of {{ totalPhenotypesCount }} phenotype(s) displayed</p> -->
@@ -15,9 +15,9 @@
 </template>
 
 <script setup name="Phenotypes">
-    import Navbar2 from '../../components/Navbar2.vue';
+    import Navbar from '@/components/Navbar.vue';
+    import PhenotypesTable from '@/components/PhenotypesTable.vue';
     import { ref, onMounted } from 'vue'
-    import PhenotypesTable from '../../components/PhenotypesTable.vue';
     import axios from 'axios';
 
     const uniquePhenotypesCount = ref(0);

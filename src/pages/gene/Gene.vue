@@ -1,6 +1,6 @@
 <template>
   <v-app>
-    <Navbar2 /> 
+    <Navbar /> 
     <v-main class="responsive-main"> 
       <v-progress-linear
         v-if="isLoading"
@@ -77,7 +77,7 @@
 <script setup name="Gene">
 import { ref, computed, watch} from 'vue';
 import { useRoute } from 'vue-router';
-import Navbar2 from '../../components/Navbar2.vue';
+import Navbar from '../../components/Navbar.vue';
 import TableGene from '../../components/TableGene.vue';
 
 import RegionPlot from '../../components/LocusZoomRegion.vue';

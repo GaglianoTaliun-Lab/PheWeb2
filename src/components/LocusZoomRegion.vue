@@ -4,7 +4,7 @@ import {onMounted, ref, watch} from 'vue'
 import { useRoute } from 'vue-router';
 
 
-import * as utils from '../pages/region/Region.js'
+import * as utils from '@/pages/region/Region.js'
 
 const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URL
 

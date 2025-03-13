@@ -5,14 +5,14 @@ import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import '@fortawesome/fontawesome-free/css/all.css';
 
-import Navbar2 from '../../components/Navbar2.vue';
-import ManhattanPlot from '../../components/ManhattanPlot.vue';
-import MiamiPlot from '../../components/MiamiPlot.vue';
-import QQPlot from '../../components/QQPlot.vue';
-import GWASTable from '../../components/GWASTable.vue';
-import InteractionManhattanPlot from '../../components/InteractionManhattanPlot.vue'
-import InteractionMiamiPlot from '../../components/InteractionMiamiPlot.vue'
-import InteractionTable from '../../components/InteractionTable.vue';
+import Navbar2 from '@/components/Navbar.vue';
+import ManhattanPlot from '@/components/ManhattanPlot.vue';
+import MiamiPlot from '@/components/MiamiPlot.vue';
+import QQPlot from '@/components/QQPlot.vue';
+import GWASTable from '@/components/GWASTable.vue';
+import InteractionManhattanPlot from '@/components/InteractionManhattanPlot.vue'
+import InteractionMiamiPlot from '@/components/InteractionMiamiPlot.vue'
+import InteractionTable from '@/components/InteractionTable.vue';
 
 import * as functions from './Pheno.js';
 

@@ -6,7 +6,7 @@ import * as d3 from 'd3';
 import d3Tip from 'd3-tip';
 import _ from 'underscore'
 
-import * as utils from '../pages/pheno/Pheno.js'
+import * as utils from '@/pages/pheno/Pheno.js'
 
 const point_radius = 2.3;
 

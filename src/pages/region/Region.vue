@@ -4,7 +4,7 @@ import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import '@fortawesome/fontawesome-free/css/all.css';
 
-import Navbar2 from '../../components/Navbar2.vue';
+import Navbar from '../../components/Navbar.vue';
 import LocusZoomRegion from '../../components/LocusZoomRegion.vue'
 
 import * as functions from './Region.js';
@@ -37,7 +37,7 @@ onMounted(async () => {
 <template>
     
     <v-app>
-        <Navbar2 />
+        <Navbar />
         <v-main class="pt-10">
             <h1 v-if="phenostring">{{phenocode}}: {{phenostring}}</h1>
             <h1 v-else>{{phenocode}}</h1>

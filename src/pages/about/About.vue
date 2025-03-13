@@ -1,6 +1,6 @@
 <template>
     <v-app>
-        <Navbar2 />
+        <Navbar />
         <v-main>
             <v-card app>
                 <v-navigation-drawer app permanent :width="200" align="left"> 
@@ -272,7 +272,7 @@
 </template>
 
 <script setup name="About">
-    import Navbar2 from '../../components/Navbar2.vue';
+    import Navbar from '../../components/Navbar.vue';
     import { ref } from 'vue'
 
     const selectedContent = ref('Overview');

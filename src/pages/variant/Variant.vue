@@ -5,7 +5,7 @@ import { useRoute } from 'vue-router';
 
 import { maf_range, keyToLabel } from './Variant.js';
 
-import Navbar2 from '../../components/Navbar2.vue';
+import Navbar from '../../components/Navbar.vue';
 import PhewasPlot from '../../components/PhewasPlot.vue';
 import VariantTable from '../../components/VariantTable.vue';
 import VariantCompareTable from '../../components/VariantCompareTable.vue';
@@ -204,7 +204,7 @@ const downloadTable = () => {
 
 <template>
   <v-app>
-    <Navbar2 />
+    <Navbar />
     <v-main class="responsive-main">
       <!-- Loading Bar -->
     <v-progress-linear

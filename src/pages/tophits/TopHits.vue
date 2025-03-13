@@ -1,6 +1,6 @@
 <template>
     <v-app>
-        <Navbar2 />
+        <Navbar />
         <v-main>
             <h2 style="font-weight: bold;">Top Hits</h2>
             <span style="font-weight: bold;">This page shows only the peaks with a p-value < 10-6. 
@@ -16,7 +16,7 @@
 </template>
 
 <script setup name="Tophits">
-    import Navbar2 from '../../components/Navbar2.vue';
+    import Navbar from '../../components/Navbar.vue';
     import { ref, onMounted} from 'vue'
     import TopHitsTable from '../../components/TopHitsTable.vue';
     import PhenotypesTable from '../../components/PhenotypesTable.vue';

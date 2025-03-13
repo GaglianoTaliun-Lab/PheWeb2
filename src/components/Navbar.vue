@@ -1,31 +1,80 @@
 <template>
-    <div class="container" style="position: fixed; top:3%; right: 5%; width: 100%; height: 60px; z-index: 1000;">
-        <v-row align="center" justify="space-between">
-            <v-col cols="auto"  style="position: fixed; left: 2%">
-                <router-link :to="{ name: 'Home' }" tag="v-btn" icon="$vuetify">
-                    <img src="../assets/favicon.svg" alt="Icon" class="custom-icon">
-                </router-link>
-            </v-col>
-            <v-row align="center" justify="end">
-                <v-col cols="auto">
-                    <v-btn variant="plain" density="compact" class="custom-btn" :to="{ name: 'Phenotypes' }">Phenotypes</v-btn>
-                </v-col>
-                <v-col cols="auto">
-                    <v-btn variant="plain" density="compact" class="custom-btn" :to="{ name: 'Tophits' }">Top Hits</v-btn>
-                </v-col>
-                <v-col cols="auto">
-                    <v-btn variant="plain" density="compact" class="custom-btn" :to="{ name: 'Random' }">Random</v-btn>
-                </v-col>
-                <v-col cols="auto">
-                    <v-btn variant="plain" density="compact" class="custom-btn" :to="{ name: 'About' }">About</v-btn>
-                </v-col>
-            </v-row>
+    <v-app-bar app fixed elevation="0" style="width: 100% " >
+      <v-row align="center" justify="space-between">
+        <v-col cols="auto" style="margin-left:2%">
+            <router-link :to="{ name: 'Home' }" tag="v-btn" icon="$vuetify">
+                    <img src="@/assets/favicon.svg" alt="Icon" class="custom-icon">
+            </router-link>
+        </v-col>
+        <v-row align="center" justify="end" style="margin-right:2%">
+          <v-col cols="auto">
+            <v-btn text variant="plain" class="custom-btn" :to="{ name: 'Phenotypes' }">Phenotypes</v-btn>
+          </v-col>
+          <v-col cols="auto">
+            <v-btn text variant="plain" class="custom-btn" :to="{ name: 'Tophits' }">Top Hits</v-btn>
+          </v-col>
+          <v-col cols="auto">
+            <v-btn text variant="plain" class="custom-btn" @click="toRandom">Random</v-btn>
+          </v-col>
+          <v-col cols="auto">
+            <v-btn text variant="plain" class="custom-btn" :to="{ name: 'About' }">About</v-btn>
+          </v-col>
         </v-row>
-    </div>
-</template>
+      </v-row>
+    </v-app-bar>
+  </template>
 
-<script setup name="Navbar">
+<script setup>
+import axios from 'axios';
+import {ref, onMounted} from 'vue';
 
+const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URL
+
+const tophits = ref(null)
+const hits_to_choose_from = ref([])
+
+onMounted(() => {
+
+  fetchTophits()
+
+})
+
+const fetchTophits = async () => {
+  try{
+    const response = await axios.get(`${api}/phenotypes/tophits`)
+
+    tophits.value = response.data
+
+    for (var hit of tophits.value){
+      if (hit['pval'] < Number("5E-8")){
+        hits_to_choose_from.value.push(hit)
+      }
+    }
+
+  }
+  catch (error) {
+    console.error("There was an error fetching the sample data:", error);
+  }
+}
+
+function toRandom() {
+
+  // get tophits
+  var random_value = Math.random()
+
+  var hit = hits_to_choose_from.value[Math.floor(Math.random() * hits_to_choose_from.value.length)]
+
+  console.log(hit)
+  if (random_value < 0.4) {
+    window.location.href = `${window.location.origin}/phenotypes/${hit['phenocode']}`;
+  } else if (random_value < 0.8){
+    window.location.href = `${window.location.origin}/variant/${hit['chrom']}-${hit['pos']}-${hit['ref']}-${hit['alt']}`;
+  } else {
+    var offset = Number("50E3")
+    window.location.href = `${window.location.origin}/phenotypes/${hit['phenocode']}/region/${hit['chrom']}:${hit['pos']-offset}-${hit['pos']+offset}`;
+  }
+
+}
 </script>
 
 <style lang="scss" scoped>
