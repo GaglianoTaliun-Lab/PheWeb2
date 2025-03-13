@@ -121,7 +121,7 @@
                             <li>Genotype missingness of < 0.05</li>
                             <li>MAF > 0.0001</li>
                         </ol>
-                        <p>The TOPMed reference panel version r3, contains 133,597 reference samples belonging to diverse genetic ancestries and 445,600,184 genetic variants. EAGLE v2.4 and Minimac v2.0.0-beta3 where used to pre-phase and impute the genotyping data. </p>
+                        <p>The TOPMed reference panel version r3, contains 133,597 reference samples belonging to diverse genetic ancestries and 445,600,184 genetic variants. EAGLE v2.4 and Minimac v2.0.0-beta3 were used to pre-phase and impute the genotyping data. </p>
                     </div>
 
                     <!-- Single variant genome-wide association analyses across the phenome -->
