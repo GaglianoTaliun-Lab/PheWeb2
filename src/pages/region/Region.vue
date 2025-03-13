@@ -4,8 +4,8 @@ import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import '@fortawesome/fontawesome-free/css/all.css';
 
-import Navbar from '../../components/Navbar.vue';
-import LocusZoomRegion from '../../components/LocusZoomRegion.vue'
+import Navbar from '@/components/Navbar.vue';
+import LocusZoomRegion from '@/components/LocusZoomRegion.vue'
 
 import * as functions from './Region.js';
 

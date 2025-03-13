@@ -5,12 +5,12 @@ import { useRoute } from 'vue-router';
 
 import { maf_range, keyToLabel } from './Variant.js';
 
-import Navbar from '../../components/Navbar.vue';
-import PhewasPlot from '../../components/PhewasPlot.vue';
-import VariantTable from '../../components/VariantTable.vue';
-import VariantCompareTable from '../../components/VariantCompareTable.vue';
+import Navbar from '@/components/Navbar.vue';
+import PhewasPlot from '@/components/PhewasPlot.vue';
+import VariantTable from '@/components/VariantTable.vue';
+import VariantCompareTable from '@/components/VariantCompareTable.vue';
 
-import { HG_BUILD_NUMBER, PRIORITY_STRATIFICATIONS } from "../../config.js";
+import { HG_BUILD_NUMBER, PRIORITY_STRATIFICATIONS } from "@/config.js";
 
 const route = useRoute();
 

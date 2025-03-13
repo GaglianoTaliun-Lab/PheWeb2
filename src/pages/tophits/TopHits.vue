@@ -16,10 +16,10 @@
 </template>
 
 <script setup name="Tophits">
-    import Navbar from '../../components/Navbar.vue';
+    import Navbar from '@/components/Navbar.vue';
     import { ref, onMounted} from 'vue'
-    import TopHitsTable from '../../components/TopHitsTable.vue';
-    import PhenotypesTable from '../../components/PhenotypesTable.vue';
+    import TopHitsTable from '@/components/TopHitsTable.vue';
+    import PhenotypesTable from '@components/PhenotypesTable.vue';
     import axios from 'axios';
     const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URL
     const data = ref([]);

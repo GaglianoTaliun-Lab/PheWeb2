@@ -406,7 +406,7 @@ const populateDataPreview = () => {
   try {
     var link = "https://datapreview.clsa-elcv.ca/mica/variable/com%3A"+phenocode+"%3ACollected#/"
     // just checking if it's working
-    axios.get(link);
+    //axios.get(link);
     linkUrl.value = link;
   }
   catch {
