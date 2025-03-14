@@ -1,32 +1,77 @@
 <template>
-    <v-app-bar app fixed elevation="0" style="width: 100% " >
-      <v-row align="center" justify="space-between">
-        <v-col cols="auto" style="margin-left:2%">
-            <router-link :to="{ name: 'Home' }" tag="v-btn" icon="$vuetify">
-                    <img src="../assets/favicon.svg" alt="Icon" class="custom-icon">
-            </router-link>
+  <v-app-bar app fixed elevation="0" style="width: 100% " >
+    <v-row align="center" justify="space-between">
+      <v-col cols="auto" style="margin-left:2%">
+        <router-link :to="{ name: 'Home' }" tag="v-btn" icon="$vuetify">
+                <img src="../assets/favicon.svg" alt="Icon" class="custom-icon">
+        </router-link>
+      </v-col>
+      <v-row align="center" justify="end" style="margin-right:1%">
+        <v-col cols="auto" class="d-none d-md-flex">
+          <v-btn text variant="plain" class="custom-btn" :to="{ name: 'Phenotypes' }">Phenotypes</v-btn>
         </v-col>
-        <v-row align="center" justify="end" style="margin-right:2%">
-          <v-col cols="auto">
-            <v-btn text variant="plain" class="custom-btn" :to="{ name: 'Phenotypes' }">Phenotypes</v-btn>
-          </v-col>
-          <v-col cols="auto">
-            <v-btn text variant="plain" class="custom-btn" :to="{ name: 'Tophits' }">Top Hits</v-btn>
-          </v-col>
-          <v-col cols="auto">
-            <v-btn text variant="plain" class="custom-btn" @click="toRandom">Random</v-btn>
-          </v-col>
-          <v-col cols="auto">
-            <v-btn text variant="plain" class="custom-btn" :to="{ name: 'About' }">About</v-btn>
-          </v-col>
-        </v-row>
+        <v-col cols="auto" class="d-none d-md-flex">
+          <v-btn text variant="plain" class="custom-btn" :to="{ name: 'Tophits' }">Top Hits</v-btn>
+        </v-col>
+        <v-col cols="auto" class="d-none d-md-flex">
+          <v-btn text variant="plain" class="custom-btn" @click="toRandom">Random</v-btn>
+        </v-col>
+        <v-col cols="auto" class="d-none d-md-flex">
+          <v-btn text variant="plain" class="custom-btn" :to="{ name: 'API' }">API</v-btn>
+        </v-col>
+        <v-col cols="auto" class="d-none d-md-flex">
+          <v-btn text variant="plain" class="custom-btn" :to="{ name: 'About' }">About</v-btn>
+        </v-col>
+        <v-col cols="auto" class="d-none d-md-flex">
+          <v-btn text variant="plain" class="custom-btn" :to="{ name: 'Contact' }">Contact Us</v-btn>
+        </v-col>
+        <v-col cols="auto" class="d-flex d-md-none">
+          <v-btn icon @click="sheet = true">
+            <v-icon>mdi-menu</v-icon>
+          </v-btn>
+
+          <v-bottom-sheet v-model="sheet">
+            <v-sheet height="100vh">
+              <v-toolbar dark color="blue-lighten-3">
+                <v-btn icon @click="sheet = false">
+                  <v-icon>mdi-close</v-icon>
+                </v-btn>
+                <v-toolbar-title>Pages</v-toolbar-title>
+              </v-toolbar>
+
+              <v-list class="text-center">
+                <v-list-item link :to="{ name: 'Phenotypes' }">
+                  <v-list-item-title text variant="plain" class="custom-btn2">Phenotypes</v-list-item-title>
+                </v-list-item>
+                <v-list-item link :to="{ name: 'Tophits' }">
+                  <v-list-item-title text variant="plain" class="custom-btn2">Top Hits</v-list-item-title>
+                </v-list-item>
+                <v-list-item @click="toRandom">
+                  <v-list-item-title text variant="plain" class="custom-btn2">Random</v-list-item-title>
+                </v-list-item>
+                <v-list-item link :to="{ name: 'API' }">
+                  <v-list-item-title text variant="plain" class="custom-btn2">API</v-list-item-title>
+                </v-list-item>
+                <v-list-item link :to="{ name: 'About' }">
+                  <v-list-item-title text variant="plain" class="custom-btn2">About</v-list-item-title>
+                </v-list-item>
+                <v-list-item link :to="{ name: 'Contact' }">
+                  <v-list-item-title text variant="plain" class="custom-btn2">Contact Us</v-list-item-title>
+                </v-list-item>
+              </v-list>
+            </v-sheet>
+          </v-bottom-sheet>
+
+        </v-col>
       </v-row>
-    </v-app-bar>
-  </template>
+    </v-row>
+  </v-app-bar>
+</template>
 
 <script setup>
 import axios from 'axios';
 import {ref, onMounted} from 'vue';
+const sheet = ref(false);
 
 const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URL
 
@@ -83,7 +128,6 @@ function toRandom() {
   font-size: 15px;   
   letter-spacing: .3px; 
 //   width: 5%; 
-
 }
 .custom-icon {
   width: 30px;  
@@ -91,5 +135,11 @@ function toRandom() {
 }
 .v-col {
   margin-left: 1px; 
+}
+.custom-btn2 {
+  font-weight: bold; 
+  font-size: 20px;   
+  letter-spacing: .3px; 
+//   width: 5%; 
 }
 </style>
