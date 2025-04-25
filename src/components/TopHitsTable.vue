@@ -85,15 +85,18 @@
   <script setup>
       import { ref, onMounted } from 'vue';
       import axios from 'axios';
+      import {STRATIFICATION_CATEGORIES} from '@/config.js'
   
-      const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URL
+      const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URL;
   
       const headers = ref([
         { title: 'Category', key: 'category' },
         // { title: 'Phenotype', key: 'phenostring' },
         { title: 'Phenotype', key: 'phenocode' },
-        { title: 'Sex', key: 'sex' },
-        { title: 'Ancestry', key: 'ancestry' },
+        ...STRATIFICATION_CATEGORIES.map((cat) => ({
+          title: cat.charAt(0).toUpperCase() + cat.slice(1).toLowerCase(), // e.g. 'Sex'
+          key: cat.toLowerCase(),                                          // e.g. 'sex'
+        })),
         //{ title: 'Interaction', key : 'interaction'},
         { title: 'Top Variant', key: 'variantid' },
         { title: 'P-value', key: 'pval' },
@@ -111,33 +114,38 @@
         isLoading.value = true;
         errorMessage.value = '';
         try {
-          const response = await axios.get(`${api}/phenotypes/tophits`)
+          const response = await axios.get(`${api}/phenotypes/tophits`);
 
-          console.log(response.data)
+          console.log(response.data);
 
-          phenotypes.value = response.data.map(item => ({
-            ...item,
-            category: item.category ? item.category.replace(/_/g, ' ') : '',
-            variantid: `${item.chrom}-${item.pos}-${item.ref}-${item.alt}`,
-            variantName: `${item.chrom}: ${item.pos} ${item.ref} / ${item.alt} (${item.rsids})`,
-            ancestry: `${item.stratification.ancestry}`,
-            sex: `${item.stratification.sex}`,
-            //interaction: `${item.interaction}`,
-            maf: `${Number(item.af).toFixed(4)}`,
-            num_controls: `${item.num_controls}`,
-            num_num_cases: `${item.num_cases}`,
-            nearest_genes: item.nearest_genes ? item.nearest_genes.split(',') : [],  // Convert string to array
-            
-          }));
+          phenotypes.value = response.data.map(item => {
+            const stratifications = Object.fromEntries(
+              STRATIFICATION_CATEGORIES.map((cat) => [
+                cat.toLowerCase(),
+                item.stratification?.[cat.toLowerCase()] || '',
+              ])
+            );
+
+            return {
+              ...item,
+              category: item.category ? item.category.replace(/_/g, ' ') : '',
+              variantid: `${item.chrom}-${item.pos}-${item.ref}-${item.alt}`,
+              variantName: `${item.chrom}: ${item.pos} ${item.ref} / ${item.alt} (${item.rsids})`,
+              ...stratifications,
+              maf: `${Number(item.af).toFixed(4)}`,
+              num_controls: `${item.num_controls}`,
+              num_num_cases: `${item.num_cases}`,
+              nearest_genes: item.nearest_genes ? item.nearest_genes.split(',') : [],  // Convert string to array
+            };
+          });
         } catch (error) {
           console.error("There was an error fetching the sample data:", error);
           errorMessage.value = "Failed to load data. Please try again later.";
         } finally {
           isLoading.value = false;
         }
-        
       };
-  
+
       const coverToCSV = (data) => {
         if (!data || data.length === 0) return '';
   

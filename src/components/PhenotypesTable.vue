@@ -40,32 +40,21 @@
           density="compact"
         >  
           <v-row class="d-flex" dense>
-            <v-col cols="12" sm="6">
-              <v-select
-                  v-model="selectedSex"
-                  :items="sexOptions"
-                  label="Sex"
-                  prepend-icon="mdi-gender-male-female"
+            <template v-for="category in STRATIFICATION_CATEGORIES" :key="category">
+              <v-col cols="12" sm="6">
+                <v-select
+                  v-model="selectedFilters[category.toLowerCase()]"
+                  :items="filterOptions[category.toLowerCase()]"
+                  :label="category.charAt(0).toUpperCase() + category.slice(1)"
+                  prepend-icon="mdi-filter-variant"
                   class="ma-2 pa-2"
                   variant="underlined"
-              ></v-select>
-            </v-col>
-            <v-col cols="12" sm="6">
-              <v-select
-                  v-model="selectedAncestry"
-                  :items="ancestryOptions"
-                  label="Ancestry"
-                  prepend-icon="mdi-account-group-outline"
-                  class="ma-2 pa-2"
-                  variant="underlined"
-              ></v-select>
-            </v-col>
+                ></v-select>
+              </v-col>
+            </template>
           </v-row>
         </v-card>
       </v-col>
-
-
-
     </v-row>
   </v-card>
   
@@ -331,7 +320,9 @@
 </template>
 
 <script setup>
-    import { ref, onMounted, computed, watch } from 'vue';
+    import { ref, onMounted, computed, watch, reactive, watchEffect } from 'vue';
+    import { STRATIFICATION_CATEGORIES} from '@/config.js'
+
     const props = defineProps({
       data: Array,
     });
@@ -355,42 +346,50 @@
 
     const search = ref('');
 
-    // data
     const fetchData = async () => {
       isLoading.value = true;
       errorMessage.value = '';
       try {
-        phenotypes.value = props.data.map(item => ({
-          ...item,
-          variantid: `${item.chrom}-${item.pos}-${item.ref}-${item.alt}`,
-          variantName: item.rsids 
-            ? `${item.chrom}: ${item.pos} ${item.ref} / ${item.alt}\n(${item.rsids})`
-            : `${item.chrom}: ${item.pos} ${item.ref} / ${item.alt}`,
-          sex: `${item.stratification.sex}`,
-          ancestry: `${item.stratification.ancestry}`,
-          num_controls: `${item.num_controls}`,
-          num_num_cases: `${item.num_cases}`,
-          nearest_genes: item.nearest_genes ? item.nearest_genes.split(',') : [],  // Convert string to array
-          category: item.category ? item.category.replace(/_/g, ' ') : ''
-        }));
+        phenotypes.value = props.data.map(item => {
+          const stratificationData = {};
+          STRATIFICATION_CATEGORIES.forEach(cat => { // dynamically fetch based on constant (STRATIFICATION_CATEGORIES)
+            stratificationData[cat.toLowerCase()] = item.stratification?.[cat.toLowerCase()] ?? '';
+          });
+
+          return {
+            ...item,
+            variantid: `${item.chrom}-${item.pos}-${item.ref}-${item.alt}`,
+            variantName: item.rsids 
+              ? `${item.chrom}: ${item.pos} ${item.ref} / ${item.alt}\n(${item.rsids})`
+              : `${item.chrom}: ${item.pos} ${item.ref} / ${item.alt}`,
+            ...stratificationData,
+            num_controls: `${item.num_controls}`,
+            num_num_cases: `${item.num_cases}`,
+            nearest_genes: item.nearest_genes ? item.nearest_genes.split(',') : [],
+            category: item.category ? item.category.replace(/_/g, ' ') : ''
+          };
+        });
       } catch (error) {
         console.error("There was an error fetching the sample data:", error);
         errorMessage.value = "Failed to load data. Please try again later.";
       } finally {
         isLoading.value = false;
       }
-      
     };
 
     const baseHeaders = [
       { title: 'Category', key: 'category' },
       { title: 'Phenotype', key: 'phenostring' },
-      { title: 'Sex', key: 'sex' },
-      { title: 'Ancestry', key: 'ancestry' },
+      ...STRATIFICATION_CATEGORIES.map((cat) => ({
+        title: cat.charAt(0).toUpperCase() + cat.slice(1).toLowerCase(), // e.g. 'Sex'
+        key: cat.toLowerCase(),                            // e.g. 'sex'
+      })),
       { title: 'P-value', key: 'pval' },
       { title: 'Top Variant', key: 'variantid', sortable: false },
       { title: 'Nearest Gene(s)', key: 'nearest_genes', sortable: false },
     ];
+
+
     const hasAF = computed(() => props.data.some(item => item.hasOwnProperty('af')));
     const headers = computed(() => {
       const hasNumSamples = props.data.some(item => item.hasOwnProperty('num_samples'));
@@ -417,16 +416,29 @@
     });
 
     // filters
-    const selectedSex = ref('All');
-    const sexOptions = computed(() => {
-      const sex = phenotypes.value.map(item => item.sex);
-      return ['All', ...new Set(sex)];
-    });
+    // const selectedSex = ref('All');
+    // const sexOptions = computed(() => {
+    //   const sex = phenotypes.value.map(item => item.sex);
+    //   return ['All', ...new Set(sex)];
+    // });
 
-    const selectedAncestry = ref('All');
-    const ancestryOptions = computed(() => {
-      const ancestry = phenotypes.value.map(item => item.ancestry);
-      return ['All', ...new Set(ancestry)];
+    // const selectedAncestry = ref('All');
+    // const ancestryOptions = computed(() => {
+    //   const ancestry = phenotypes.value.map(item => item.ancestry);
+    //   return ['All', ...new Set(ancestry)];
+    // });
+
+    const selectedFilters = reactive({});
+    const filterOptions = reactive({});
+
+    STRATIFICATION_CATEGORIES.forEach(cat => {
+      const key = cat.toLowerCase();
+      selectedFilters[key] = 'All';
+
+      watchEffect(() => {
+        const values = phenotypes.value.map(item => item[key]).filter(Boolean);
+        filterOptions[key] = ['All', ...new Set(values)];
+      });
     });
 
     const selectedCategory = ref();
@@ -484,24 +496,29 @@
     // since there will be a lot of data for the final table
     const filteredPhenotypes = computed(() => {
       return phenotypes.value.filter(item => {
-        const sexMatches = selectedSex.value === 'All' || item.sex === selectedSex.value;
-        const ancestryMatches = selectedAncestry.value === 'All' || item.ancestry === selectedAncestry.value;
+        // Stratification filters
+        const stratFiltersPass = STRATIFICATION_CATEGORIES.every(cat => {
+          const key = cat.toLowerCase();
+          const selected = selectedFilters[key];
+          return selected === 'All' || item[key] === selected;
+        });
+
+        // Other filters
         const categoryMatches = !selectedCategory.value || selectedCategory.value === 'All' || item.category === selectedCategory.value;
         const phenotypeMatches = !selectedPhenotype.value || selectedPhenotype.value === 'All' || item.phenostring === selectedPhenotype.value;
-        // const variantMatches = !filteredVariant.value || filteredVariant.value === 'All' ||  item.rsids === filteredVariant.value || item.variantid === filteredVariant.value;
-        // const geneMatches = !filteredGene.value || filteredGene.value === 'All' ||   item.nearest_genes.includes(filteredGene.value.toUpperCase());
+
         const variantMatches = !filteredVariant.value || filteredVariant.value === '' || 
           (item.rsids && item.rsids.includes(filteredVariant.value)) ||
           (item.variantid && item.variantid.includes(filteredVariant.value));
-        const geneMatches = !filteredGene.value || filteredGene.value === '' ||
-        (Array.isArray(item.nearest_genes) && item.nearest_genes.some(gene => 
-          gene.toUpperCase().includes(filteredGene.value.toUpperCase()))
-        )
 
-        return sexMatches && ancestryMatches && categoryMatches && phenotypeMatches && variantMatches && geneMatches;
+        const geneMatches = !filteredGene.value || filteredGene.value === '' ||
+          (Array.isArray(item.nearest_genes) && item.nearest_genes.some(gene => 
+            gene.toUpperCase().includes(filteredGene.value.toUpperCase()))
+          );
+
+        return stratFiltersPass && categoryMatches && phenotypeMatches && variantMatches && geneMatches;
       });
     });
-
 
     // unique phenotype displayed
     const displayedUniquePhenotypesCount = computed(() => {

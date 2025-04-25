@@ -80,44 +80,46 @@
   
   <script setup>
   import { ref, computed } from 'vue';
-
-  // Add this function in your script setup
-  const downloadTable = () => {
-  // Convert all data to CSV format (using formattedVariantList instead of filteredVariantList)
-  const headers = [
-    'Category',
-    'Phenotype',
-    'Sex',
-    'Ancestry',
-    'P-value',
-    'Effect Size (se)',
-    'Number of Samples'
-  ];
+  import { STRATIFICATION_CATEGORIES } from '@/config.js'
   
-  const csvContent = [
-    headers.join(','),
-    ...formattedVariantList.value.map(item => [
-      item.category,
-      item.phenostring,
-      item.sex,
-      item.ancestry,
-      item.pval,
-      item.beta_se,
-      item.num_samples
-    ].join(','))
-  ].join('\n');
+//   // Add this function in your script setup
+//   const downloadTable = () => {
+//   // Convert all data to CSV format (using formattedVariantList instead of filteredVariantList)
+//   const headers = [
+//     'Category',
+//     'Phenotype',
+//     'Sex',
+//     'Ancestry',
+//     'P-value',
+//     'Effect Size (se)',
+//     'Number of Samples'
+//   ];
+  
+//   const csvContent = [
+//     headers.join(','),
+//     ...formattedVariantList.value.map(item => [
+//       item.category,
+//       item.phenostring,
+//       item.sex,
+//       item.ancestry,
+//       item.pval,
+//       item.beta_se,
+//       item.num_samples
+//     ].join(','))
+//   ].join('\n');
 
-  // Create and trigger download
-  const blob = new Blob([csvContent], { type: 'text/csv' });
-  const url = window.URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.setAttribute('download', 'variant_data.csv');
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  window.URL.revokeObjectURL(url);
-};  
+//   // Create and trigger download
+//   const blob = new Blob([csvContent], { type: 'text/csv' });
+//   const url = window.URL.createObjectURL(blob);
+//   const link = document.createElement('a');
+//   link.href = url;
+//   link.setAttribute('download', 'variant_data.csv');
+//   document.body.appendChild(link);
+//   link.click();
+//   document.body.removeChild(link);
+//   window.URL.revokeObjectURL(url);
+// };  
+
   const props = defineProps({
     selectedStratifications: Object,
     variantList: Object,
@@ -137,16 +139,21 @@
       key: 'phenostring',
       sortable: false 
     },
-    { 
-      title: 'Sex', 
-      key: 'sex',
-      sortable: false 
-    },
-    { 
-      title: 'Ancestry', 
-      key: 'ancestry',
-      sortable: false 
-    },
+    ...STRATIFICATION_CATEGORIES.map((cat) => ({
+        title: cat.charAt(0).toUpperCase() + cat.slice(1).toLowerCase(),
+        key: cat.toLowerCase(),                           
+        sortable: false
+    })),
+    // { 
+    //   title: 'Sex', 
+    //   key: 'sex',
+    //   sortable: false 
+    // },
+    // { 
+    //   title: 'Ancestry', 
+    //   key: 'ancestry',
+    //   sortable: false 
+    // },
     { 
       title: 'P-value', 
       key: 'pval',
@@ -185,31 +192,35 @@
   
   // Format variant list (same as before)
   const formattedVariantList = computed(() => {
-    return props.variantList?.flatMap((v) => {
+  return props.variantList?.flatMap((v) => {
+    if (!props.selectedStratifications.includes(v.stratification.slice(1))) return [];
 
-        if (!props.selectedStratifications.includes(v.stratification.slice(1))) return [];
+    return v.phenos
+      .filter((pheno) => props.categoryList.includes(pheno.category))
+      .filter((pheno) => pheno.pval > 0)
+      .map((pheno) => {
+        const stratifications = Object.fromEntries(
+          STRATIFICATION_CATEGORIES.map((cat) => [
+            cat.toLowerCase(),
+            pheno.stratification?.[cat.toLowerCase()] || '',
+          ])
+        );
 
-        console.log(props.categoryList)
-
-        var phenos = v.phenos
-            .filter((pheno) => props.categoryList.includes(pheno.category))
-            .filter((pheno) => pheno.pval > 0)
-            .map((pheno) => ({
-                category: pheno.category,
-                phenostring: pheno.phenostring,
-                sex: pheno.stratification.sex,
-                ancestry: pheno.stratification.ancestry,
-                pval: pheno.pval,
-                eaf : pheno.af,
-                beta_se: `${pheno.beta} (${pheno.sebeta})`,
-                num_samples: pheno.num_samples,
-                cases: pheno.num_cases,
-                controls: pheno.num_controls,
-            }));
-
-        return phenos
-    })
+        return {
+          category: pheno.category,
+          phenostring: pheno.phenostring,
+          ...stratifications,
+          pval: pheno.pval,
+          eaf: pheno.af,
+          beta_se: `${pheno.beta} (${pheno.sebeta})`,
+          num_samples: pheno.num_samples,
+          cases: pheno.num_cases,
+          controls: pheno.num_controls,
+        };
+      });
+  });
 });
+
   
   // New computed properties for dynamic hints
   const firstCategory = computed(() => {
