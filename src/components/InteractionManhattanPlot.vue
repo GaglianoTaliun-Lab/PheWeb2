@@ -387,7 +387,7 @@ function create_manhattan_plot(variant_bins, unbinned_variants, variants = "filt
         if (variants === "filtered"){
             var color_by_chrom_dim = d3.scaleOrdinal()
             .domain(get_chrom_offsets.value().chroms)
-            .range(['rgb(220, 198, 224)', 'rgb(191, 165, 214)']);
+            .range(['rgb(242, 233, 233)', 'rgb(232, 227, 227)']);
         } else {
             var color_by_chrom_dim = d3.scaleOrdinal()
             .domain(get_chrom_offsets.value().chroms)

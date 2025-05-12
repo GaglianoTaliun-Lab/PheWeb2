@@ -531,7 +531,7 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
             if (variants === "filtered"){
                 var color_by_chrom_dim = d3.scaleOrdinal()
                 .domain(get_chrom_offsets.value().chroms)
-                .range(['rgb(237,221,221)', 'rgb(208,191,191)']);
+                .range(['rgb(242, 233, 233)', 'rgb(232, 227, 227)']);
             } else {
                 var color_by_chrom_dim = d3.scaleOrdinal()
                 .domain(get_chrom_offsets.value().chroms)
@@ -551,7 +551,7 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
             if (variants === "filtered"){
                 var color_by_chrom_dim = d3.scaleOrdinal()
                 .domain(get_chrom_offsets.value().chroms)
-                .range(['rgb(237,221,221)', 'rgb(208,191,191)']);
+                .range(['rgb(242, 233, 233)', 'rgb(232, 227, 227)']);
             } else {
                 var color_by_chrom_dim = d3.scaleOrdinal()
                 .domain(get_chrom_offsets.value().chroms)
