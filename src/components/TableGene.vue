@@ -292,13 +292,13 @@
   //     return ['All', ...new Set(ancestry)];
   //   });
 
-    const selectedCategory = ref();
+    const selectedCategory = ref('All');
     const categoryOptions = computed(() => {
       const categories = phenotypes.value.map(item => item.category);
       return ['All', ...[...new Set(categories)].sort((a, b) => a.localeCompare(b))];
     });
 
-    const selectedPhenotype = ref();
+    const selectedPhenotype = ref('All');
     const phenotypeOptions = computed(() => {
       if (selectedCategory.value && selectedCategory.value !== 'All' ) {
         const phenos = phenotypes.value

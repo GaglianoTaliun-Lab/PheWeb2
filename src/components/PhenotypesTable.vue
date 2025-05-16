@@ -12,7 +12,7 @@
               <v-autocomplete
                 v-model="selectedCategory"
                 :items="categoryOptions"
-                label="Select/Type a category"
+                label="Search categories"
                 prepend-icon="mdi-shape-outline"
                 class="ma-2 pa-2"
                 variant="underlined"
@@ -23,7 +23,7 @@
               <v-autocomplete
                 v-model="selectedPhenotype"
                 :items="phenotypeOptions"
-                label="Select/Type a phenotype"
+                label="Search phenotypes"
                 prepend-icon="mdi-heart-pulse"
                 class="ma-2 pa-2"
                 variant="underlined"
@@ -246,24 +246,6 @@
                 prepend-inner-icon="mdi-magnify"
                 @keydown.enter="filterVariants"
               ></v-text-field>
-              <!-- <v-autocomplete
-                v-model="selectedVariant"
-                :loading="variantSearchLoading"
-                :items="variantOptions"
-                label="Enter vairantID or rsID"
-                placeholder="Try rs11553699 or 12-121779004-A-G"
-                clearable
-                style="width: 400px;"
-                variant="outlined"
-                prepend-inner-icon="mdi-magnify"      
-                density="compact"
-                elevation="2"
-                rounded
-                item-props
-                menu-icon=""
-                auto-select-first
-                filter-mode="some"
-              ></v-autocomplete> -->
               <v-row justify="end">
                 <v-col cols="auto">
                   <v-btn 
@@ -326,19 +308,6 @@
     const props = defineProps({
       data: Array,
     });
-    
-    // main table
-    // const headers = ref([
-    //   { title: 'Category', key: 'category' },
-    //   { title: 'Phenotype', key: 'phenostring' },
-    //   { title: 'Sex', key: 'sex' },
-    //   { title: 'Ancestry', key: 'ancestry' },
-    //   { title: '#Samples', key: 'num_samples' },
-    //   { title: '#Loci < 5e-8', key: 'num_peaks' },
-    //   { title: 'P-value', key: 'pval' },
-    //   { title: 'Top Variant', key: 'variantid', sortable: false },
-    //   { title: 'Nearest Gene(s)', key: 'nearest_genes', sortable: false },
-    // ]);
     
     const phenotypes = ref([]);
     const isLoading = ref(false);
@@ -415,19 +384,6 @@
       return updatedHeaders;
     });
 
-    // filters
-    // const selectedSex = ref('All');
-    // const sexOptions = computed(() => {
-    //   const sex = phenotypes.value.map(item => item.sex);
-    //   return ['All', ...new Set(sex)];
-    // });
-
-    // const selectedAncestry = ref('All');
-    // const ancestryOptions = computed(() => {
-    //   const ancestry = phenotypes.value.map(item => item.ancestry);
-    //   return ['All', ...new Set(ancestry)];
-    // });
-
     const selectedFilters = reactive({});
     const filterOptions = reactive({});
 
@@ -441,13 +397,13 @@
       });
     });
 
-    const selectedCategory = ref();
+    const selectedCategory = ref('All');
     const categoryOptions = computed(() => {
       const categories = phenotypes.value.map(item => item.category);
       return ['All', ...[...new Set(categories)].sort((a, b) => a.localeCompare(b))];
     });
 
-    const selectedPhenotype = ref();
+    const selectedPhenotype = ref('All');
     const phenotypeOptions = computed(() => {
       const phenos = phenotypes.value.map(item => item.phenostring);
       return ['All', ...[...new Set(phenos)].sort((a, b) => a.localeCompare(b))];
