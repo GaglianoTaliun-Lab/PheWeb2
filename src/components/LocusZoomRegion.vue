@@ -238,6 +238,20 @@ const fetchData = async () => {
                                         }
                                     }
                                 ]
+                            },
+                            {
+                                type: 'move_panel_up',          
+                                id: 'move_panel_up',  
+                                title: 'Move Panel Up',   
+                                label: 'Move Panel Up', 
+                                position: "left"
+                            },
+                            {
+                                type: 'move_panel_down',          
+                                id: 'move_panel_down',  
+                                title: 'Move Panel Down',   
+                                label: 'Move Panel Down', 
+                                position: "left"
                             }
                         ]
                     },
@@ -256,21 +270,6 @@ const fetchData = async () => {
                                     "{{namespace[catalog]}}rsid", "{{namespace[catalog]}}trait", "{{namespace[catalog]}}log_pvalue"
                                 ],
                                 id_field: "{{namespace[assoc]}}id",
-                                // tooltip: {
-                                //     closable: true,
-                                //     show: {
-                                //         "or": ["highlighted", "selected"]
-                                //     },
-                                //     hide: {
-                                //         "and": ["unhighlighted", "unselected"]
-                                //     },
-                                //     html: "<strong>{{{{namespace[assoc]}}id}}</strong><br><br>" +
-                                //         template +
-                                //         "<br>" +
-                                //         "<a href=\"" + window.location.origin+ "/variant/{{{{namespace[assoc]}}chr}}-{{{{namespace[assoc]}}position}}-{{{{namespace[assoc]}}ref}}-{{{{namespace[assoc]}}alt}}\"" + ">Go to PheWAS</a>" +
-                                //         "{{#if {{namespace[catalog]}}rsid}}<br><a href=\"https://www.ebi.ac.uk/gwas/search?query={{{{namespace[catalog]}}rsid}}\" target=\"_new\">See hits in GWAS catalog</a>{{/if}}" +
-                                //         "<br>{{#if {{namespace[ld]}}isrefvar}}<strong>LD Reference Variant</strong>{{#else}}<a href=\"javascript:void(0);\" onclick=\"var data = this.parentNode.__data__;data.getDataLayer().makeLDReference(data);\">Make LD Reference</a>{{/if}}<br>"
-                                // },
                                 tooltip: {
                                     closable: true,
                                     show: {
@@ -318,7 +317,8 @@ const fetchData = async () => {
                     type: "resize_to_data",
                     position: "right",
                     color: "blue"
-                }, LocusZoom.Layouts.get('toolbar_widgets', 'gene_selector_menu')]
+                }, 
+                LocusZoom.Layouts.get('toolbar_widgets', 'gene_selector_menu')]
             },
             data_layers: [
                 LocusZoom.Layouts.get("data_layer", "genes_filtered", {

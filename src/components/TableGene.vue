@@ -279,19 +279,6 @@
     });
   });
 
-  // filtering
-  // const selectedSex = ref('All');
-  //   const sexOptions = computed(() => {
-  //     const sex = phenotypes.value.map(item => item.sex);
-  //     return ['All', ...new Set(sex)];
-  //   });
-
-  //   const selectedAncestry = ref('All');
-  //   const ancestryOptions = computed(() => {
-  //     const ancestry = phenotypes.value.map(item => item.ancestry);
-  //     return ['All', ...new Set(ancestry)];
-  //   });
-
     const selectedCategory = ref('All');
     const categoryOptions = computed(() => {
       const categories = phenotypes.value.map(item => item.category);

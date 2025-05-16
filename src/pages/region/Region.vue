@@ -1,8 +1,8 @@
 <script setup name="Region">
 import axios from 'axios';
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
-import draggable from 'vuedraggable'
+
 import '@fortawesome/fontawesome-free/css/all.css';
 
 import Navbar from '@/components/Navbar.vue';
@@ -20,55 +20,37 @@ const info = ref(null)
 const refreshKey = ref(0)
 
 const chosenPlottingData = ref({})
-
 const stratification_list = ref(null);
 const selectedStratifications = ref([])
-const orderedStratifications = ref([]);
-
 
 onMounted(async () => {
     try {
       const response = await axios.get(`${api}/phenotypes/${phenocode}/phenotypes_list`);
       const response_stratification = await axios.get(`${api}/variant/stratification_list`);
 
-      stratification_list.value = JSON.parse(JSON.stringify(response_stratification.data)).sort((a, b) => a.localeCompare(b));
+      stratification_list.value = response_stratification.data.sort((a, b) => a.localeCompare(b));
       selectedStratifications.value = [...stratification_list.value];
-      orderedStratifications.value = [...stratification_list.value];
 
       info.value = response.data;
-      chosenPlottingData.value = response.data;
-
-      console.log(stratification_list.value)
-      console.log(chosenPlottingData.value)
-
-      phenostring.value = info.value[0].phenostring
+      phenostring.value = info.value[0].phenostring;
 
       onDisplayChoiceChange();
-
     }
     catch (error) {
       console.log(error);
     }
 })
 
-
-watch(orderedStratifications, () => {
-  onDisplayChoiceChange();
-});
-
 function onDisplayChoiceChange() {
-  chosenPlottingData.value = orderedStratifications.value
-    .filter(strat => selectedStratifications.value.includes(strat)) // keep selected only
+  chosenPlottingData.value = selectedStratifications.value
     .map(strat => {
       return info.value.find(i =>
         stratificationsToLabel(i.stratification) === strat
       );
     })
-    .filter(Boolean); // just in case
+    .filter(Boolean);
   refreshKey.value += 1;
 }
-
-
 </script>
 
 <template>
@@ -82,32 +64,29 @@ function onDisplayChoiceChange() {
 
 
             <div class="d-flex align-items-center col-12 mt-1 mb-3">    
-                  <div class="dropdown pt-1 pr-2" id="dropdown-data1">
-                    <button :disabled="isDisabled"  class="btn btn-primary btn-drop" id="button-data1"> Select stratifications <span class="arrow-container"><span class="arrow-down"></span></span></button>
-                    <div class="dropdown-menu" id="dropdown-content-data1">
-                      <draggable 
-                      v-model="orderedStratifications" 
-                      item-key="stratification" 
-                      :animation="200"
-                      handle=".drag-handle"
-                    >
-                      <template #item="{ element }">
-                        <label class="d-flex justify-content-between align-items-center mb-1" style="width: 100%;">
-                          <div class="d-flex align-items-center gap-2">
-                            <input 
-                              type="checkbox" 
-                              :value="element" 
-                              v-model="selectedStratifications"
-                              @change="onDisplayChoiceChange"
-                            >
-                            {{ keyToLabel(element) }}
-                          </div>
-                          <span class="drag-handle" style="cursor: grab;">☰</span>
-                        </label>
-                      </template>
-                    </draggable>
+              <div class="dropdown pt-1 pr-2" id="dropdown-data1">
+                <button :disabled="isDisabled" class="btn btn-primary btn-drop" id="button-data1">
+                  Select stratifications <span class="arrow-container"><span class="arrow-down"></span></span>
+                </button>
+                <div class="dropdown-menu" id="dropdown-content-data1">
+                  <label 
+                    v-for="strat in stratification_list" 
+                    :key="strat"
+                    class="d-flex justify-content-between align-items-center mb-1" 
+                    style="width: 100%;"
+                  >
+                    <div class="d-flex align-items-center gap-2">
+                      <input 
+                        type="checkbox" 
+                        :value="strat" 
+                        v-model="selectedStratifications"
+                        @change="onDisplayChoiceChange"
+                      >
+                      {{ keyToLabel(strat) }}
                     </div>
-                  </div>
+                  </label>
+                </div>
+              </div>
             </div>
 
             <div class="row">
