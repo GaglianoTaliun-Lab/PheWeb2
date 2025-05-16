@@ -23,3 +23,20 @@ export const tooltip_lztemplate = `
 {{#if num_controls}}#controls: <strong>{{num_controls}}</strong><br>{{/if}}
 {{#if num_samples}}#samples: <strong>{{num_samples}}</strong><br>{{/if}}
 `
+
+export function keyToLabel(phenoLabel){
+
+    if (!phenoLabel){
+        return null
+    }
+    var label = phenoLabel.split(".")
+    if (label.length < 1){
+        return []
+    }
+
+    return label.join(', ')
+}
+
+export function stratificationsToLabel(stratifications){
+    return Object.values(stratifications).join('.');
+}

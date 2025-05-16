@@ -73,12 +73,9 @@ if (!LocusZoom.Adapters._items.has('AssociationPheWeb')){
             return [];
         }
 
-        console.log("given_max : ", data.max_log10p)
         if (data.max_log10p > max_y_value){
             max_y_value = Math.ceil(data.max_log10p);
-            // console.log(plot.refresh())
         }
-        console.log(max_y_value)
 
         delete data.max_log10p
 
@@ -99,6 +96,10 @@ if (!LocusZoom.TransformationFunctions._items.has('percent')){
 
 const fetchData = async () => {
     info.value = props.data
+
+    if (info.value.length === 0){
+        return 0;
+    }
 
     if (info.value[0].stratification){
         var phenocode_list = info.value.map((pheno) => {return pheno.phenocode + "." + Object.values(pheno.stratification).join('.')})
@@ -122,7 +123,6 @@ const fetchData = async () => {
         data_sources_new.add(utils.fmt("assoc_study{0}",i+1), ["AssociationPheWeb", {url: api + "/phenotypes/"+ phenocode_list[0] +"/"+ stratification + "/region/", source: i+1}])
 
     });
-
 
     var all_panels = []
 
