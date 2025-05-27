@@ -51,6 +51,13 @@ function onDisplayChoiceChange() {
     .filter(Boolean);
   refreshKey.value += 1;
 }
+
+//uncheck removed panel from list
+function handlePanelRemoval(panelPhenocode){
+
+  selectedStratifications.value = selectedStratifications.value.filter(strat => strat !== panelPhenocode.substring(panelPhenocode.indexOf('.') + 1))
+
+}
 </script>
 
 <template>
@@ -92,7 +99,7 @@ function onDisplayChoiceChange() {
             <div class="row">
                 <div v-if="info" class="col-xs-12">
                     <!-- Unlike pheno, pass in all the data at once in order to ensure that the plots are linked. -->
-                    <LocusZoomRegion :key="refreshKey" :data="chosenPlottingData"></LocusZoomRegion>
+                    <LocusZoomRegion :key="refreshKey" :data="chosenPlottingData" @panelRemoved="handlePanelRemoval"></LocusZoomRegion>
                 </div>
             </div>
         </v-main>

@@ -1,6 +1,6 @@
 <script setup>
 import LocusZoom from 'locuszoom';
-import {onMounted, ref, watch} from 'vue'
+import {onMounted, ref, watch, defineEmits} from 'vue'
 import { useRoute } from 'vue-router';
 
 
@@ -14,6 +14,8 @@ const props = defineProps({
         type : String
     },
 });
+
+const emit = defineEmits(['panelRemoved'])
 
 const plot = ref(null)
 const info = ref(null)
@@ -155,9 +157,14 @@ const fetchData = async () => {
             }()
     );
 
+    // create a dict that stores key-value pairs of dynamicPart : phenocode
+    var phenocodes = {}
+
     phenocode_list.forEach( function (phenocode, i){
         
         let dynamicPart = utils.fmt("assoc_study{0}", i + 1);
+
+        phenocodes[dynamicPart] = phenocode
 
         var template = utils.tooltip_lztemplate.replace(/{{/g, `{{${dynamicPart}:`)
                             .replace(new RegExp(`{{${dynamicPart}:#if `, 'g'), `{{#if ${dynamicPart}:`)
@@ -240,18 +247,31 @@ const fetchData = async () => {
                                 ]
                             },
                             {
-                                type: 'move_panel_up',          
-                                id: 'move_panel_up',  
-                                title: 'Move Panel Up',   
-                                label: 'Move Panel Up', 
-                                position: "left"
-                            },
-                            {
                                 type: 'move_panel_down',          
                                 id: 'move_panel_down',  
                                 title: 'Move Panel Down',   
                                 label: 'Move Panel Down', 
-                                position: "left"
+                                group_position: 'end',
+                                position: "right"
+                            },
+
+                            {
+                                type: 'move_panel_up',          
+                                id: 'move_panel_up',  
+                                title: 'Move Panel Up',   
+                                label: 'Move Panel Up', 
+                                group_position: 'middle',
+                                position: "right"
+                            },
+                            {
+                                type: 'remove_panel',          
+                                id: 'remove_panel',  
+                                title: 'Remove Panel',   
+                                label: 'Remove Panel', 
+                                group_position: 'start',
+                                position: "right",
+                                color: 'red',
+                                suppress_confirm : 'true'
                             }
                         ]
                     },
@@ -454,6 +474,12 @@ const fetchData = async () => {
 
     plot.value = LocusZoom.populate("#lz", data_sources_new, layout_new);
 
+    plot.value.on('panel_removed', event => {
+        const removedPanelId = event.data;  // ID of removed panel
+        var phenocode_removed = phenocodes[removedPanelId]
+        emit('panelRemoved', phenocode_removed);
+    });
+
     // Handle double-click on a variant point
     var doubleclick_delay_ms = 400;
     var previous_data, previous_milliseconds = 0;
@@ -472,6 +498,8 @@ const fetchData = async () => {
             });
         }
     })
+
+
 }
 
 onMounted(() => {
