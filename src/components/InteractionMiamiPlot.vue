@@ -530,12 +530,12 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
             })();
             if (variants === "filtered"){
                 var color_by_chrom_dim = d3.scaleOrdinal()
-                .domain(get_chrom_offsets.value().chroms)
+                .domain(get_chrom_offsets_data1.value().chroms)
                 .range(['rgb(242, 233, 233)', 'rgb(232, 227, 227)']);
             } else {
                 var color_by_chrom_dim = d3.scaleOrdinal()
-                .domain(get_chrom_offsets.value().chroms)
-                .range(['rgb(170,4,4)', 'rgb(70,4,4)']);
+                .domain(get_chrom_offsets_data1.value().chroms)
+                .range(['rgb(167, 133, 178)', 'rgb(86, 56, 101)']);
             }
 
         } else if ( variant_bins2 != null){
@@ -939,7 +939,7 @@ var miami_filter_view = {
         var gwas_plot = d3.select("#miami_plot");
         var color_by_chrom = d3.scaleOrdinal()
             .domain(get_chrom_offsets_data1.value().chroms)
-            .range(['rgb(120,120,186)', 'rgb(0,0,66)']);
+            .range(['rgb(167, 133, 178)', 'rgb(86, 56, 101)']);
 
         var point_selection_upper = d3.select('#filtered_variant_points_upper')
             .selectAll('a.variant_point_upper')
