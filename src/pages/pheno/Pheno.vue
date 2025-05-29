@@ -4,6 +4,7 @@ import axios from 'axios';
 import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import '@fortawesome/fontawesome-free/css/all.css';
+import {isEqual} from 'lodash';
 
 import Navbar2 from '@/components/Navbar.vue';
 import ManhattanPlot from '@/components/ManhattanPlot.vue';
@@ -19,6 +20,7 @@ import * as functions from './Pheno.js';
 const route = useRoute();
 
 const phenocode = route.params.phenocode;
+const url_query = route.query;
 const phenostring = ref(null);
 
 const info = ref(null);
@@ -132,8 +134,9 @@ onMounted(async () => {
 
       populateDataPreview(phenocode)
       
-      //logic for choosing first two 
-      var strats = chooseDefaultPhenos(info.value)
+      //logic for choosing first two stratifications displayed on load
+      // TODO: could likely improve speed here
+      var strats = chooseDefaultPhenos(info.value, url_query)
 
       selectedStratification1.value = strats[0].phenocode +returnExtraInfoString(strats[0])
       selectedStratification2.value = strats[1] ? strats[1].phenocode + returnExtraInfoString(strats[1]): "No stratification"
@@ -157,10 +160,17 @@ function updateFilteringParameters({ min, max, type}) {
 
 }
 
-function chooseDefaultPhenos(data){
+function chooseDefaultPhenos(data, from_url = {}){
 
   if (!data[0].stratification){
       return ['', null]  
+  }
+
+  var chosen_stratifications = [];
+
+  // if stratifications are passed from url it will adjust here
+  if (Object.keys(from_url).length !== 0){
+    chosen_stratifications.push(from_url)
   }
 
   var all_stratifications = data.map(pheno => {
@@ -171,20 +181,18 @@ function chooseDefaultPhenos(data){
     return [data[0], null];
   }
 
+  if (all_stratifications.length == 2){
+    return [data[0], data[1]];
+  }
+
   if (!all_stratifications[0].sex){
     return [data[0], data[1]];
   }
 
-  var chosen_stratifications = [];
   var male = null;
   var female = null;
-  var both = null;
 
   for (var item of all_stratifications){
-
-    if (chosen_stratifications.length < 2){
-      chosen_stratifications.push(item)
-    }
 
     if ('female' === item.sex.toLowerCase()){
       female = item;
@@ -192,27 +200,25 @@ function chooseDefaultPhenos(data){
     else if ('male' === item.sex.toLowerCase()){
       male = item;
     }
-    else if ('both' === item.sex.toLowerCase()){
-      both = item;
-    }
   }
 
-  if (female != null){
-    chosen_stratifications[0] = female;
+  if (female != null && isEqual(from_url, female) === false){
+    chosen_stratifications.push(female);
   }
   if (male != null){
-    chosen_stratifications[1] = male;
+    chosen_stratifications.push(male);
   }
 
-  if (!male && both != null){
-    chosen_stratifications[1] = both;
-  }
-  if (!female && both != null){
-    chosen_stratifications[0] = both;
+  while (chosen_stratifications.length < 2 ){
+    chosen_stratifications.push(null)
   }
 
   // return phenos with those exact stratification
+  return returnPhenoFromStratifications(data, chosen_stratifications)
+}
 
+// niche helper function for above
+const returnPhenoFromStratifications = (data, chosen_stratifications) => {
   var chosen_phenos = [null, null]
 
   for (var pheno of data){
@@ -492,12 +498,15 @@ const updateChosenVariantMehod = (variant) => {
 
 function onInteractionCheckboxChange() {
   if (isInteractionChecked.value) {
+    console.log(infoInteraction.value)
     var strats = chooseDefaultPhenos(infoInteraction.value)
+    console.log(strats)
     selectedInteractionStratification1.value = strats[0].phenocode +returnExtraInfoString(strats[0])
     selectedInteractionStratification2.value = strats[1] ? strats[1].phenocode + returnExtraInfoString(strats[1]): "No stratification"
     handleInteractionRadioChange(); 
 
   } else {
+    console.log(info.value)
     var strats = chooseDefaultPhenos(info.value)
     selectedStratification1.value = strats[0].phenocode +returnExtraInfoString(strats[0])
     selectedStratification2.value = strats[1] ? strats[1].phenocode + returnExtraInfoString(strats[1]): "No stratification"

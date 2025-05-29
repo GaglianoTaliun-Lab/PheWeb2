@@ -562,6 +562,11 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
                     };
                 });
             })();
+
+            var color_by_chrom_numbers = d3.scaleOrdinal()
+                .domain(get_chrom_offsets_data1.value().chroms)
+                .range(['rgb(120,120,186)', 'rgb(0,0,66)']);
+                
             if (variants === "filtered"){
                 var color_by_chrom_dim = d3.scaleOrdinal()
                 .domain(get_chrom_offsets_data1.value().chroms)
@@ -582,6 +587,11 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
                     };
                 });
             })();
+
+            var color_by_chrom_numbers = d3.scaleOrdinal()
+                .domain(get_chrom_offsets_data1.value().chroms)
+                .range(['rgb(120,120,186)', 'rgb(0,0,66)']);
+
             if (variants === "filtered"){
                 var color_by_chrom_dim = d3.scaleOrdinal()
                 .domain(get_chrom_offsets_data1.value().chroms)
@@ -604,13 +614,13 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
             .attr('transform', function(d) {
                 return utils.fmt('translate({0},{1})',
                             plot_margin.left + x_scale.value(d.midpoint),
-                            svg_height/2 + 5); // divide by two to have it midway // TODO : why do I need to +5 here to have it perfectly centered??
+                            svg_height/2 + 5); // divide by two to have it midway
             })
             .text(function(d) {
                 return d.chrom;
             })
             .style('fill', function(d) {
-                return color_by_chrom_dim(d.chrom);
+                return color_by_chrom_numbers(d.chrom);
             });
         
         if (variant_bins1 != null){

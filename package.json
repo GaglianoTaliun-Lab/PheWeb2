@@ -21,6 +21,7 @@
     "d3-tip": "^0.9.1",
     "jquery": "^3.7.1",
     "locuszoom": "^0.13.4",
+    "lodash": "^4.17.21",
     "underscore": "^1.13.7",
     "vue": "^3.4.37",
     "vue-router": "^4.4.3",

@@ -384,6 +384,10 @@ function create_manhattan_plot(variant_bins, unbinned_variants, variants = "filt
             });
         })();
 
+        var color_by_chrom_numbers = d3.scaleOrdinal()
+                .domain(get_chrom_offsets.value().chroms)
+                .range(['rgb(167, 133, 178)', 'rgb(86, 56, 101)']);
+
         if (variants === "filtered"){
             var color_by_chrom_dim = d3.scaleOrdinal()
             .domain(get_chrom_offsets.value().chroms)
@@ -411,7 +415,7 @@ function create_manhattan_plot(variant_bins, unbinned_variants, variants = "filt
                 return d.chrom;
             })
             .style('fill', function(d) {
-                return color_by_chrom_dim(d.chrom);
+                return color_by_chrom_numbers(d.chrom);
             });
 
         gwas_plot.append('line')

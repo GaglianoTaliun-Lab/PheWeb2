@@ -84,7 +84,16 @@
       hover>
 
       <template v-slot:item.phenostring="{ item }">
-        <router-link :to="`/phenotypes/${item.phenocode}`">{{ item.phenostring }}</router-link>
+        <router-link 
+          :to="{
+            path: `/phenotypes/${item.phenocode}`,
+            query: {
+              ...item.stratification,
+            }
+          }"
+          >
+          {{ item.phenostring }}
+        </router-link>
       </template>
 
       <template v-slot:item.variantid="{ item }">
@@ -344,7 +353,9 @@
       } finally {
         isLoading.value = false;
       }
+
     };
+
 
     const baseHeaders = [
       { title: 'Category', key: 'category' },

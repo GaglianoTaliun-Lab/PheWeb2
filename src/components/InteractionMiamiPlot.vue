@@ -528,6 +528,11 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
                     };
                 });
             })();
+
+            var color_by_chrom_numbers = d3.scaleOrdinal()
+                .domain(get_chrom_offsets_data1.value().chroms)
+                .range(['rgb(167, 133, 178)', 'rgb(86, 56, 101)']);
+
             if (variants === "filtered"){
                 var color_by_chrom_dim = d3.scaleOrdinal()
                 .domain(get_chrom_offsets_data1.value().chroms)
@@ -548,6 +553,11 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
                     };
                 });
             })();
+
+            var color_by_chrom_numbers = d3.scaleOrdinal()
+                .domain(get_chrom_offsets_data1.value().chroms)
+                .range(['rgb(167, 133, 178)', 'rgb(86, 56, 101)']);
+
             if (variants === "filtered"){
                 var color_by_chrom_dim = d3.scaleOrdinal()
                 .domain(get_chrom_offsets.value().chroms)
@@ -576,7 +586,7 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
                 return d.chrom;
             })
             .style('fill', function(d) {
-                return color_by_chrom_dim(d.chrom);
+                return color_by_chrom_numbers(d.chrom);
             });
         
         if (variant_bins1 != null){
