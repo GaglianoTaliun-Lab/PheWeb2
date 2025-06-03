@@ -405,12 +405,12 @@
           variantName: item.rsids 
             ? `${item.chrom}: ${item.pos} ${item.ref} / ${item.alt}\n(${item.rsids})`
             : `${item.chrom}: ${item.pos} ${item.ref} / ${item.alt}`,
-          sex: `${item.stratification.sex}`,
-          ancestry: `${item.stratification.ancestry}`,
+          sex: `${item.stratification.sex.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}`,
+          ancestry: `${item.stratification.ancestry.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}`,
           num_controls: `${item.num_controls}`,
           num_num_cases: `${item.num_cases}`,
           nearest_genes: item.nearest_genes ? item.nearest_genes.split(',') : [],  // Convert string to array
-          category: item.category ? item.category.replace(/_/g, ' ') : ''
+          category: item.category ? String(item.category).replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : ''
         }));
       } catch (error) {
         console.error("There was an error fetching the sample data:", error);
@@ -456,22 +456,22 @@
     });
 
     // filters
-    const selectedSex = ref('All');
+    const selectedSex = ref('All results');
     const sexOptions = computed(() => {
       const sex = phenotypes.value.map(item => item.sex);
-      return ['All', ...new Set(sex)];
+      return ['All results', ...new Set(sex)];
     });
 
-    const selectedAncestry = ref('All');
+    const selectedAncestry = ref('All results');
     const ancestryOptions = computed(() => {
       const ancestry = phenotypes.value.map(item => item.ancestry);
-      return ['All', ...new Set(ancestry)];
+      return ['All results', ...new Set(ancestry)];
     });
 
     const selectedCategory = ref();
     const categoryOptions = computed(() => {
       const categories = phenotypes.value.map(item => item.category);
-      return ['All', ...[...new Set(categories)].sort((a, b) => a.localeCompare(b))];
+      return ['All results', ...[...new Set(categories)].sort((a, b) => a.localeCompare(b))];
     });
 
     const selectedPhenotype = ref();
@@ -480,15 +480,15 @@
     //   return ['All', ...[...new Set(phenos)].sort((a, b) => a.localeCompare(b))];
     // });
     const phenotypeOptions = computed(() => {
-      if (selectedCategory.value && selectedCategory.value !== 'All' ) {
+      if (selectedCategory.value && selectedCategory.value !== 'All results' ) {
         const phenos = phenotypes.value
           .filter(item => item.category === selectedCategory.value)
           .map(item => item.phenostring);
-        return ['All', ...[...new Set(phenos)].sort((a, b) => a.localeCompare(b))];
+        return ['All results', ...[...new Set(phenos)].sort((a, b) => a.localeCompare(b))];
       }
 
       const phenos = phenotypes.value.map(item => item.phenostring);
-      return ['All', ...[...new Set(phenos)].sort((a, b) => a.localeCompare(b))];
+      return ['All results', ...[...new Set(phenos)].sort((a, b) => a.localeCompare(b))];
     });
 
     // in-table filters
@@ -508,7 +508,7 @@
       const variants = phenotypes.value
         .flatMap(item => [item.rsids, item.variantid]) 
         .filter(variant => variant !== undefined && variant !== '');
-      return ['All', ...[...new Set(variants)].sort((a, b) => a.localeCompare(b))];
+      return ['All results', ...[...new Set(variants)].sort((a, b) => a.localeCompare(b))];
     });
 
     const filteredVariant = ref('');
@@ -534,10 +534,10 @@
     // since there will be a lot of data for the final table
     const filteredPhenotypes = computed(() => {
       return phenotypes.value.filter(item => {
-        const sexMatches = selectedSex.value === 'All' || item.sex === selectedSex.value;
-        const ancestryMatches = selectedAncestry.value === 'All' || item.ancestry === selectedAncestry.value;
-        const categoryMatches = !selectedCategory.value || selectedCategory.value === 'All' || item.category === selectedCategory.value;
-        const phenotypeMatches = !selectedPhenotype.value || selectedPhenotype.value === 'All' || item.phenostring === selectedPhenotype.value;
+        const sexMatches = selectedSex.value === 'All results' || item.sex === selectedSex.value;
+        const ancestryMatches = selectedAncestry.value === 'All results' || item.ancestry === selectedAncestry.value;
+        const categoryMatches = !selectedCategory.value || selectedCategory.value === 'All results' || item.category === selectedCategory.value;
+        const phenotypeMatches = !selectedPhenotype.value || selectedPhenotype.value === 'All results' || item.phenostring === selectedPhenotype.value;
         // const variantMatches = !filteredVariant.value || filteredVariant.value === 'All' ||  item.rsids === filteredVariant.value || item.variantid === filteredVariant.value;
         // const geneMatches = !filteredGene.value || filteredGene.value === 'All' ||   item.nearest_genes.includes(filteredGene.value.toUpperCase());
         const variantMatches = !filteredVariant.value || filteredVariant.value === '' || 

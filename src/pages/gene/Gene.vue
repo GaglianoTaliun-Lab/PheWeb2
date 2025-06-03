@@ -2,12 +2,6 @@
   <v-app>
     <Navbar2 /> 
     <v-main class="responsive-main"> 
-      <v-progress-linear
-        v-if="isLoading"
-        indeterminate
-        color="primary"
-        height="5"
-      ></v-progress-linear>
       <div v-if="geneChrom && geneStart && geneStop">
         <h2 style="font-weight: bold;"><i>{{ geneName }}</i> ({{ geneChrom }}:{{ geneStart }}-{{ geneStop }})</h2>
       </div>
@@ -151,11 +145,20 @@
           <RegionPlot :data="plottingData" :region="region"></RegionPlot>
         </div>
       </v-card> -->
-      <v-card elevation="5" class="pa-2" v-if="displayPlot">
+      <!-- <v-card elevation="5" class="pa-2" v-if="displayPlot">
         <div class="pt-2" v-if="plottingData && geneChrom && geneStart && geneStop">
           <LZ :data="plottingData" :region="region"></LZ>
         </div>
+      </v-card> -->
+      <v-card elevation="5" class="pa-2 mt-2" v-if="displayPlot">
+        <div class="pt-2" v-if="plottingData && geneChrom && geneStart && geneStop">
+          <LZ2 :data="plottingData" :region="region"></LZ2>
+        </div>
       </v-card>
+      <v-card elevation="0" class="pa-2 mt-2 text-center" v-else>
+        <span>No data selected to display LZ plot, please select a phenotype in the table above.</span>
+      </v-card>
+
     </v-main>
   </v-app>
 </template>
@@ -168,6 +171,7 @@ import TableGene from '../../components/TableGene.vue';
 
 import RegionPlot from '../../components/LocusZoomRegion.vue';
 import LZ from '../../components/LocusZoom.vue';
+import LZ2 from '../../components/LocusZoom2.vue';
 import { onMounted } from 'vue';
 import axios from 'axios';
 
@@ -196,10 +200,15 @@ const ukbTopmedUrl = computed(() => `https://pheweb.org/UKB-TOPMed/gene/${geneNa
 // const finngenUrl = computed(() => `https://r11.finngen.fi/gene/${geneName}`);
 
 const chosenPheno = ref([]);
+const currentChosenPheno = ref([]);
+const newAddedPheno = ref([]);
 const displayPlot = ref(true);
 const updateChosenPhenoMethod = (pheno) => {
   // chosenPheno.value = pheno.value;
   chosenPheno.value = [...pheno.value];
+  newAddedPheno.value = chosenPheno.value.filter(pheno => !currentChosenPheno.value.includes(pheno));
+  currentChosenPheno.value = chosenPheno.value;
+  console.log(newAddedPheno.value)
   // console.log('Clicked pheno:', chosenPheno.value);
   // console.log(chosenPheno.value.length)
 };

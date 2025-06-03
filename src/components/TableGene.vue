@@ -252,53 +252,61 @@
 
   // data fetch
   const fetchData = async () => {
-    phenotypes.value = props.data.map(item => ({
-        ...item,
-        phenocode_router: item.phenocode.split('.').slice(0, 1).join('.') ,
-        ancestry: `${item.stratification.ancestry}`, // TODO: don't hardcode these
-        sex: `${item.stratification.sex}`,
-        abs_distance_to_true_start: item.is_in_real_range ? 0 : Math.abs(item.distance_to_true_start),
-      }));
+    try {
+      isLoading.value = true;
+      phenotypes.value = props.data.map(item => ({
+          ...item,
+          phenocode_router: item.phenocode.split('.').slice(0, 1).join('.') ,
+          ancestry: `${item.stratification.ancestry.replace(/\b\w/g, l => l.toUpperCase())}`, // TODO: don't hardcode these
+          sex: `${item.stratification.sex.replace(/\b\w/g, l => l.toUpperCase())}`,
+          abs_distance_to_true_start: item.is_in_real_range ? 0 : Math.abs(item.distance_to_true_start),
+          category: item.category ? String(item.category).replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : ''
+        }));
+    } catch (error) {
+      console.error('Error fetching data for gene table:', error);
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   // filtering
-  const selectedSex = ref('All');
+  const selectedSex = ref('All results');
   const sexOptions = computed(() => {
     const sex = phenotypes.value.map(item => item.sex);
-    return ['All', ...new Set(sex)];
+    return ['All results', ...new Set(sex)];
   });
 
-  const selectedAncestry = ref('All');
+  const selectedAncestry = ref('All results');
   const ancestryOptions = computed(() => {
     const ancestry = phenotypes.value.map(item => item.ancestry);
-    return ['All', ...new Set(ancestry)];
+    return ['All results', ...new Set(ancestry)];
   });
 
   const selectedCategory = ref();
   const categoryOptions = computed(() => {
     const categories = phenotypes.value.map(item => item.category);
-    return ['All', ...[...new Set(categories)].sort((a, b) => a.localeCompare(b))];
+    return ['All results', ...[...new Set(categories)].sort((a, b) => a.localeCompare(b))];
   });
 
   const selectedPhenotype = ref();
   const phenotypeOptions = computed(() => {
-    if (selectedCategory.value && selectedCategory.value !== 'All' ) {
+    if (selectedCategory.value && selectedCategory.value !== 'All results' ) {
       const phenos = phenotypes.value
         .filter(item => item.category === selectedCategory.value)
         .map(item => item.phenostring);
-      return ['All', ...[...new Set(phenos)].sort((a, b) => a.localeCompare(b))];
+      return ['All results', ...[...new Set(phenos)].sort((a, b) => a.localeCompare(b))];
     }
 
     const phenos = phenotypes.value.map(item => item.phenostring);
-    return ['All', ...[...new Set(phenos)].sort((a, b) => a.localeCompare(b))];
+    return ['All results', ...[...new Set(phenos)].sort((a, b) => a.localeCompare(b))];
   });
 
   const filteredPhenotypes = computed(() => {
     return phenotypes.value.filter(item => {
-      const sexMatches = selectedSex.value === 'All' || item.sex === selectedSex.value;
-      const ancestryMatches = selectedAncestry.value === 'All' || item.ancestry === selectedAncestry.value;
-      const categoryMatches = !selectedCategory.value || selectedCategory.value === 'All' || item.category === selectedCategory.value;
-      const phenotypeMatches = !selectedPhenotype.value || selectedPhenotype.value === 'All' || item.phenostring === selectedPhenotype.value;
+      const sexMatches = selectedSex.value === 'All results' || item.sex === selectedSex.value;
+      const ancestryMatches = selectedAncestry.value === 'All results' || item.ancestry === selectedAncestry.value;
+      const categoryMatches = !selectedCategory.value || selectedCategory.value === 'All results' || item.category === selectedCategory.value;
+      const phenotypeMatches = !selectedPhenotype.value || selectedPhenotype.value === 'All results' || item.phenostring === selectedPhenotype.value;
       return sexMatches && ancestryMatches && categoryMatches && phenotypeMatches;
     })
     .sort((a, b) => a.pval - b.pval);;

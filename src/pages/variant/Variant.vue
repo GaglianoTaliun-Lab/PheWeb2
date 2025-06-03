@@ -135,12 +135,12 @@ const handleCheckboxChange = () => {
     <Navbar2 />
     <v-main class="responsive-main">
       <!-- Loading Bar -->
-    <v-progress-linear
+    <!-- <v-progress-linear
       v-if="isLoading"
       indeterminate
       color="primary"
       height="5"
-    ></v-progress-linear>
+    ></v-progress-linear> -->
 
       <div class="ml-4 mt-2">
         <h1 class="mb-0">{{ variantCodeToLabel(variantCode) }}</h1>

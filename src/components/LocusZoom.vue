@@ -20,6 +20,7 @@ const info = ref(null)
 
 const route = useRoute();
 const phenocode = route.params.phenocode;
+const currentPhenoList = ref(null);
 
 var region = route.params.region;
 
@@ -102,6 +103,8 @@ if (!LocusZoom.TransformationFunctions._items.has('percent')){
     });
 }
 
+const data_sources_new = ref(null)
+const phenocode_list = ref(null)
 const fetchData = async () => {
     if (props.data.length === 0 || !props.data){
         return;
@@ -110,14 +113,16 @@ const fetchData = async () => {
     info.value = props.data
 
     if (info.value[0].stratification){
-        var phenocode_list = info.value.map((pheno) => {return pheno.phenocode + "." + Object.values(pheno.stratification).join('.')})
+        phenocode_list.value = info.value.map((pheno) => {return pheno.phenocode + "." + Object.values(pheno.stratification).join('.')})
     } else {
-        var phenocode_list = info.value.map((pheno) => {return pheno.phenocode})
+        phenocode_list.value = info.value.map((pheno) => {return pheno.phenocode})
     }
+
+    currentPhenoList.value = phenocode_list;
 
     var remoteBase = "https://portaldev.sph.umich.edu/api/v1/";
 
-    var data_sources_new = new LocusZoom.DataSources()
+    data_sources_new.value = new LocusZoom.DataSources()
         .add("catalog", ["GwasCatalogLZ", {url: remoteBase + 'annotation/gwascatalog/results/', params: { build: "GRCh38" }}])
         .add("ld", ["LDServer", { url: "https://portaldev.sph.umich.edu/ld/",
             params: { source: '1000G', build: 'GRCh38', population: 'ALL' }
@@ -125,10 +130,10 @@ const fetchData = async () => {
         .add("gene", ["GeneLZ", { url: remoteBase + "annotation/genes/", params: {build: 'GRCh38'} }])
         .add("recomb", ["RecombLZ", { url: remoteBase + "annotation/recomb/results/", params: {build:'GRCh38'} }]);
 
-    phenocode_list.forEach( function (phenocode, i){
+    phenocode_list.value.forEach( function (phenocode, i){
         var phenocode_list = phenocode.split(".")
         var stratification = '.' + phenocode_list.slice(1).join('.')
-        data_sources_new.add(utils.fmt("assoc_study{0}",i+1), ["AssociationPheWeb", {url: api + "/phenotypes/"+ phenocode_list[0] +"/"+ stratification + "/region/", source: i+1}])
+        data_sources_new.value.add(utils.fmt("assoc_study{0}",i+1), ["AssociationPheWeb", {url: api + "/phenotypes/"+ phenocode_list[0] +"/"+ stratification + "/region/", source: i+1}])
 
     });
 
@@ -164,7 +169,7 @@ const fetchData = async () => {
             }()
     );
 
-    phenocode_list.forEach( function (phenocode, i){
+    phenocode_list.value.forEach( function (phenocode, i){
         
         let dynamicPart = utils.fmt("assoc_study{0}", i + 1);
 
@@ -465,7 +470,7 @@ const fetchData = async () => {
     });
 
 
-    plot.value = LocusZoom.populate("#lz", data_sources_new, layout_new);
+    plot.value = LocusZoom.populate("#lz", data_sources_new.value, layout_new);
 
     // Handle double-click on a variant point
     var doubleclick_delay_ms = 400;

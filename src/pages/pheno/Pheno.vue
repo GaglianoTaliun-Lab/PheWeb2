@@ -236,6 +236,7 @@ const handleRadioChange = () => {
     miamiToggle.value = false;
     manhattanData.value[selectedStratification1.value] = allPlottingData.value[selectedStratification1.value];
 
+    console.log(allPlottingData.value[selectedStratification1.value])
     qqSubset.value = {};
     qqSubset.value[selectedStratification1.value] = qqData.value[selectedStratification1.value];
   } else {
@@ -244,10 +245,12 @@ const handleRadioChange = () => {
 
     miamiData.value[selectedStratification1.value] = allPlottingData.value[selectedStratification1.value];
     miamiData.value[selectedStratification2.value] = allPlottingData.value[selectedStratification2.value];
+    
 
     qqSubset.value = {};
     qqSubset.value[selectedStratification1.value] = qqData.value[selectedStratification1.value];
     qqSubset.value[selectedStratification2.value] = qqData.value[selectedStratification2.value];
+
 
 
   }
@@ -532,12 +535,12 @@ onUnmounted(() => {
             <div>
               <h1 v-if="phenostring">{{phenocode}}: {{phenostring}}</h1>
               <h1 v-else>{{phenocode}}</h1>
-              <v-progress-linear
+              <!-- <v-progress-linear
                 v-if="isLoading"
                 indeterminate
                 color="primary"
                 height="5"
-              ></v-progress-linear>
+              ></v-progress-linear> -->
               <div class="links m-1 d-flex justify-space-between align-center text-center">
                 
                 <div class="interaction d-none d-md-flex">
