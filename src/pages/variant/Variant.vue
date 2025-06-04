@@ -55,6 +55,7 @@ onMounted(async () => {
     //maf_text.value = maf_range(variant_list.value).replace(/\n/g, "<br>");
     variant.value = variant_list.value[0];
 
+    console.log(variant_list.value)
     console.log(variant.value)
     rsids.value = variant.value.rsids ?  variant.value.rsids.split(',') : [];
 
@@ -369,8 +370,6 @@ const downloadTable = () => {
               </v-row>
             </div>  
           </div>
-
-
 
         <div v-if="chosen_variants.length > 0">
           <PhewasPlot :key="refreshKey" :variantList="chosen_variants" :uniqueCategoriesList="category_list"/>

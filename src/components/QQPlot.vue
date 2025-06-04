@@ -86,7 +86,7 @@ function createQQPlot(data, height = null, width = null) {
         'left': 30,
         'right': 30,
         'top': 10,
-        'bottom': 120,
+        'bottom': 130,
     };
 
     var svg_width = qqPlotContainer.value.clientWidth;
@@ -163,13 +163,23 @@ function createQQPlot(data, height = null, width = null) {
     // Legend
     qq_svg.append('g')
         .attr('transform', fmt('translate({0},{1})',
-                            plot_margin.left + plot_width,
-                            plot_margin.top + plot_height + 70))
+                            0,
+                            plot_margin.top + plot_height + 80))
+        .append('text')
+        .attr('text-anchor', 'start')
+        .attr('y', '-1em')
+        .text('MAF ranges per quartile')
+        .style('font-weight', 'bold');
+
+    qq_svg.append('g')
+        .attr('transform', fmt('translate({0},{1})',
+                            0,
+                            plot_margin.top + plot_height + 82))
         .selectAll('text.legend-items')
         .data(maf_ranges)
         .enter()
         .append('text')
-        .attr('text-anchor', 'end')
+        .attr('text-anchor', 'start')
         .attr('y', function(d,i) {
             return i + 'em';
         })
@@ -218,7 +228,7 @@ function createQQPlot(data, height = null, width = null) {
         .style('text-anchor', 'middle')
         .attr('transform', fmt('translate({0},{1})',
                             plot_margin.left + plot_width/2,
-                            plot_margin.top + plot_height + 40))
+                            plot_margin.top + plot_height + 35))
         .text('expected -log\u2081\u2080(p)');
 
 }

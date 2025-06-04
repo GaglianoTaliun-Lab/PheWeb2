@@ -124,6 +124,8 @@ function generatePlot(variant_list){
             var panel_int = +panel;
 
             var data = JSON.parse(JSON.stringify(variant_list[panel_int].phenos)); //otherwise LZ adds attributes I don't want to the original data.
+            
+            
             data.forEach(function(d, i) {
                 data[i].x = i;
                 data[i].id = i.toString();
@@ -214,7 +216,7 @@ function generatePlot(variant_list){
                 JSON.parse(JSON.stringify(props.uniqueCategoriesList))
             )
         })
-        console.log(unique_categories_list)
+        //console.log(unique_categories_list)
     }
 
     const category20 = d3.schemeCategory10.concat(d3.schemeCategory10);  /* d3 removed category20, so I make this terrible version */

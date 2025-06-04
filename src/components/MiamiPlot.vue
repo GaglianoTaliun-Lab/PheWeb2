@@ -657,7 +657,7 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
             "<% if(_.has(d, 'num_significant_in_peak') && d.num_significant_in_peak>1) { %>#significant variants in peak: <%= d.num_significant_in_peak %><br><% } %>" +
     
             // add link
-            "<br>Region Plot: <a href='<%= `${window.location}/region/${d.chrom}:${Math.max(0, d.pos - 200 * 1000)}-${d.pos + 200 * 1000}` %>' target='_blank'>View</a>"
+            "<br>Region Plot: <a href='<%= `${window.location.toString().split('?')[0]}/region/${d.chrom}:${Math.max(0, d.pos - 200 * 1000)}-${d.pos + 200 * 1000}` %>' target='_blank'>View</a>"
         );
 
             point_tooltip.value = d3Tip()

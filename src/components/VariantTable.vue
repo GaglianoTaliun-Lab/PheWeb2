@@ -65,7 +65,6 @@
           </div>
         </template>
 
-        <!-- Other template slots remain the same -->
         <template v-slot:item.phenostring="{ item }">
           <router-link :to="`/phenotypes/${item.phenocode}`">{{ item.phenostring }}</router-link>
         </template>
@@ -209,6 +208,7 @@
         return {
           category: pheno.category,
           phenostring: pheno.phenostring,
+          phenocode: pheno.phenocode,
           ...stratifications,
           pval: pheno.pval,
           eaf: pheno.af,
