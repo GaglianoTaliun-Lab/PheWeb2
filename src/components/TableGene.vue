@@ -1,8 +1,8 @@
-<template>
+<template class="d-flex">
   <v-row style="margin-top: 2px;" dense  align="center" class="align-end d-flex">
-    <v-col cols="12" md="4">
+    <v-col cols="12" md="3">
       <v-card
-        max-width="1210px"
+        max-width="600px"
         hover
         density="compact"
       >
@@ -34,7 +34,7 @@
     </v-col>
     <v-col cols="12" md="3">
       <v-card
-        max-width="500"
+        max-width="600"
         hover
         density="compact"
       >  
@@ -61,8 +61,9 @@
   </v-row>
 
   <v-card
-    elevation="0"
-    style="margin-top: 2px;"
+    elevation="5"
+    style="margin-top: 5px; margin-bottom: 5px;"
+    class="d-flex"
   >
     <!-- <p>Phenotypes with the most-significant associations for this locus:</p> -->
     <v-data-table
@@ -110,7 +111,7 @@
           <v-row no-gutters >
             <v-col>
               <span v-if="item.distance_to_true_start<0" style="white-space: nowrap;">
-                {{ item.distance_to_true_start }} bp
+                {{ formatScientific(item.distance_to_true_start) }} bp
               </span>
               <v-progress-linear 
                 v-if="item.distance_to_true_start<0"
@@ -122,7 +123,7 @@
             </v-col>
             <v-col>
               <span v-if="item.distance_to_true_start>0" style="white-space: nowrap;">
-                {{ item.distance_to_true_start }} bp
+                {{ formatScientific(item.distance_to_true_start) }} bp
               </span>
               <v-progress-linear 
                 v-if="item.distance_to_true_start>0"
@@ -165,8 +166,8 @@
         <div style="display: flex; align-items: center; ">
           <span>
             <v-chip v-if="item.pval !== 'NA'" :color="getColour(item.pval)">
-                  {{ item.pval }}
-                </v-chip>
+              {{ formatScientific(item.pval) }}
+            </v-chip>
           </span>
         </div>
       </template>
@@ -205,8 +206,6 @@
         <v-skeleton-loader type="table-row@3"></v-skeleton-loader>
       </template>
       
-
-
     </v-data-table>
   </v-card>
 
@@ -228,6 +227,11 @@
   // const chosenPhenocode = ref('')
   const selectedItems = ref([]);
   const emit = defineEmits(['updateChosenPheno']);
+  // scientific notation
+  const formatScientific = (num) => {
+    if (!num || isNaN(num)) return 'N/A';  
+    return Number(num).toExponential(2);  
+  };
 
   const headers = ref([
   { title: 'Category', value: 'category' },
@@ -243,83 +247,65 @@
 
   // data fetch
   const fetchData = async () => {
-    isLoading.value = true;
     try {
-      phenotypes.value = props.data.map(item => {
-        const stratificationData = {};
-        STRATIFICATION_CATEGORIES.forEach(cat => {
-          stratificationData[cat.toLowerCase()] = item.stratification?.[cat.toLowerCase()] ?? '';
-        });
-
-        return {
+      isLoading.value = true;
+      phenotypes.value = props.data.map(item => ({
           ...item,
-          phenocode_router: item.phenocode.split('.').slice(0, 1).join('.'),
-          ...stratificationData,
+          phenocode_router: item.phenocode.split('.').slice(0, 1).join('.') ,
+          ancestry: `${item.stratification.ancestry.replace(/\b\w/g, l => l.toUpperCase())}`, // TODO: don't hardcode these
+          sex: `${item.stratification.sex.replace(/\b\w/g, l => l.toUpperCase())}`,
           abs_distance_to_true_start: item.is_in_real_range ? 0 : Math.abs(item.distance_to_true_start),
-        };
-      });
+          category: item.category ? String(item.category).replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : ''
+        }));
     } catch (error) {
-      console.error("There was an error fetching the sample data:", error);
+      console.error('Error fetching data for gene table:', error);
     } finally {
       isLoading.value = false;
     }
-  };
+  }
 
-
-  const selectedFilters = reactive({});
-  const filterOptions = reactive({});
-
-  STRATIFICATION_CATEGORIES.forEach(cat => {
-    const key = cat.toLowerCase();
-    selectedFilters[key] = 'All';
-
-    watchEffect(() => {
-      const values = phenotypes.value.map(item => item[key]).filter(Boolean);
-      filterOptions[key] = ['All', ...new Set(values)];
-    });
+  // filtering
+  const selectedSex = ref('All results');
+  const sexOptions = computed(() => {
+    const sex = phenotypes.value.map(item => item.sex);
+    return ['All results', ...new Set(sex)];
   });
 
-    const selectedCategory = ref('All');
-    const categoryOptions = computed(() => {
-      const categories = phenotypes.value.map(item => item.category);
-      return ['All', ...[...new Set(categories)].sort((a, b) => a.localeCompare(b))];
-    });
+  const selectedAncestry = ref('All results');
+  const ancestryOptions = computed(() => {
+    const ancestry = phenotypes.value.map(item => item.ancestry);
+    return ['All results', ...new Set(ancestry)];
+  });
 
-    const selectedPhenotype = ref('All');
-    const phenotypeOptions = computed(() => {
-      if (selectedCategory.value && selectedCategory.value !== 'All' ) {
-        const phenos = phenotypes.value
-          .filter(item => item.category === selectedCategory.value)
-          .map(item => item.phenostring);
-        return ['All', ...[...new Set(phenos)].sort((a, b) => a.localeCompare(b))];
-      }
+  const selectedCategory = ref();
+  const categoryOptions = computed(() => {
+    const categories = phenotypes.value.map(item => item.category);
+    return ['All results', ...[...new Set(categories)].sort((a, b) => a.localeCompare(b))];
+  });
 
-      const phenos = phenotypes.value.map(item => item.phenostring);
-      return ['All', ...[...new Set(phenos)].sort((a, b) => a.localeCompare(b))];
-    });
+  const selectedPhenotype = ref();
+  const phenotypeOptions = computed(() => {
+    if (selectedCategory.value && selectedCategory.value !== 'All results' ) {
+      const phenos = phenotypes.value
+        .filter(item => item.category === selectedCategory.value)
+        .map(item => item.phenostring);
+      return ['All results', ...[...new Set(phenos)].sort((a, b) => a.localeCompare(b))];
+    }
 
-    const filteredPhenotypes = computed(() => {
-      return phenotypes.value
-        .filter(item => {
-          const stratificationMatches = STRATIFICATION_CATEGORIES.every(cat => {
-            const selectedValue = selectedFilters[cat.toLowerCase()]?.value;
-            return !selectedValue || selectedValue === 'All' || item[cat.toLowerCase()] === selectedValue;
-          });
+    const phenos = phenotypes.value.map(item => item.phenostring);
+    return ['All results', ...[...new Set(phenos)].sort((a, b) => a.localeCompare(b))];
+  });
 
-          const categoryMatches =
-            !selectedCategory.value ||
-            selectedCategory.value === 'All' ||
-            item.category === selectedCategory.value;
-
-          const phenotypeMatches =
-            !selectedPhenotype.value ||
-            selectedPhenotype.value === 'All' ||
-            item.phenostring === selectedPhenotype.value;
-
-          return stratificationMatches && categoryMatches && phenotypeMatches;
-        })
-        .sort((a, b) => a.pval - b.pval);
-    });
+  const filteredPhenotypes = computed(() => {
+    return phenotypes.value.filter(item => {
+      const sexMatches = selectedSex.value === 'All results' || item.sex === selectedSex.value;
+      const ancestryMatches = selectedAncestry.value === 'All results' || item.ancestry === selectedAncestry.value;
+      const categoryMatches = !selectedCategory.value || selectedCategory.value === 'All results' || item.category === selectedCategory.value;
+      const phenotypeMatches = !selectedPhenotype.value || selectedPhenotype.value === 'All results' || item.phenostring === selectedPhenotype.value;
+      return sexMatches && ancestryMatches && categoryMatches && phenotypeMatches;
+    })
+    .sort((a, b) => a.pval - b.pval);;
+  });
   
   // downloading
   const coverToCSV = (data) => {

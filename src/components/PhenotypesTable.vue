@@ -35,7 +35,7 @@
       </v-col>
       <v-col cols="12" md="4">
         <v-card
-          max-width="500"
+          max-width="600"
           hover
           density="compact"
         >  
@@ -124,7 +124,15 @@
 
       <template v-slot:item.pval="{ item }">
         <span style="white-space: nowrap;">
-          {{ item.pval }}
+          <v-chip :color="getColour(item.pval)">
+            {{ formatScientific(item.pval) }}
+          </v-chip>
+        </span>
+      </template>
+
+      <template v-if="hasAF" v-slot:item.af="{ item }">
+        <span style="white-space: nowrap;">
+          {{ item.af }}
         </span>
       </template>
 
@@ -283,16 +291,26 @@
       </template>
 
       <template v-slot:header.pval="{ column, isSorted, getSortIcon }">
-        <div style="display: flex; align-items: center;">
+        <div style="display: flex; align-items: left; justify-content: left; text-align: left;">
           <span style="white-space: nowrap;">{{ column.title }}</span>
+          <v-tooltip location="top">
+            <template v-slot:activator="{ props }">
+              <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
+            </template>
+            <span style="white-space: normal;">
+              P-value significant threshold: 5e-8 <br>
+              green: significant <br>
+              grey: unsignificant <br>
+            </span>
+          </v-tooltip>
           <template v-if="isSorted(column)">
-              <v-icon :icon="getSortIcon(column)"></v-icon>
+            <v-icon :icon="getSortIcon(column)"></v-icon>
           </template>
         </div>
       </template>
 
-      <template v-if="hasAF" v-slot:header.af="{ column }">
-        <div style="display: flex; align-items: center; justify-content: center; text-align: center;">
+      <template v-if="hasAF" v-slot:header.af="{ column, isSorted, getSortIcon  }">
+        <div style="display: flex; align-items: left; justify-content: left; text-align: left;">
           <span style="white-space: nowrap;">{{ "EAF" }}</span>
           <v-tooltip location="top">
             <template v-slot:activator="{ props }">
@@ -302,6 +320,9 @@
               Effect allele frequency
             </span>
           </v-tooltip>
+          <template v-if="isSorted(column)">
+            <v-icon :icon="getSortIcon(column)"></v-icon>
+          </template>
         </div>
       </template>
 
@@ -324,10 +345,18 @@
 
     const search = ref('');
 
+    // scientific notation
+    const formatScientific = (num) => {
+      if (!num || isNaN(num)) return 'N/A';  
+      return Number(num).toExponential(2);  
+    };
+
+    // data
     const fetchData = async () => {
       isLoading.value = true;
       errorMessage.value = '';
       try {
+<<<<<<< HEAD
         phenotypes.value = props.data.map(item => {
           const stratificationData = {};
           STRATIFICATION_CATEGORIES.forEach(cat => { // dynamically fetch based on constant (STRATIFICATION_CATEGORIES)
@@ -344,14 +373,14 @@
             num_controls: `${item.num_controls}`,
             num_num_cases: `${item.num_cases}`,
             nearest_genes: item.nearest_genes ? item.nearest_genes.split(',') : [],
-            category: item.category ? item.category.replace(/_/g, ' ') : ''
+            category: item.category ? String(item.category).replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : ''
           };
         });
       } catch (error) {
         console.error("There was an error fetching the sample data:", error);
         errorMessage.value = "Failed to load data. Please try again later.";
       } finally {
-        isLoading.value = false;
+        // isLoading.value = false;
       }
 
     };
@@ -375,12 +404,12 @@
       const hasNumSamples = props.data.some(item => item.hasOwnProperty('num_samples'));
       const hasNumPeaks = props.data.some(item => item.hasOwnProperty('num_peaks'));
       // hasAF.value = props.data.some(item => item.hasOwnProperty('af'));
-      const hasNumSignificantInPeak = props.data.some(item => item.hasOwnProperty('num_significant_in_peak'));
+      const hasNumPeak = props.data.some(item => item.hasOwnProperty('num_peaks'));
 
-      let lociColumn = { title: '#Loci < 5e-8', key: hasNumPeaks ? 'num_peaks' : hasNumSignificantInPeak ? 'num_significant_in_peak' : '' };
+      let lociColumn = { title: '#Loci < 5e-8', key: 'num_peaks'};
       let updatedHeaders = [...baseHeaders];
 
-      if (lociColumn.key) {
+      if (hasNumPeak) {
         updatedHeaders.splice(4, 0, lociColumn); 
       }
 
@@ -389,7 +418,7 @@
       }
 
       if (hasAF.value) {
-        updatedHeaders.splice(6, 0, { title: 'EAF', key: 'af' }); 
+        updatedHeaders.splice(6, 0, { title: 'EAF', key: 'af'}); 
       }
 
       return updatedHeaders;
@@ -411,13 +440,20 @@
     const selectedCategory = ref('All');
     const categoryOptions = computed(() => {
       const categories = phenotypes.value.map(item => item.category);
-      return ['All', ...[...new Set(categories)].sort((a, b) => a.localeCompare(b))];
+      return ['All results', ...[...new Set(categories)].sort((a, b) => a.localeCompare(b))];
     });
 
     const selectedPhenotype = ref('All');
     const phenotypeOptions = computed(() => {
+      if (selectedCategory.value && selectedCategory.value !== 'All results' ) {
+        const phenos = phenotypes.value
+          .filter(item => item.category === selectedCategory.value)
+          .map(item => item.phenostring);
+        return ['All results', ...[...new Set(phenos)].sort((a, b) => a.localeCompare(b))];
+      }
+
       const phenos = phenotypes.value.map(item => item.phenostring);
-      return ['All', ...[...new Set(phenos)].sort((a, b) => a.localeCompare(b))];
+      return ['All results', ...[...new Set(phenos)].sort((a, b) => a.localeCompare(b))];
     });
 
     // in-table filters
@@ -437,7 +473,7 @@
       const variants = phenotypes.value
         .flatMap(item => [item.rsids, item.variantid]) 
         .filter(variant => variant !== undefined && variant !== '');
-      return ['All', ...[...new Set(variants)].sort((a, b) => a.localeCompare(b))];
+      return ['All results', ...[...new Set(variants)].sort((a, b) => a.localeCompare(b))];
     });
 
     const filteredVariant = ref('');
@@ -500,6 +536,12 @@
 
     const emit = defineEmits(['updateUniquePhenotypesCount']) //emit('updateUniquePhenotypesCount', data) to parent
 
+    // p value colours
+    const getColour = (pval) => {
+      if (pval < 5e-8 && pval !== null) return 'green';
+      else if (pval === "NA") return null;
+      return '#grey';
+    };
     // download
     const coverToCSV = (data) => {
       if (!data || data.length === 0) return '';

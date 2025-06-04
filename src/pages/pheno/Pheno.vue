@@ -1,7 +1,7 @@
 <script setup name="Pheno">
 
 import axios from 'axios';
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
 import '@fortawesome/fontawesome-free/css/all.css';
 import {isEqual} from 'lodash';
@@ -240,6 +240,7 @@ const handleRadioChange = () => {
     miamiToggle.value = false;
     manhattanData.value[selectedStratification1.value] = allPlottingData.value[selectedStratification1.value];
 
+    console.log(allPlottingData.value[selectedStratification1.value])
     qqSubset.value = {};
     qqSubset.value[selectedStratification1.value] = qqData.value[selectedStratification1.value];
   } else {
@@ -248,6 +249,7 @@ const handleRadioChange = () => {
 
     miamiData.value[selectedStratification1.value] = allPlottingData.value[selectedStratification1.value];
     miamiData.value[selectedStratification2.value] = allPlottingData.value[selectedStratification2.value];
+    
 
     qqSubset.value = {};
     qqSubset.value[selectedStratification1.value] = qqData.value[selectedStratification1.value];
@@ -514,6 +516,20 @@ function onInteractionCheckboxChange() {
   }
 }
 
+const isLargeScreen = ref(window.innerWidth >= 1100);
+
+const updateScreenSize = () => {
+  isLargeScreen.value = window.innerWidth >= 1100;
+};
+
+onMounted(() => {
+  window.addEventListener("resize", updateScreenSize);
+});
+
+onUnmounted(() => {
+  window.removeEventListener("resize", updateScreenSize);
+});
+
 </script>
 
 <template>
@@ -523,36 +539,54 @@ function onInteractionCheckboxChange() {
             <div>
               <h1 v-if="phenostring">{{phenocode}}: {{phenostring}}</h1>
               <h1 v-else>{{phenocode}}</h1>
-              <v-progress-linear
+              <!-- <v-progress-linear
                 v-if="isLoading"
                 indeterminate
                 color="primary"
                 height="5"
-              ></v-progress-linear>
-              <div class="links m-1">
+              ></v-progress-linear> -->
+              <div class="links m-1 d-flex justify-space-between align-center text-center">
                 
-                <div class="interaction">
+                <div class="interaction d-none d-md-flex">
                     <div v-if="Object.keys(allInteractionPlottingData).length > 0">
-                      <h3><label for="interactionCheckbox" class="mr-2" >Show Genotypes x Sex Interaction Results</label>
-                        <input 
-                        type="checkbox" 
-                        id="interactionCheckbox" 
-                        v-model="isInteractionChecked"
-                        @change="onInteractionCheckboxChange"
-                        class="custom-checkbox"
-                      /></h3>
-
+                      <v-chip
+                        size="x-large"
+                        label
+                        :color="isInteractionChecked ? 'primary' : 'default'"
+                        filter
+                        :filter-icon="isInteractionChecked ? 'mdi-check' : ''"
+                        @click="isInteractionChecked = !isInteractionChecked; onInteractionCheckboxChange()"
+                      >
+                        Show Genotypes x Sex Interaction Results
+                      </v-chip>
                     </div>
                 </div>
-                <div class="data-portal">
+                <div class="data-portal d-flex d-md-none justify-center align-center text-center">
+                  <div v-if="Object.keys(allInteractionPlottingData).length > 0">
+                      <v-chip
+                      size="x-large"
+                      label
+                      :color="isInteractionChecked ? 'primary' : 'default'"
+                      filter
+                      :filter-icon="isInteractionChecked ? 'mdi-check' : ''"
+                      @click="isInteractionChecked = !isInteractionChecked; onInteractionCheckboxChange()"
+                    >
+                    Show Interaction
+                    </v-chip>
+                  </div>
+                </div>
+                <div class="data-portal d-none d-md-flex">
                   <a  v-if="linkUrl" :href="linkUrl" target="_blank" rel="noopener noreferrer"><u><b>Data Preview Portal</b></u> <i class="fas fa-external-link-alt"></i></a>
+                </div>
+                <div class="data-portal d-flex d-md-none justify-center align-center text-center">
+                  <a  v-if="linkUrl" :href="linkUrl" target="_blank" rel="noopener noreferrer"><u><b></b></u> <v-icon>mdi-printer-eye</v-icon></a>
                 </div>
               </div>
 
             </div>
 
             <div v-if="!isInteractionChecked" class="non-interaction">
-              <div class="pheno-info col-12 mt-0">
+              <div class="pheno-info col-12 d-flex justify-left align-center text-center mt-0">
                 <div class="dropdown p-1" id="dropdown-data1">
                     <button class="btn btn-primary btn-drop" id="button-data1">{{keyToLabel(selectedStratification1) + " (" + sampleSizeLabel[selectedStratification1] + ")"}}<span class="arrow-container"><span class="arrow-down"></span></span></button>
                     <div class="dropdown-menu" id="dropdown-content-data1">
@@ -588,8 +622,19 @@ function onInteractionCheckboxChange() {
                     </div>
                   </div>
 
-                  <div class="dropdown p-1 float-right" id="dropdown-sumstats">
-                    <button class="btn btn-primary btn-drop">  Download Summary Statistics  <span class="arrow-container"><span class="arrow-down"></span></span></button>
+                  <div class="dropdown p-1 float-right" style="margin-left: auto;" id="dropdown-sumstats">
+                    <div>
+                      <button v-if="isLargeScreen" class="btn btn-primary btn-drop">
+                        Download Summary Statistics
+                        <span class="arrow-container"><span class="arrow-down"></span></span>
+                      </button>
+
+                      <button v-else class="btn btn-primary btn-drop">
+                        <v-icon>mdi-download</v-icon>
+                      </button>
+                    </div>
+                    <!-- <button class="btn btn-primary btn-drop d-none d-md-flex">  Download Summary Statistics  <span class="arrow-container"><span class="arrow-down"></span></span></button>
+                    <button class="btn btn-primary btn-drop d-flex d-md-none"><v-icon>mdi-download</v-icon></button> -->
                     <div class="dropdown-menu dropdown-menu-right p-1" id="dropdown-content-sumstats">
                       <button class="sec-button btn w-100 mt-1 mb-1"  id="download-all-button" @click="downloadAll">Download All</button>
                       <button class="sec-button btn w-100 mt-1 mb-1"  id="download-current-button" @click="downloadCurrent">Download Plotted Variants</button>
