@@ -1,6 +1,6 @@
 <template>
     <v-app>
-        <Navbar2 />
+        <Navbar />
         <v-main>
             <h2 style="font-weight: bold;">PheWeb 2.0 API</h2>
             <v-alert
@@ -50,7 +50,7 @@
 
 <script setup>
 import { ref } from 'vue';
-import Navbar2 from '../../components/Navbar2.vue';
+import Navbar from '../../components/Navbar.vue';
 
 const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URL
 

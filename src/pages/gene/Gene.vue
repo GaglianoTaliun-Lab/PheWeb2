@@ -74,7 +74,7 @@
           class="gene-link"
         >
           UKB-TOPMed (UMich)
-        </a>,
+        </a>
       </div>
       <!-- Mobile external links menu -->
       <div class="gene-links d-flex d-md-none justify-left align-center">
@@ -137,6 +137,7 @@
         <TableGene 
           :geneName="geneName"
           :data="geneData"
+          :isLoading="isLoading"
           @updateChosenPheno="updateChosenPhenoMethod"
         />
       </div>

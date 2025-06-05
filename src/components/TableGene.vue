@@ -39,18 +39,26 @@
         density="compact"
       >  
         <v-row class="d-flex" dense>
-          <template v-for="category in STRATIFICATION_CATEGORIES" :key="category">
-            <v-col cols="12" sm="6">
-              <v-select
-                v-model="selectedFilters[category.toLowerCase()]"
-                :items="filterOptions[category.toLowerCase()]"
-                :label="category.charAt(0).toUpperCase() + category.slice(1)"
-                prepend-icon="mdi-filter-variant"
+          <v-col cols="12" sm="6">
+            <v-select
+                v-model="selectedSex"
+                :items="sexOptions"
+                label="Sex"
+                prepend-icon="mdi-gender-male-female"
                 class="ma-2 pa-2"
                 variant="underlined"
-              ></v-select>
-            </v-col>
-          </template>
+            ></v-select>
+          </v-col>
+          <v-col cols="12" sm="6">
+            <v-select
+                v-model="selectedAncestry"
+                :items="ancestryOptions"
+                label="Ancestry"
+                prepend-icon="mdi-account-group-outline"
+                class="ma-2 pa-2"
+                variant="underlined"
+            ></v-select>
+          </v-col>
         </v-row>
       </v-card>
     </v-col>
@@ -69,7 +77,7 @@
     <v-data-table
       elevation="5"
       v-model="selectedItems"
-      :loading="isLoading"
+      :loading="props.isLoading"
       :headers="headers"
       :items="filteredPhenotypes"
       item-value="phenocode"
@@ -212,15 +220,15 @@
 </template>
 
 <script setup>
-  import { ref, onMounted, watch, computed, reactive, watchEffect} from 'vue';
-  import { STRATIFICATION_CATEGORIES } from '@/config.js'
+  import { ref, onMounted, watch, computed} from 'vue';
 
-  // const phenotypes = ref(["CCC_MACDEG_COM.european.both"]);
-  const phenotypes = ref([])
+  const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URL
+  const phenotypes = ref(["CCC_MACDEG_COM.european.both"]);
   const isLoading = ref(false);
   const props = defineProps({
     geneName: String,
     data: Array,
+    isLoading: Boolean,
   });
   const currentPhenocode = ref(props.phenocode) ;
   const sortBy = ref([{ key: 'pval', order: 'asc' }]);
@@ -236,10 +244,8 @@
   const headers = ref([
   { title: 'Category', value: 'category' },
     { title: 'Phenotype', value: 'phenostring' },
-    ...STRATIFICATION_CATEGORIES.map((cat) => ({
-        title: cat.charAt(0).toUpperCase() + cat.slice(1).toLowerCase(), // e.g. 'Sex'
-        key: cat.toLowerCase(),                            // e.g. 'sex'
-      })),
+    { title: 'Ancestry', value: 'ancestry' },
+    { title: 'Sex', value: 'sex' },
     { title: '#Samples', value: 'num_samples' },
     { title: 'Top hit location', value: 'abs_distance_to_true_start', sortable: true },
     { title: 'Top p-value of phenotype in the range', value: 'pval', sortable: true, align: 'center' },

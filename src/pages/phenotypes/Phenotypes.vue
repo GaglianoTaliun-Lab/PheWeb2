@@ -1,19 +1,20 @@
 <template>
     <v-app>
         <Navbar />
-        <v-progress-linear
-          v-if="isLoading"
-          indeterminate
-          color="primary"
-          height="5"
-        ></v-progress-linear>
         <v-main class="responsive-main">
             <h2 style="font-weight: bold;">Phenotypes</h2>
             <!-- <p>{{ uniquePhenotypesCount }} of {{ totalPhenotypesCount }} phenotype(s) displayed</p> -->
+            <!-- <v-progress-linear
+              v-if="isLoading"
+              indeterminate
+              color="primary"
+              height="5"
+            ></v-progress-linear> -->
             <div>
                 <PhenotypesTable 
                     @updateUniquePhenotypesCount="updateUniquePhenotypesMethod"
                     :data="data"
+                    :isLoading="isLoading"
                 />
             </div>
         </v-main>

@@ -1,6 +1,6 @@
 <template>
     <v-app>
-        <Navbar2 />
+        <Navbar />
         <v-main>
             <v-btn :icon="drawer ? 'mdi-menu-down' : 'mdi-menu-right'"  @click="drawer = !drawer"></v-btn>
             <v-navigation-drawer v-model="drawer" app :width="200" floating location="left">
@@ -44,7 +44,7 @@
 </template>
 
 <script setup name="Contact">  
-import Navbar2 from '../../components/Navbar2.vue';
+import Navbar from '../../components/Navbar.vue';
 import { ref } from 'vue';
 const selectedContent = ref('Acknowledgements');
 

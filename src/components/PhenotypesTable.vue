@@ -77,11 +77,13 @@
       :search="search" 
       height=700 
       fixed-header 
-      :items-per-page="100"
+      :items-per-page="10"
       :sort-by="[{ key: 'pval', order: 'asc' }]"
-      :loading="isLoading"
+      :loading="props.isLoading"
       must-sort
-      hover>
+      hover
+
+    >
 
       <template v-slot:item.phenostring="{ item }">
         <router-link 
@@ -337,6 +339,7 @@
 
     const props = defineProps({
       data: Array,
+      isLoading: Boolean,
     });
     
     const phenotypes = ref([]);
@@ -356,11 +359,10 @@
       isLoading.value = true;
       errorMessage.value = '';
       try {
-<<<<<<< HEAD
         phenotypes.value = props.data.map(item => {
           const stratificationData = {};
           STRATIFICATION_CATEGORIES.forEach(cat => { // dynamically fetch based on constant (STRATIFICATION_CATEGORIES)
-            stratificationData[cat.toLowerCase()] = item.stratification?.[cat.toLowerCase()] ?? '';
+            stratificationData[cat.toLowerCase()] = item.stratification?.[cat.toLowerCase()] ? item.stratification?.[cat.toLowerCase()].replace(/\b\w/g, l => l.toUpperCase()) : '';
           });
 
           return {
@@ -379,8 +381,9 @@
       } catch (error) {
         console.error("There was an error fetching the sample data:", error);
         errorMessage.value = "Failed to load data. Please try again later.";
+        
       } finally {
-        // isLoading.value = false;
+        isLoading.value = false;
       }
 
     };
@@ -429,21 +432,21 @@
 
     STRATIFICATION_CATEGORIES.forEach(cat => {
       const key = cat.toLowerCase();
-      selectedFilters[key] = 'All';
+      selectedFilters[key] = 'All results';
 
       watchEffect(() => {
         const values = phenotypes.value.map(item => item[key]).filter(Boolean);
-        filterOptions[key] = ['All', ...new Set(values)];
+        filterOptions[key] = ['All results', ...new Set(values)];
       });
     });
 
-    const selectedCategory = ref('All');
+    const selectedCategory = ref('All results');
     const categoryOptions = computed(() => {
       const categories = phenotypes.value.map(item => item.category);
       return ['All results', ...[...new Set(categories)].sort((a, b) => a.localeCompare(b))];
     });
 
-    const selectedPhenotype = ref('All');
+    const selectedPhenotype = ref('All results');
     const phenotypeOptions = computed(() => {
       if (selectedCategory.value && selectedCategory.value !== 'All results' ) {
         const phenos = phenotypes.value
@@ -503,12 +506,12 @@
         const stratFiltersPass = STRATIFICATION_CATEGORIES.every(cat => {
           const key = cat.toLowerCase();
           const selected = selectedFilters[key];
-          return selected === 'All' || item[key] === selected;
+          return selected === 'All results' || item[key] === selected;
         });
 
         // Other filters
-        const categoryMatches = !selectedCategory.value || selectedCategory.value === 'All' || item.category === selectedCategory.value;
-        const phenotypeMatches = !selectedPhenotype.value || selectedPhenotype.value === 'All' || item.phenostring === selectedPhenotype.value;
+        const categoryMatches = !selectedCategory.value || selectedCategory.value === 'All results' || item.category === selectedCategory.value;
+        const phenotypeMatches = !selectedPhenotype.value || selectedPhenotype.value === 'All results' || item.phenostring === selectedPhenotype.value;
 
         const variantMatches = !filteredVariant.value || filteredVariant.value === '' || 
           (item.rsids && item.rsids.includes(filteredVariant.value)) ||

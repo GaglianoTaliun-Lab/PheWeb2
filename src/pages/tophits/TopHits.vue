@@ -15,6 +15,7 @@
                 <!-- <TopHitsTable/> -->
                 <PhenotypesTable 
                     :data="data"
+                    :isLoading="isLoading"
                 />
             </div>
         </v-main>
