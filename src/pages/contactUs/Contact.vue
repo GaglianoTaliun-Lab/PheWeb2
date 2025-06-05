@@ -44,7 +44,7 @@
 </template>
 
 <script setup name="Contact">  
-import Navbar2 from '../../components/Navbar2.vue';
+import Navbar2 from '@/components/Navbar.vue';
 import { ref } from 'vue';
 const selectedContent = ref('Acknowledgements');
 

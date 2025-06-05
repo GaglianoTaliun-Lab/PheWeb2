@@ -50,7 +50,7 @@
 
 <script setup>
 import { ref } from 'vue';
-import Navbar2 from '../../components/Navbar2.vue';
+import Navbar2 from '@/components/Navbar.vue';
 
 const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URL
 

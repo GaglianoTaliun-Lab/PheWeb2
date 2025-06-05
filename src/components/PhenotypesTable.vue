@@ -356,7 +356,6 @@
       isLoading.value = true;
       errorMessage.value = '';
       try {
-<<<<<<< HEAD
         phenotypes.value = props.data.map(item => {
           const stratificationData = {};
           STRATIFICATION_CATEGORIES.forEach(cat => { // dynamically fetch based on constant (STRATIFICATION_CATEGORIES)
@@ -380,7 +379,7 @@
         console.error("There was an error fetching the sample data:", error);
         errorMessage.value = "Failed to load data. Please try again later.";
       } finally {
-        // isLoading.value = false;
+        isLoading.value = false;
       }
 
     };
@@ -469,6 +468,7 @@
         return false;
       }
     });
+
     const variantOptions = computed(() => {
       const variants = phenotypes.value
         .flatMap(item => [item.rsids, item.variantid]) 
