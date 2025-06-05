@@ -472,6 +472,7 @@
         return false;
       }
     });
+
     const variantOptions = computed(() => {
       const variants = phenotypes.value
         .flatMap(item => [item.rsids, item.variantid]) 
