@@ -1351,7 +1351,7 @@ function reset_for_miami_plot() {
     </svg>
     `
 }
-
+const dialog = ref(false);
 watch(
     () => props.hoverVariant,
     (newHoverVariant) => {
@@ -1365,97 +1365,178 @@ watch(
     <div class="shadow-sm border rounded mt-3 mb-3">
       <div class="container-fluid mt-2 ml-1 mr-2">
         <!-- Left: Filter Button and Filter Options -->
-        <div class="d-flex flex-grow-0 flex-shrink-0" @mouseleave="showExpanded = false"
-        >
-          <button 
-            class="btn btn-primary" 
-            @click="toggleExpanded" 
-            @mouseover="showExpanded = true" 
-            ref="hiddenToggle"
-          > 
-            Filter Variants 
-          </button>
-  
-          <transition name="slide-fade">
-            <div v-if="showExpanded || showExpandedClick" class="expanded-content rounded" >
-              <label class="mr-1 ml-2" ><b>Minor Allele Freq Range:</b></label>
-  
-              <input
-                type="number"
-                v-model="minFreq"
-                class="form-control form-control-sm mr-1"
-                style="width:70px; border: 1px solid black; color: black; font-size: 16px;"
-                :min="0"
-                :max="0.5"
-                :step="0.05"
-              />
-              <span class="mr-1">-</span>
-              <input
-                type="number"
-                v-model="maxFreq"
-                class="form-control form-control-sm mr-3"
-                style="width:70px; border: 1px solid black; color: black; font-size: 16px;"
-                :min="0"
-                :max="0.5"
-                :step="0.05"
-              />
-  
-              <div class="btn-group mr-2">
-                <button
-                  type="button"
-                  class="btn btn-primary"
-                  style="color: white;"
-                  :class="{ active: selectedType === 'SNP' }"
-                  @click="selectType('SNP')"
-                >
-                  SNP
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-primary"
-                  style="color: white;"
-                  :class="{ active: selectedType === 'Indel' }"
-                  @click="selectType('Indel')"
-                >
-                  Indel
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-primary"
-                  style="color: white;"
-                  :class="{ active: selectedType === 'Both' }"
-                  @click="selectType('Both')"
-                >
-                  Both
-                </button>
+        <div class="d-flex flex-grow-0 flex-shrink-0" @mouseleave="showExpanded = false">
+          <div class="d-none d-md-flex">
+            <button 
+              class="btn btn-primary" 
+              @click="toggleExpanded" 
+              @mouseover="showExpanded = true" 
+              ref="hiddenToggle"
+            > 
+              Filter Variants 
+            </button>
 
+            <transition name="slide-fade">
+              <div v-if="showExpanded || showExpandedClick" class="expanded-content rounded" >
+                <label class="mr-1 ml-2" ><b>Minor Allele Freq Range:</b></label>
+
+                <input
+                  type="number"
+                  v-model="minFreq"
+                  class="form-control form-control-sm mr-1"
+                  style="width:70px; border: 1px solid black; color: black; font-size: 16px;"
+                  :min="0"
+                  :max="0.5"
+                  :step="0.05"
+                />
+                <span class="mr-1">-</span>
+                <input
+                  type="number"
+                  v-model="maxFreq"
+                  class="form-control form-control-sm mr-3"
+                  style="width:70px; border: 1px solid black; color: black; font-size: 16px;"
+                  :min="0"
+                  :max="0.5"
+                  :step="0.05"
+                />
+
+                <div class="btn-group mr-2">
+                  <button
+                    type="button"
+                    class="btn btn-primary"
+                    style="color: white;"
+                    :class="{ active: selectedType === 'SNP' }"
+                    @click="selectType('SNP')"
+                  >
+                    SNP
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-primary"
+                    style="color: white;"
+                    :class="{ active: selectedType === 'Indel' }"
+                    @click="selectType('Indel')"
+                  >
+                    Indel
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-primary"
+                    style="color: white;"
+                    :class="{ active: selectedType === 'Both' }"
+                    @click="selectType('Both')"
+                  >
+                    Both
+                  </button>
+                </div>
+                <button class="btn btn-primary blue-button mr-2" @click="applyFilter">
+                  Filter
+                </button>
+                <button class="btn btn-secondary" @click="cancelFilter()">
+                  Cancel
+                </button>
               </div>
-              <button class="btn btn-primary blue-button mr-2" @click="applyFilter">
-                Filter
-              </button>
-              <button class="btn btn-secondary" @click="cancelFilter()">
-                Cancel
-              </button>
-            </div>
-          </transition>
+            </transition>
+          </div>
+
+          <div class="d-flex d-md-none">
+            <button
+              type="button" 
+              class="btn btn-primary"
+              @click="dialog = true"
+              style="color: white;"
+            >
+              Filter Variants
+            </button>
+
+            <v-dialog
+              v-model="dialog"
+              width="auto"
+            >
+              <v-card>
+                <v-card-title>Filter Variants</v-card-title>
+                <v-card-text>
+                  <v-row>
+                    <v-col cols="12">
+                      <label><b>Minor Allele Freq Range:</b></label>
+                      <div class="d-flex align-center">
+                        <v-text-field
+                          v-model="minFreq"
+                          type="number"
+                          :min="0"
+                          :max="0.5"
+                          :step="0.05"
+                          density="compact"
+                          class="mr-2"
+                        ></v-text-field>
+                        <span>-</span>
+                        <v-text-field
+                          v-model="maxFreq"
+                          type="number"
+                          :min="0"
+                          :max="0.5"
+                          :step="0.05"
+                          density="compact"
+                          class="ml-2"
+                        ></v-text-field>
+                      </div>
+                    </v-col>
+                    <v-col cols="12">
+                      <v-btn-group>
+                        <v-btn
+                          :color="selectedType === 'SNP' ? 'primary' : ''"
+                          @click="selectType('SNP')"
+                        >SNP</v-btn>
+                        <v-btn
+                          :color="selectedType === 'Indel' ? 'primary' : ''"
+                          @click="selectType('Indel')"
+                        >Indel</v-btn>
+                        <v-btn
+                          :color="selectedType === 'Both' ? 'primary' : ''"
+                          @click="selectType('Both')"
+                        >Both</v-btn>
+                      </v-btn-group>
+                    </v-col>
+                  </v-row>
+                </v-card-text>
+                <v-card-actions>
+                  <v-spacer></v-spacer>
+                  <v-btn
+                    color="primary"
+                    @click="applyFilter(); dialog = false"
+                  >
+                    Filter
+                  </v-btn>
+                  <v-btn
+                    color="grey"
+                    @click="cancelFilter(); dialog = false"
+                  >
+                    Cancel
+                  </v-btn>
+                </v-card-actions>
+              </v-card>
+            </v-dialog>
+          </div>
         </div>
 
         <div class="d-flex flex-grow-0 flex-shrink-0">
           <button 
             type="button" 
             class="btn btn-light border bg-body rounded"
-            style="width:150px" 
+
             @click="downloadPNG"
           >
-            Download PNG
+            <span class="d-none d-sm-inline">Download PNG</span>
+            <span class="d-sm-none"><v-icon>mdi-download</v-icon>PNG</span>
           </button>
           <button 
             type="button" 
             class="btn btn-light border ml-2 bg-body rounded"
-            style="width:150px" 
+
             @click="downloadSVG"
           >
-            Download SVG
+            <span class="d-none d-sm-inline">Download SVG</span>
+            <span class="d-sm-none"><v-icon>mdi-download</v-icon>SVG</span>
           </button>
         </div>
       </div>

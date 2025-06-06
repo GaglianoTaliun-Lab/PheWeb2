@@ -541,18 +541,22 @@
       const filterVariants = () => {
         // variantSearchLoading.value = false;
         filteredVariant.value = selectedVariant.value;
+        menu.value = false; 
         // console.log(filteredVariant)
       };
       const filterGene = () => {
         filteredGene.value = selectedGene.value;
+        menu2.value = false;
       };
       const clearVariants = () => {
         selectedVariant.value = '';
         filteredVariant.value = '';
+        menu.value = false; 
       };
       const clearGene = () => {
         selectedGene.value = '';
         filteredGene.value = '';
+        menu2.value = false; 
       };
       const filteredMergedVariants = computed(() => {
         return mergedVariants.value.filter(item => {

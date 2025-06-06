@@ -18,6 +18,7 @@ export const tooltip_lztemplate = `
 {{#if control_af}}AF among controls: <strong>{{control_af|percent}}</strong><br>{{/if}}
 {{#if ac}}AC: <strong>{{ac}}</strong><br>{{/if}}
 {{#if r2}}R2: <strong>{{r2}}</strong><br>{{/if}}
+{{#if imp_quality}}Imp. Quality: <strong>{{imp_quality}}</strong><br>{{/if}}
 {{#if tstat}}Tstat: <strong>{{tstat}}</strong><br>{{/if}}
 {{#if num_cases}}#cases: <strong>{{num_cases}}</strong><br>{{/if}}
 {{#if num_controls}}#controls: <strong>{{num_controls}}</strong><br>{{/if}}

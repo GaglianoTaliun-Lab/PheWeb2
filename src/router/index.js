@@ -7,6 +7,8 @@ import Variant from '../pages/variant/Variant.vue';
 import Pheno from '../pages/pheno/Pheno.vue';
 import Gene from '../pages/gene/Gene.vue';
 import Region from '../pages/region/Region.vue';
+import Contact from '../pages/contactUs/Contact.vue';
+import API from '../pages/api/API.vue';
 
 const routes = [
   {
@@ -71,6 +73,22 @@ const routes = [
     component: Gene,
     meta: {
       title: 'CLSA-PheWeb: Gene'
+    }
+  },
+  {
+    path: '/contact',
+    name: 'Contact',
+    component: Contact,
+    meta: {
+      title: 'CLSA-PheWeb: Contact Us'
+    }
+  },
+  {
+    path: '/api',
+    name: 'API',
+    component: API,
+    meta: {
+      title: 'CLSA-PheWeb: API'
     }
   }
 ];

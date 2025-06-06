@@ -56,19 +56,19 @@
             <td>
               <!-- pval1 -->
               <v-chip v-if="item.pval_pheno1 !== 'NA'" :color="getColour(item.pval_pheno1)">
-                {{ item.pval_pheno1 }}
+                {{ formatScientific(item.pval_pheno1) }}
               </v-chip>
               <span v-else>
-                {{ item.pval_pheno1 }}
+                {{ formatScientific(item.pval_pheno1) }}
               </span>
             </td>
             <td v-if="props.selectedStratification2 !== props.selectedStratification1 && props.selectedStratification2 !== 'No stratification'" style="border-right:thin dashed rgba(var(--v-border-color), var(--v-border-opacity));">
               <!-- pval2 w/ divider -->
               <v-chip v-if="item.pval_pheno2 !== 'NA'" :color="getColour(item.pval_pheno2)" >
-                {{ item.pval_pheno2 }}
+                {{ formatScientific(item.pval_pheno2) }}
               </v-chip>
               <span v-else>
-                {{ item.pval_pheno2 }}
+                {{ formatScientific(item.pval_pheno2) }}
               </span>
             </td>
             <td>
@@ -151,7 +151,7 @@
         </template>
 
         <template v-slot:header.ea="{ column }">
-          <div style="display: flex; align-items: center; justify-content: center; text-align: center;">
+          <div style="display: flex; align-items: left; justify-content: left; text-align: left;">
             <span style="white-space: nowrap;">{{ "EA" }}</span>
             <v-tooltip location="top">
               <template v-slot:activator="{ props }">
@@ -369,6 +369,12 @@
         sortBy.value = newSort; 
       };
 
+      // scientific notation
+      const formatScientific = (num) => {
+        if (!num || isNaN(num)) return 'N/A';  
+        return Number(num).toExponential(2);  
+      };
+
       const headers = computed(() => [
         { title: 'Top Variant', key: 'variantid', sortable: false },
         { title: 'EA', key: 'ea', sortable: false },
@@ -519,6 +525,7 @@
                   : `${item.beta} (${item.sebeta}) ▽`
               }));;
 
+              console.log("POST triggered")
               if (missingData1 && Array.isArray(missingData1) && missingData2 && Array.isArray(missingData2)) {
                 // console.log("missingData")
                 // console.log(missingData1)
@@ -593,18 +600,22 @@
       const filterVariants = () => {
         // variantSearchLoading.value = false;
         filteredVariant.value = selectedVariant.value;
+        menu.value = false; 
         // console.log(filteredVariant)
       };
       const filterGene = () => {
         filteredGene.value = selectedGene.value;
+        menu2.value = false;
       };
       const clearVariants = () => {
         selectedVariant.value = '';
         filteredVariant.value = '';
+        menu.value = false; 
       };
       const clearGene = () => {
         selectedGene.value = '';
         filteredGene.value = '';
+        menu2.value = false; 
       };
       const filteredMergedVariants = computed(() => {
         return mergedVariants.value.filter(item => {
@@ -673,16 +684,16 @@
         fetchSampleData();
       });
 
-      watch(() => [props.selectedStratification1, props.selectedStratification2], (newSelectedStratification1, newSelectedStratification2) => {
-        // console.log(`Selected value changed to: ${newSelectedStratification1}, ${newSelectedStratification2}`);
-        // console.log(`here ${newChosenVariant}`)
-        //fetchSampleData();
-        page.value = chosenPage.value;
+      // watch(() => [props.selectedStratification1, props.selectedStratification2], (newSelectedStratification1, newSelectedStratification2) => {
+      //   // console.log(`Selected value changed to: ${newSelectedStratification1}, ${newSelectedStratification2}`);
+      //   // console.log(`here ${newChosenVariant}`)
+      //   fetchSampleData();
+      //   page.value = chosenPage.value;
         
-        // const unbinnedVariants = props.miamiData[props.selectedStratification1]["unbinned_variants"];
-        // console.log("Unbinned Variants:", unbinnedVariants);
+      //   // const unbinnedVariants = props.miamiData[props.selectedStratification1]["unbinned_variants"];
+      //   // console.log("Unbinned Variants:", unbinnedVariants);
 
-      });
+      // });
       watch(
         () => props.chosenVariant,
         (newValue) => {
