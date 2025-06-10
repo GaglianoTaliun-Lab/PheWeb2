@@ -262,7 +262,7 @@
     import { ref } from 'vue'
 
     const selectedContent = ref('Overview');
-    const drawer = ref(true);
+    const drawer = ref(false);
     function selectContent(content) {
         selectedContent.value = content; 
     }

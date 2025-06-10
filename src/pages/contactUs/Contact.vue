@@ -23,7 +23,7 @@
                 <h2 class="text-center">Acknowledgements</h2>
 
                 <ul>
-                    <li><strong>Core Development Team : Justin Bellavance, Hongyu Xiao, Le Chang, Mehrdad Kazemi, Seyla Wickramasinghe,(Alexandra J Mayhew? Parminder Raina? Peter VandeHaar?), Daniel Taliun, Sarah A Gagliano Taliun</strong></li>
+                    <li><strong>Core Development Team : Justin Bellavance, Hongyu Xiao, Le Chang, Mehrdad Kazemi, Seyla Wickramasinghe, Daniel Taliun, Sarah A Gagliano Taliun</strong></li>
                     <li>This work has been carried out under approved CLSA Methods Application 23ME002 and funded by the Canadian Institutes of Health Research (CIHR): 2 Canada Graduate Scholarships – Master's (MK & JB) & a Catalyst Grant: Analysis of CLSA Data (DT & SGT).</li>
                     <li>We thank Parminder Raina and the CLSA Executive Team for their support with this research. We also thank Alexandra Mayhew for discussion of the Dexa Scan variables as well as Isabel Fortier and Rita Wissa for assistance with trait categorization.</li> 
                     <li>We thank the individuals who provided feedback on the initial version of the CLSA PheWeb.</li>
@@ -48,7 +48,7 @@ import Navbar from '../../components/Navbar.vue';
 import { ref } from 'vue';
 const selectedContent = ref('Acknowledgements');
 
-const drawer = ref(true);
+const drawer = ref(false);
 
 function selectContent(content) {
     selectedContent.value = content; 
