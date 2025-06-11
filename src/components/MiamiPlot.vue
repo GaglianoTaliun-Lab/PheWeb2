@@ -669,14 +669,69 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
                 .offset([-6,0]);
         miami_svg.call(point_tooltip.value);
 
-        // TODO: if the label touches any circles or labels, skip it?
-        var variants_to_label_data1 = _.sortBy(_.where(variant_unbinned1, {peak: true}), _.property('pval'))
-            .filter(function(d) { return d.pval < 5e-8; })
-            .slice(0,7);
+        var sorted_variants = _.sortBy(_.where(variant_unbinned1, {peak: true}), _.property('pval'))
+            .filter(function(d) { return d.pval < 5e-8; });
 
-        var variants_to_label_data2 = _.sortBy(_.where(variant_unbinned2, {peak: true}), _.property('pval'))
-            .filter(function(d) { return d.pval < 5e-8; })
-            .slice(0,7);
+        var selected_variants = [];
+
+        sorted_variants.forEach(function(variant) {
+            var is_close = selected_variants.some(function(selected) {
+                return selected.chrom === variant.chrom && Math.abs(selected.pos - variant.pos) <= 10000000;
+            });
+
+            if (!is_close) {
+                selected_variants.push(variant);
+            }
+        });
+        var variants_to_label = selected_variants;
+
+        var filtered_variants = [];
+
+        variants_to_label.forEach(function(variant) {
+            var logp = -Math.log10(variant.pval);
+            var is_too_close = filtered_variants.some(function(existing) {
+                return existing.chrom === variant.chrom &&
+                    Math.abs(-Math.log10(existing.pval) - logp) < 1;
+            });
+
+            if (!is_too_close) {
+                filtered_variants.push(variant);
+            }
+        });
+
+        var variants_to_label_data1 = filtered_variants.slice(0, 7);
+
+        var sorted_variants = _.sortBy(_.where(variant_unbinned2, {peak: true}), _.property('pval'))
+            .filter(function(d) { return d.pval < 5e-8; });
+
+        var selected_variants = [];
+
+        sorted_variants.forEach(function(variant) {
+            var is_close = selected_variants.some(function(selected) {
+                return selected.chrom === variant.chrom && Math.abs(selected.pos - variant.pos) <= 10000000;
+            });
+
+            if (!is_close) {
+                selected_variants.push(variant);
+            }
+        });
+        var variants_to_label = selected_variants;
+
+        var filtered_variants = [];
+
+        variants_to_label.forEach(function(variant) {
+            var logp = -Math.log10(variant.pval);
+            var is_too_close = filtered_variants.some(function(existing) {
+                return existing.chrom === variant.chrom &&
+                    Math.abs(-Math.log10(existing.pval) - logp) < 1;
+            });
+
+            if (!is_too_close) {
+                filtered_variants.push(variant);
+            }
+        });
+
+        var variants_to_label_data2 = filtered_variants.slice(0, 7);
 
         var genenames_data1 = miami_plot.append('g')
             .attr('class', 'genenames_data1')

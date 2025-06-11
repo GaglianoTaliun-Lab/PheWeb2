@@ -454,9 +454,37 @@ function create_manhattan_plot(variant_bins, unbinned_variants, variants = "filt
         gwas_svg.call(point_tooltip.value);
 
         // TODO: if the label touches any circles or labels, skip it?
-        var variants_to_label = _.sortBy(_.where(unbinned_variants, {peak: true}), _.property('pval'))
-            .filter(function(d) { return d.pval < 5e-8; })
-            .slice(0,7);
+        var sorted_variants = _.sortBy(_.where(unbinned_variants, {peak: true}), _.property('pval'))
+            .filter(function(d) { return d.pval < 5e-8; });
+
+        var selected_variants = [];
+
+        sorted_variants.forEach(function(variant) {
+            var is_close = selected_variants.some(function(selected) {
+                return selected.chrom === variant.chrom && Math.abs(selected.pos - variant.pos) <= 10000000;
+            });
+
+            if (!is_close) {
+                selected_variants.push(variant);
+            }
+        });
+        var variants_to_label = selected_variants;
+
+        var filtered_variants = [];
+
+        variants_to_label.forEach(function(variant) {
+            var logp = -Math.log10(variant.pval);
+            var is_too_close = filtered_variants.some(function(existing) {
+                return existing.chrom === variant.chrom &&
+                    Math.abs(-Math.log10(existing.pval) - logp) < 1;
+            });
+
+            if (!is_too_close) {
+                filtered_variants.push(variant);
+            }
+        });
+
+        variants_to_label = filtered_variants.slice(0, 7);
 
         var genenames = gwas_plot.append('g')
             .attr('class', 'genenames')
@@ -527,7 +555,6 @@ function create_manhattan_plot(variant_bins, unbinned_variants, variants = "filt
                     point_tooltip.value.show(d, this);
                     tooltip_showing.value = true;
                     chosenVariant.value = `${d.chrom}-${d.pos}-${d.ref}-${d.alt}`;
-                    console.log(chosenVariant.value)
                     emit('updateChosenVariant', chosenVariant)
                 }
             });
@@ -769,8 +796,6 @@ var url = url_base + get_params.join('&');
 try {
     const response = await axios.get(url);
     var data = response.data ;
-
-    console.log("data", data)
     manhattan_filter_view.set_variants(data.variant_bins , data.unbinned_variants, data.weakest_pval );
     
     emit('updateFilteringParams', { min: minFreq.value, max: maxFreq.value, type : selectedType.value });
