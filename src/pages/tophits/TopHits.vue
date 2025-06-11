@@ -1,6 +1,12 @@
 <template>
     <v-app>
         <Navbar />
+        <v-progress-linear
+          v-if="isLoading"
+          indeterminate
+          color="primary"
+          height="5"
+        ></v-progress-linear>
         <v-main>
             <h2 style="font-weight: bold;">Top Hits</h2>
             <span style="font-weight: bold;">This page shows only the peaks with a p-value < 10-6. 
@@ -9,6 +15,7 @@
                 <!-- <TopHitsTable/> -->
                 <PhenotypesTable 
                     :data="data"
+                    :isLoading="isLoading"
                 />
             </div>
         </v-main>
@@ -24,17 +31,19 @@
     const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URL
     const data = ref([]);
     const errorMessage = ref('');
-
+    const isLoading = ref(false);   
     const fetchData = async () => {
       errorMessage.value = '';
       try {
+        isLoading.value = true;
         const response = await axios.get(`${api}/phenotypes/tophits`)
         data.value = response.data;
       } catch (error) {
         console.error("There was an error fetching the sample data:", error);
         errorMessage.value = "Failed to load data. Please try again later.";
+      } finally {
+        isLoading.value = false;
       } 
-      
     };
 
     onMounted( () => {
