@@ -503,6 +503,9 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
         stratification_label1.shift()
         stratification_label2.shift()
 
+        stratification_label1.shift()
+        stratification_label2.shift()
+
         miami_svg.append('text')
             .style('text-anchor', 'middle')
             .attr('transform', utils.fmt('translate({0},{1})rotate(-90)',

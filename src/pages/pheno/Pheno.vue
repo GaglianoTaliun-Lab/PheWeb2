@@ -83,10 +83,21 @@ onMounted(async () => {
       // const responseInteraction = await axios.get(`${api}/phenotypes/interaction_list/` + phenocode);
       isLoading.value = true;
       const response = await axios.get(`${api}/phenotypes/${phenocode}/phenotypes_list`);
-      const responseInteraction = await axios.get(`${api}/phenotypes/${phenocode}/interaction_list`);
+
+      let responseInteraction = {};
+      try {
+        responseInteraction = await axios.get(`${api}/phenotypes/${phenocode}/interaction_list`);
+      } catch (error) {
+        if (error.response && error.response.status === 404) {
+          console.warn(`Interaction list not found for ${phenocode}`);
+          responseInteraction.data = [];
+        } else {
+          console.error("Unexpected error:", error);
+          throw error; // rethrow if it's not a 404
+        }
+      }
 
       info.value = response.data;
-      infoInteraction.value = responseInteraction.data;
 
       // just take the first instance...they will all be the same
       phenostring.value = info.value[0].phenostring
@@ -110,6 +121,11 @@ onMounted(async () => {
       }
 
       dimension.value = calculate_qq_dimension(qqData.value);
+
+      // interaction processing
+      console.log(responseInteraction)
+      
+      infoInteraction.value = responseInteraction.data;
 
       if (infoInteraction.value.length > 0) {
         for (let i = 0; i < infoInteraction.value.length; i++) {

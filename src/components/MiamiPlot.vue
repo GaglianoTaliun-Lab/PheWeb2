@@ -723,7 +723,7 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
             var logp = -Math.log10(variant.pval);
             var is_too_close = filtered_variants.some(function(existing) {
                 return existing.chrom === variant.chrom &&
-                    Math.abs(-Math.log10(existing.pval) - logp) < 1;
+                    Math.abs(-Math.log10(existing.pval) - logp) < 2;
             });
 
             if (!is_too_close) {
