@@ -294,10 +294,10 @@ function generatePlot(variant_list){
                         "label.text": "{{phewas_string}}",
                         "label.filters": (function() {
                             var ret = [
-                                {field:"pval|neglog10_handle0", operator:">", value:neglog10_significance_threshold_list[i] * 1/4},
-                                {field:"pval|neglog10_handle0", operator:">", value:best_neglog10_pval / 10}
+                                {field:"pval|neglog10_handle0", operator:">", value:neglog10_significance_threshold_list[i] * 3/4},
+                                {field:"pval|neglog10_handle0", operator:">", value:best_neglog10_pval / 4}
                             ];
-                            if (variant_list[0].phenos.length > 100) { // TODO: instead of first 60, we need to first 10 per trait.
+                            if (variant_list[0].phenos.length > 10) { // TODO: instead of first 60, we need to first 10 per trait.
                                 ret.push({field:"pval", operator:"<", value:_.sortBy(variant_list[i].phenos.map(_.property('pval')))[100]});
                             }
                             return ret;
