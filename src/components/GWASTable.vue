@@ -1,5 +1,11 @@
 <template>
   <v-card elevation="5" class="">
+    <v-progress-linear
+      v-if="props.isLoadingData"
+      indeterminate
+      color="primary"
+      height="5"
+    ></v-progress-linear>
     <v-row>
     <v-col :cols="selectedStratification2 !== 'None' ? 12 : 12">
       <v-data-table 
@@ -13,7 +19,7 @@
         :sort-by.sync="sortBy"
         must-sort
         hover
-        :loading="isTableLoading"
+        :loading="isTableLoading || props.isLoadingData"
         @update:sort-by="updateSortBy"
         dense
         v-model:page="page"
@@ -346,6 +352,7 @@
         selectedType: String,
         miamiData: Object,
         chosenVariant: String,
+        isLoadingData: Boolean,
       });
       const tableInfo = ref([]);
       

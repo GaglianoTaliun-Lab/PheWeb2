@@ -601,6 +601,7 @@ onUnmounted(() => {
 
             </div>
 
+
             <div v-if="!isInteractionChecked" class="non-interaction">
               <div class="pheno-info col-12 d-flex justify-left align-center text-center mt-0">
                 <div class="dropdown p-1" id="dropdown-data1">
@@ -657,6 +658,12 @@ onUnmounted(() => {
                     </div>
                   </div>
             </div> 
+            <v-progress-linear
+              v-if="isLoading"
+              indeterminate
+              color="primary"
+              height="5"
+            ></v-progress-linear>
             <div v-if="miamiToggle && Object.keys(miamiData).length > 0">
                 <MiamiPlot :key="refreshKey" :data="miamiData" :hoverVariant="hoverVariant" @updateFilteringParams="updateFilteringParameters" @updateChosenVariant="updateChosenVariantMehod"/>
                 <GWASTable
@@ -669,6 +676,7 @@ onUnmounted(() => {
                   :miamiData="miamiData"
                   :chosenVariant="chosenVariant"
                   @updateHoverVariant="updateHoverVariantMethod"
+                  :isLoadingData="isLoading"
                 />
               </div>
             <div v-else-if="!miamiToggle && Object.keys(manhattanData).length > 0">
@@ -683,21 +691,31 @@ onUnmounted(() => {
                   :miamiData="manhattanData"
                   :chosenVariant="chosenVariant"
                   @updateHoverVariant="updateHoverVariantMethod"
+                  :isLoadingData="isLoading"
                 />
               </div>
             
             <br>
             <div v-if="qqData && dimension" class="mt-10 mb-5"> 
-                <h2> QQ Plot(s): </h2>
-                <div class="qq-container">
-                    <div :key="qqRefreshKey" class="qq" v-for="qq in Object.keys(qqSubset)" >
-                        <p>{{ qq.split(".").slice(1).join(", ") }} </p>
-                        <QQPlot :data="{
-                            qq : qqSubset[qq],
-                            dimensions : dimension
-                        }" /> 
-                    </div>
-                </div>
+              <h2> QQ Plot(s): </h2>
+              <v-row justify="left" align="start" no-gutters class="qq-row">
+                <v-col 
+                  v-for="qq in Object.keys(qqSubset)" 
+                  :key="qq + qqRefreshKey"
+                  cols="12" 
+                  sm="6" 
+                  lg="3"
+                  class="qq-col d-flex justify-left"
+                >
+                  <div class="qq-plot-wrapper">
+                    <p class="qq-title">{{ qq.split(".").slice(1).join(", ") }}</p>
+                    <QQPlot :data="{
+                        qq : qqSubset[qq],
+                        dimensions : dimension
+                    }" /> 
+                  </div>
+                </v-col>
+              </v-row>
             </div>
             </div>
             <div v-else class="interaction">
@@ -776,15 +794,24 @@ onUnmounted(() => {
 
               <div v-if="qqInteractionData && dimensionInteraction" class="mt-10 mb-5"> 
                   <h2> QQ Plot(s): </h2>
-                  <div class="qq-container">
-                      <div :key="qqRefreshKey" class="qq" v-for="qq in Object.keys(qqInteractionSubset)" >
-                          <p>{{ qq.split(".").slice(1).join(", ") }} </p>
-                          <QQPlot :data="{
-                              qq : qqInteractionSubset[qq],
-                              dimensions : dimensionInteraction
-                          }" /> 
+                  <v-row justify="left" align="start" no-gutters class="qq-row">
+                    <v-col 
+                      v-for="qq in Object.keys(qqInteractionSubset)" 
+                      :key="qq + qqRefreshKey"
+                      cols="12" 
+                      sm="6" 
+                      lg="3"
+                      class="qq-col d-flex justify-left"
+                    >
+                      <div class="qq-plot-wrapper">
+                        <p class="qq-title">{{ qq.split(".").slice(1).join(", ") }}</p>
+                        <QQPlot :data="{
+                            qq : qqInteractionSubset[qq],
+                            dimensions : dimensionInteraction
+                        }" /> 
                       </div>
-                  </div>
+                    </v-col>
+                  </v-row>
               </div>
             </div>
         </v-main>
@@ -792,26 +819,40 @@ onUnmounted(() => {
 </template>
 
 <style lang="scss" scoped>
-.qq-container {
-    position: relative;
-    display: flex;
-    justify-content: space-around; 
-    justify-content: left;
-    align-items: flex-end;
-    flex-wrap: wrap; 
-  }
+  // .qq-container {
+  //   position: relative;
+  //   display: flex;
+  //   // justify-content: space-around; 
+  //   justify-content: center;
+  //   align-items: flex-start;
+  //   // flex-wrap: nowrap; 
+  //   gap: 10px;
+  // }
   
-  .qq-container div {
-    margin: 10px 10px; 
-    object-fit: contain; 
+  // .qq-container div {
+  //   // margin: 10px 10px; 
+  //   object-fit: contain; 
+  //   max-width: 45%;
+  // }
+  .qq-plot-wrapper {
+    width: 100%;
+    max-width: 600px;
+    text-align: center;
+  }
+  .qq-title {
+    font-size: 18px;
+    font-weight: 500;
+    text-align: center;
+    margin-bottom: 10px;
+    color: #333;
   }
 
-  .qq p{
-    font-size:20px;
-    text-align:center;
-    color: black;
-    text-indent: 1%;
-  }
+  // .qq p{
+  //   font-size:20px;
+  //   text-align:center;
+  //   color: black;
+  //   text-indent: 1%;
+  // }
 
   .arrow-container {
     float: left;
