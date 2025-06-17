@@ -370,7 +370,12 @@ const downloadTable = () => {
               </v-row>
             </div>  
           </div>
-
+        <v-progress-linear
+          v-if="isLoading"
+          indeterminate
+          color="primary"
+          height="5"
+        ></v-progress-linear>
         <div v-if="chosen_variants.length > 0">
           <PhewasPlot :key="refreshKey" :variantList="chosen_variants" :uniqueCategoriesList="category_list"/>
         </div>
