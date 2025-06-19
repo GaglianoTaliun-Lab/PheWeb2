@@ -481,23 +481,23 @@ const fetchData = async () => {
     });
 
     // Handle double-click on a variant point
-    var doubleclick_delay_ms = 400;
-    var previous_data, previous_milliseconds = 0;
-    Object.keys(plot.value.panels).forEach(function(key, i) {
-        //all but first and last panel
-        if (i != 0 && i != Object.keys(plot.value.panels).length - 1) {
-            plot.value.panels[key].on('element_clicked', function(obj) {
-                var data = obj.data, milliseconds = Date.now();
-                if ((data === previous_data) && (milliseconds - previous_milliseconds < doubleclick_delay_ms)) {
-                    window.location.href = (window.location.origin + "/variant/" +
-                                            data["assoc:chr"] + "-" + data["assoc:position"] + "-" +
-                                            data["assoc:ref"] + "-" + data["assoc:alt"]);
-                }
-                previous_data = data;
-                previous_milliseconds = milliseconds;
-            });
-        }
-    })
+    // var doubleclick_delay_ms = 400;
+    // var previous_data, previous_milliseconds = 0;
+    // Object.keys(plot.value.panels).forEach(function(key, i) {
+    //     //all but first and last panel
+    //     if (i != 0 && i != Object.keys(plot.value.panels).length - 1) {
+    //         plot.value.panels[key].on('element_clicked', function(obj) {
+    //             var data = obj.data, milliseconds = Date.now();
+    //             if ((data === previous_data) && (milliseconds - previous_milliseconds < doubleclick_delay_ms)) {
+    //                 window.location.href = (window.location.origin + "/variant/" +
+    //                                         data["assoc:chr"] + "-" + data["assoc:position"] + "-" +
+    //                                         data["assoc:ref"] + "-" + data["assoc:alt"]);
+    //             }
+    //             previous_data = data;
+    //             previous_milliseconds = milliseconds;
+    //         });
+    //     }
+    // })
 
 
 }
