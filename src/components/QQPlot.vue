@@ -86,7 +86,7 @@ function createQQPlot(data, height = null, width = null) {
         'left': 30,
         'right': 30,
         'top': 10,
-        'bottom': 130,
+        'bottom': 140,
     };
 
     var svg_width = qqPlotContainer.value.clientWidth;
@@ -238,22 +238,24 @@ function createQQPlot(data, height = null, width = null) {
 
 <template>
     <div>
-        <div class="qq" ref="qqPlotContainer"></div>
+        <div class="qq-chart" ref="qqPlotContainer"></div>
         <div class="gc-lambda" v-html="gcLambdaText"></div>
     </div>
 
 </template>
 
 <style lang="scss">
-.qq div {
-    min-width:300px;
-    min-height:300px;
+.qq-chart {
+    width: 300px;
+    // max-width: 400px; 
+    // min-width: 250px; 
+    // height:300px;
 }
-.qq .axis path.domain {
+.qq-chart .axis path.domain {
     stroke: black;
     fill: none;
   }
-.qq g.tick line {
+.qq-chart g.tick line {
     stroke: #666;
     opacity: 0.3;
 }
