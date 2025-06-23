@@ -3,8 +3,15 @@
     <!-- Previous template code remains the same until the category search field -->
 
     <v-card elevation="5">
-      <v-data-table :items="filteredVariantList" :headers="headers" fixed-header :items-per-page="100"
-        hover :sort-by="[{ key: 'pval', order: 'asc' }]">
+      <v-data-table 
+        :items="filteredVariantList" 
+        :headers="headers" 
+        fixed-header 
+        :items-per-page="10"
+        hover 
+        :sort-by="[{ key: 'pval', order: 'asc' }]"
+        :search="search"
+      >
         <!-- Top slot remains the same -->
 
         <template v-slot:header.category="{ column }">
