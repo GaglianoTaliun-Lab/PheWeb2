@@ -17,6 +17,9 @@
                 class="ma-2 pa-2"
                 variant="underlined"
                 auto-select-first  
+                clearable
+                @focus="clearCategoryOnFocus"
+                @blur="restoreCategoryDefault"
               ></v-autocomplete>
             </v-col>
             <v-col cols="12" sm="6">
@@ -28,6 +31,9 @@
                 class="ma-2 pa-2"
                 variant="underlined"
                 auto-select-first  
+                clearable
+                @focus="clearPhenotypeOnFocus"
+                @blur="restorePhenotypeDefault"
               ></v-autocomplete>
             </v-col>
           </v-row>
@@ -169,11 +175,6 @@
       <template v-slot:header.nearest_genes="{ column, isSorted, getSortIcon }">
         <div style="display: flex; align-items: center;">
           <span style="white-space: nowrap;">{{ column.title }}</span>
-          <v-tooltip text="Head to internal page" location="top">
-            <template v-slot:activator="{ props }">
-              <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
-            </template>
-          </v-tooltip>
           <v-menu
             open-on-hover
             v-model="menu2"
@@ -458,6 +459,36 @@
       const phenos = phenotypes.value.map(item => item.phenostring);
       return ['All results', ...[...new Set(phenos)].sort((a, b) => a.localeCompare(b))];
     });
+
+    const clearCategoryOnFocus = () => {
+
+      if (selectedCategory.value !== '') {
+        previousCategory.value = selectedCategory.value;
+        selectedCategory.value = '';
+      }
+    };
+
+    const previousCategory = ref('');
+
+    const restoreCategoryDefault = () => {
+      if (selectedCategory.value === '' && previousCategory.value !== '') {
+        selectedCategory.value = previousCategory.value;
+      }
+    };
+    const clearPhenotypeOnFocus = () => {
+      if (selectedPhenotype.value !== '') {
+        previousPhenotype.value = selectedPhenotype.value;
+        selectedPhenotype.value = '';
+      }
+    };
+
+    const previousPhenotype = ref('');
+
+    const restorePhenotypeDefault = () => {
+      if (selectedPhenotype.value === '' && previousPhenotype.value !== '') {
+        selectedPhenotype.value = previousPhenotype.value;
+      }
+    };
 
     // in-table filters
     const selectedVariant = ref('');

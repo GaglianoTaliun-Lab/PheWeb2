@@ -123,7 +123,7 @@ onMounted(async () => {
       dimension.value = calculate_qq_dimension(qqData.value);
 
       // interaction processing
-      console.log(responseInteraction)
+      // console.log(responseInteraction)
       
       infoInteraction.value = responseInteraction.data;
 
@@ -256,7 +256,7 @@ const handleRadioChange = () => {
     miamiToggle.value = false;
     manhattanData.value[selectedStratification1.value] = allPlottingData.value[selectedStratification1.value];
 
-    console.log(allPlottingData.value[selectedStratification1.value])
+    // console.log(allPlottingData.value[selectedStratification1.value])
     qqSubset.value = {};
     qqSubset.value[selectedStratification1.value] = qqData.value[selectedStratification1.value];
   } else {
@@ -516,15 +516,15 @@ const updateChosenVariantMehod = (variant) => {
 
 function onInteractionCheckboxChange() {
   if (isInteractionChecked.value) {
-    console.log(infoInteraction.value)
+    // console.log(infoInteraction.value)
     var strats = chooseDefaultPhenos(infoInteraction.value)
-    console.log(strats)
+    // console.log(strats)
     selectedInteractionStratification1.value = strats[0].phenocode +returnExtraInfoString(strats[0])
     selectedInteractionStratification2.value = strats[1] ? strats[1].phenocode + returnExtraInfoString(strats[1]): "No stratification"
     handleInteractionRadioChange(); 
 
   } else {
-    console.log(info.value)
+    // console.log(info.value)
     var strats = chooseDefaultPhenos(info.value)
     selectedStratification1.value = strats[0].phenocode +returnExtraInfoString(strats[0])
     selectedStratification2.value = strats[1] ? strats[1].phenocode + returnExtraInfoString(strats[1]): "No stratification"

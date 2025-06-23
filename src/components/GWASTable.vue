@@ -481,9 +481,9 @@
           const variants1Map = new Map(variants1.value.map(variant => [variant.variantid, variant]));
           const variants2Map = new Map(variants2.value.map(variant => [variant.variantid, variant]));
 
-          console.log("variants1Map")
-          console.log(variants1Map)
-          console.log(variants2.value)
+          // console.log("variants1Map")
+          // console.log(variants1Map)
+          // console.log(variants2.value)
 
           if (props.selectedStratification2 !== "No stratification" && props.selectedStratification2 !== props.selectedStratification1 ){
             const unmatchedVariants = {
@@ -497,7 +497,7 @@
                 .sort((a, b) => a.localeCompare(b))
             };
 
-            console.log(unmatchedVariants)
+            // console.log(unmatchedVariants)
 
             const apiUrl_post = `${api}/phenotypes/variants`;
             const response = await axios.post(apiUrl_post, unmatchedVariants, {
