@@ -605,7 +605,7 @@ onUnmounted(() => {
             <div v-if="!isInteractionChecked" class="non-interaction">
               <div class="pheno-info col-12 d-flex justify-left align-center text-center mt-0">
                 <div class="dropdown p-1" id="dropdown-data1">
-                    <button class="btn btn-primary btn-drop" id="button-data1">{{keyToLabel(selectedStratification1) + " (" + sampleSizeLabel[selectedStratification1] + ")"}}<span class="arrow-container"><span class="arrow-down"></span></span></button>
+                    <button class="btn btn-primary btn-drop" id="button-data1">{{keyToLabel(selectedStratification1).replace(/\b\w/g, l => l.toUpperCase())+ " (" + sampleSizeLabel[selectedStratification1] + ")"}}<span class="arrow-container"><span class="arrow-down"></span></span></button>
                     <div class="dropdown-menu" id="dropdown-content-data1">
                         <label v-for="(pheno, index) in info">
                             <input 
@@ -615,13 +615,13 @@ onUnmounted(() => {
                             :name="pheno.phenocode + '1'" 
                             v-model="selectedStratification1"
                             @change="handleRadioChange">
-                            {{ returnExtraInfoLabel(pheno) + " (" + sampleSizeLabel[pheno.phenocode + returnExtraInfoString(pheno)] + ")"}} 
+                            {{ returnExtraInfoLabel(pheno).replace(/\b\w/g, l => l.toUpperCase()) + " (" + sampleSizeLabel[pheno.phenocode + returnExtraInfoString(pheno)] + ")"}} 
                         </label> 
                     </div>
                   </div>
                   <div class="dropdown p-1" id="dropdown-data2">
                     <button v-if="selectedStratification2 == 'No stratification'" class="btn btn-primary btn-drop" id="button-data2"> No stratification <span class="arrow-container"><span class="arrow-down"></span></span></button>
-                    <button v-else class="btn btn-primary btn-drop" id="button-data2"> {{keyToLabel(selectedStratification2) + " (" + sampleSizeLabel[selectedStratification2] + ")"}} <span class="arrow-container"><span class="arrow-down"></span></span></button>
+                    <button v-else class="btn btn-primary btn-drop" id="button-data2"> {{keyToLabel(selectedStratification2).replace(/\b\w/g, l => l.toUpperCase()) + " (" + sampleSizeLabel[selectedStratification2] + ")"}} <span class="arrow-container"><span class="arrow-down"></span></span></button>
                     <div class="dropdown-menu" id="dropdown-content-data2">
                         <label v-for="(pheno, index) in info" >
                             <input 
@@ -631,7 +631,7 @@ onUnmounted(() => {
                             :name="pheno.phenocode + '2'"
                             v-model="selectedStratification2"
                             @change="handleRadioChange"> 
-                            {{ returnExtraInfoLabel(pheno) + " (" + sampleSizeLabel[pheno.phenocode + returnExtraInfoString(pheno)] + ")" }} 
+                            {{ returnExtraInfoLabel(pheno).replace(/\b\w/g, l => l.toUpperCase()) + " (" + sampleSizeLabel[pheno.phenocode + returnExtraInfoString(pheno)] + ")" }} 
                         </label>
                         <label v-if="info">
                             <input type="radio" value="No stratification" :name="info[0].phenocode + '2'" v-model="selectedStratification2" @change="handleRadioChange"> No stratification
@@ -708,7 +708,7 @@ onUnmounted(() => {
                   class="qq-col d-flex justify-left"
                 >
                   <div class="qq-plot-wrapper">
-                    <p class="qq-title">{{ qq.split(".").slice(1).join(", ") }}</p>
+                    <p class="qq-title">{{ qq.split(".").slice(1).join(", ").replace(/\b\w/g, l => l.toUpperCase()) }}</p>
                     <QQPlot :data="{
                         qq : qqSubset[qq],
                         dimensions : dimension
@@ -721,7 +721,7 @@ onUnmounted(() => {
             <div v-else class="interaction">
               <div class="pheno-info col-12 mt-0">
                   <div class="dropdown p-1" id="dropdown-data1">
-                    <button class="btn btn-primary btn-drop" id="button-data1">{{keyToLabel(selectedInteractionStratification1) + " (" + sampleSizeInteractionLabel[selectedInteractionStratification1] + ")"}}<span class="arrow-container"><span class="arrow-down"></span></span></button>
+                    <button class="btn btn-primary btn-drop" id="button-data1">{{keyToLabel(selectedInteractionStratification1).replace(/\b\w/g, l => l.toUpperCase()) + " (" + sampleSizeInteractionLabel[selectedInteractionStratification1] + ")"}}<span class="arrow-container"><span class="arrow-down"></span></span></button>
                     <div class="dropdown-menu" id="dropdown-content-data1">
                         <label v-for="(pheno, index) in infoInteraction">
                             <input 
@@ -731,13 +731,13 @@ onUnmounted(() => {
                             :name="pheno.phenocode + '1'" 
                             v-model="selectedInteractionStratification1"
                             @change="handleInteractionRadioChange">
-                            {{ returnExtraInfoLabel(pheno) + " (" + sampleSizeInteractionLabel[pheno.phenocode + returnExtraInfoString(pheno)] + ")"}} 
+                            {{ returnExtraInfoLabel(pheno).replace(/\b\w/g, l => l.toUpperCase()) + " (" + sampleSizeInteractionLabel[pheno.phenocode + returnExtraInfoString(pheno)] + ")"}} 
                         </label> 
                     </div>
                   </div>
                   <div class="dropdown p-1" id="dropdown-data2">
                     <button v-if="selectedInteractionStratification2 == 'No stratification'" class="btn btn-primary btn-drop" id="button-data2"> No stratification <span class="arrow-container"><span class="arrow-down"></span></span></button>
-                    <button v-else class="btn btn-primary btn-drop" id="button-data2"> {{keyToLabel(selectedInteractionStratification2) + " (" + sampleSizeInteractionLabel[selectedInteractionStratification2] + ")"}} <span class="arrow-container"><span class="arrow-down"></span></span></button>
+                    <button v-else class="btn btn-primary btn-drop" id="button-data2"> {{keyToLabel(selectedInteractionStratification2).replace(/\b\w/g, l => l.toUpperCase()) + " (" + sampleSizeInteractionLabel[selectedInteractionStratification2] + ")"}} <span class="arrow-container"><span class="arrow-down"></span></span></button>
                     <div class="dropdown-menu" id="dropdown-content-data2">
                         <label v-for="(pheno, index) in infoInteraction" >
                             <input 
@@ -747,7 +747,7 @@ onUnmounted(() => {
                             :name="pheno.phenocode + '2'"
                             v-model="selectedInteractionStratification2"
                             @change="handleInteractionRadioChange"> 
-                            {{ returnExtraInfoLabel(pheno) + " (" + sampleSizeInteractionLabel[pheno.phenocode + returnExtraInfoString(pheno)] + ")" }} 
+                            {{ returnExtraInfoLabel(pheno).replace(/\b\w/g, l => l.toUpperCase()) + " (" + sampleSizeInteractionLabel[pheno.phenocode + returnExtraInfoString(pheno)] + ")" }} 
                         </label>
                         <label v-if="infoInteraction">
                             <input type="radio" value="No stratification" :name="infoInteraction[0].phenocode + '2'" v-model="selectedInteractionStratification2" @change="handleInteractionRadioChange"> No stratification
@@ -804,7 +804,7 @@ onUnmounted(() => {
                       class="qq-col d-flex justify-left"
                     >
                       <div class="qq-plot-wrapper">
-                        <p class="qq-title">{{ qq.split(".").slice(1).join(", ") }}</p>
+                        <p class="qq-title">{{ qq.split(".").slice(1).join(", ").replace(/\b\w/g, l => l.toUpperCase()) }}</p>
                         <QQPlot :data="{
                             qq : qqInteractionSubset[qq],
                             dimensions : dimensionInteraction

@@ -387,10 +387,10 @@
           title: 'AF', 
           key: 'af',
           children: [
-            { title: pheno1.value.split('.').slice(-3).join(', '), key: 'af_pheno1' }, 
+            { title: pheno1.value.split('.').slice(-3).join(', ').replace(/\b\w/g, l => l.toUpperCase()), key: 'af_pheno1' }, 
             ...(props.selectedStratification2 !== props.selectedStratification1 && props.selectedStratification2 !== "No stratification"
             ? [
-                { title: pheno2.value.split('.').slice(-3).join(', '), key: 'af_pheno2' }, 
+                { title: pheno2.value.split('.').slice(-3).join(', ').replace(/\b\w/g, l => l.toUpperCase()), key: 'af_pheno2' }, 
               ]
             : [])
           ],
@@ -399,14 +399,14 @@
         { 
           title: 'P-value', 
           children: [
-            { title: pheno1.value.split('.').slice(-3).join(', '), 
+            { title: pheno1.value.split('.').slice(-3).join(', ').replace(/\b\w/g, l => l.toUpperCase()), 
             key: 'pval_pheno1',
             class: 'with-divider'
             }, 
             ...(props.selectedStratification2 !== props.selectedStratification1 && props.selectedStratification2 !== "No stratification"
             ? [
                 { 
-                  title: pheno2.value.split('.').slice(-3).join(', '), 
+                  title: pheno2.value.split('.').slice(-3).join(', ').replace(/\b\w/g, l => l.toUpperCase()), 
                   key: 'pval_pheno2'
                 }
               ]
@@ -418,10 +418,10 @@
         { 
           title: 'Effect Size', 
           children: [
-            { title: pheno1.value.split('.').slice(-3).join(', '), key: 'effect_size_pheno1' }, 
+            { title: pheno1.value.split('.').slice(-3).join(', ').replace(/\b\w/g, l => l.toUpperCase()), key: 'effect_size_pheno1' }, 
             ...(props.selectedStratification2 !== props.selectedStratification1 && props.selectedStratification2 !== "No stratification"
             ? [
-                { title: pheno2.value.split('.').slice(-3).join(', '), key: 'effect_size_pheno2' }, 
+                { title: pheno2.value.split('.').slice(-3).join(', ').replace(/\b\w/g, l => l.toUpperCase()), key: 'effect_size_pheno2' }, 
               ]
             : [])
           ],

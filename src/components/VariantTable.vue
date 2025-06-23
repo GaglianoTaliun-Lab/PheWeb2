@@ -71,6 +71,19 @@
             </v-menu>
           </div>
         </template>
+	<template v-slot:header.num_samples="{ column, isSorted, getSortIcon, }">
+          <div style="display: flex; align-items: center;">
+            <span style="white-space: nowrap;">{{ column.title }}</span>
+            <v-tooltip text="Sample size" location="top">
+              <template v-slot:activator="{ props }">
+                <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
+              </template>
+            </v-tooltip>
+            <template v-if="isSorted(column)">
+              <v-icon :icon="getSortIcon(column)"></v-icon>
+            </template>
+          </div>
+        </template>
 
         <template v-slot:item.phenostring="{ item }">
           <router-link :to="`/phenotypes/${item.phenocode}`">{{ item.phenostring }}</router-link>
@@ -175,18 +188,18 @@
       sortable: false 
     },
     { 
-      title: 'Number of Samples', 
+      title: '#Samples', 
       key: 'num_samples',
       sortable: false 
     },
-    { title: 'Number of Cases',
-      key: 'cases',
-      sortable: false
-    },
-    { title: 'Number of Controls',
-      key: 'controls',
-      sortable: false
-    },
+    //{ title: 'Number of Cases',
+    //  key: 'cases',
+    //  sortable: false
+    //},
+    //{ title: 'Number of Controls',
+    //  key: 'controls',
+    //  sortable: false
+    //},
   ]);
   
   const categoryMenu = ref(false);
