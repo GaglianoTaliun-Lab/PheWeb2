@@ -137,19 +137,16 @@ import { STRATIFICATION_CATEGORIES } from "@/config.js";
     selectedStratification1 : Object,
     selectedStratification2 : Object,
     variantList: Object,
-    categoryList: Object,
-    compare: Boolean,
+    categoryList: Object
   });
 
   onMounted(() => {
     console.log("variantList")
     console.log(props.variantList);
-  })
+    console.log(props.selectedStratification1)
+    console.log(props.selectedStratification2)
 
-  
-  // ... Previous header definitions and other refs remain the same ...
-  const headers = ref([
-    { 
+    headers.value = [{ 
       title: 'Category', 
       key: 'category_variant1',
       sortable: false 
@@ -208,18 +205,27 @@ import { STRATIFICATION_CATEGORIES } from "@/config.js";
           ]
         : [])
       ],
-      sortable: false    },
-  ]);
+      sortable: false    }];
+
+      formattedVariantList.value = computeFormattedVariantList();
+
+  })
+
   
+  // ... Previous header definitions and other refs remain the same ...
+  const headers = ref([]); 
   const categoryMenu = ref(false);
   const phenoMenu = ref(false);
   const selectedCategory = ref('');
   const selectedPheno = ref('');
   const filteredCategory = ref('All');
   const filteredPheno = ref('All');
-  
+  const formattedVariantList = ref([]);
+
+
+
   // Format variant list (same as before)
-  const formattedVariantList = computed(() => {
+  function computeFormattedVariantList() {
     if (!props.variantList) return [];
 
     // Flatten and filter phenos
@@ -256,7 +262,7 @@ import { STRATIFICATION_CATEGORIES } from "@/config.js";
                   controls: isPvalNegative ? "" : pheno.num_controls
               };
           });
-  });
+    });
 
     // Group by phenostring
     const grouped = {};
@@ -296,7 +302,7 @@ import { STRATIFICATION_CATEGORIES } from "@/config.js";
 
     console.log("formattedList", formattedList);
     return formattedList;
-});
+};
 
 
   

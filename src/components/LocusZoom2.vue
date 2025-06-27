@@ -492,6 +492,8 @@ onMounted(() => {
     fetchData();
     getPanels();
     getLayout();
+
+    console.log(props.data)
     plot.value = LocusZoom.populate("#lz", data_sources_new.value, layout_new.value);
 })
 

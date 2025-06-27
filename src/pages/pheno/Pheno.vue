@@ -563,7 +563,7 @@ onUnmounted(() => {
               ></v-progress-linear> -->
               <div class="links m-1 d-flex justify-space-between align-center text-center">
                 
-                <div class="interaction d-none d-md-flex">
+                <div class="d-none d-md-flex">
                     <div v-if="Object.keys(allInteractionPlottingData).length > 0">
                       <v-chip
                         size="x-large"
@@ -605,7 +605,7 @@ onUnmounted(() => {
             <div v-if="!isInteractionChecked" class="non-interaction">
               <div class="pheno-info col-12 d-flex justify-left align-center text-center mt-0">
                 <div class="dropdown p-1" id="dropdown-data1">
-                    <button class="btn btn-primary btn-drop" id="button-data1">{{keyToLabel(selectedStratification1).replace(/\b\w/g, l => l.toUpperCase())+ " (" + sampleSizeLabel[selectedStratification1] + ")"}}<span class="arrow-container"><span class="arrow-down"></span></span></button>
+                    <button class="btn btn-primary btn-drop" id="button-data1">{{keyToLabel(selectedStratification1)+ " (" + sampleSizeLabel[selectedStratification1] + ")"}}<span class="arrow-container"><span class="arrow-down"></span></span></button>
                     <div class="dropdown-menu" id="dropdown-content-data1">
                         <label v-for="(pheno, index) in info">
                             <input 
@@ -621,7 +621,7 @@ onUnmounted(() => {
                   </div>
                   <div class="dropdown p-1" id="dropdown-data2">
                     <button v-if="selectedStratification2 == 'No stratification'" class="btn btn-primary btn-drop" id="button-data2"> No stratification <span class="arrow-container"><span class="arrow-down"></span></span></button>
-                    <button v-else class="btn btn-primary btn-drop" id="button-data2"> {{keyToLabel(selectedStratification2).replace(/\b\w/g, l => l.toUpperCase()) + " (" + sampleSizeLabel[selectedStratification2] + ")"}} <span class="arrow-container"><span class="arrow-down"></span></span></button>
+                    <button v-else class="btn btn-primary btn-drop" id="button-data2"> {{keyToLabel(selectedStratification2) + " (" + sampleSizeLabel[selectedStratification2] + ")"}} <span class="arrow-container"><span class="arrow-down"></span></span></button>
                     <div class="dropdown-menu" id="dropdown-content-data2">
                         <label v-for="(pheno, index) in info" >
                             <input 

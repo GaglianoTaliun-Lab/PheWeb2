@@ -7,6 +7,7 @@ import { maf_range, keyToLabel } from './Variant.js';
 
 import Navbar from '@/components/Navbar.vue';
 import PhewasPlot from '@/components/PhewasPlot.vue';
+import PhewasPlot2 from '@/components/PhewasPlot2.vue';
 import VariantTable from '@/components/VariantTable.vue';
 import VariantCompareTable from '@/components/VariantCompareTable.vue';
 
@@ -34,7 +35,7 @@ const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URL;
 const isLoading = ref(false);
 const refreshKey = ref(0)
 
-const isDisplayAllChecked = ref(false);
+const isDisplayAllChecked = ref(true);
 const isDisabled = ref(false);
 
 onMounted(async () => {
@@ -47,21 +48,22 @@ onMounted(async () => {
     category_list.value = JSON.parse(JSON.stringify(response_category.data))
     pheno_list.value = JSON.parse(JSON.stringify(response_phenolist.data))
 
+    // set chosen variants to be male and female automatically
+    selectedStratifications.value = stratification_list.value;
+    selectedCategories.value = category_list.value;
+
     // we need to map here to get rid of the proxy
     await fetchPhewasPlottingData(
       stratification_list.value.map((stratification) => stratification)
     );
 
-    //maf_text.value = maf_range(variant_list.value).replace(/\n/g, "<br>");
     variant.value = variant_list.value[0];
 
     console.log(variant_list.value)
     console.log(variant.value)
     rsids.value = variant.value.rsids ?  variant.value.rsids.split(',') : [];
 
-    // set chosen variants to be male and female automatically
-    selectedStratifications.value = stratification_list.value;
-    selectedCategories.value = category_list.value;
+
 
     handleCheckboxChange();
     onDisplayChoiceChange();
@@ -72,12 +74,6 @@ onMounted(async () => {
     isLoading.value = false; // Stop loading
   }
 });
-
-
-// no longer needed
-// const maf_text = computed(() => {
-//     return maf_range(chosen_variants.value).replace(/\n/g, "<br>");
-// });
 
 function onDisplayChoiceChange(){
   if (!isDisplayAllChecked.value){
@@ -300,7 +296,22 @@ const downloadTable = () => {
 
         <div class="d-flex align-items-center col-12 mt-1">
 
-            <div class="display-choice">
+            <div class="interaction d-none d-md-flex">
+                <div >
+                  <v-chip
+                    size="x-large"
+                    label
+                    :color="isDisplayAllChecked ? 'default' : 'primary'"
+                    filter
+                    :filter-icon="isDisplayAllChecked ? '' : 'mdi-check'"
+                    @click="isDisplayAllChecked = !isDisplayAllChecked; onDisplayChoiceChange() "
+                  >
+                    Show All PheWAS
+                  </v-chip>
+                </div>
+            </div>
+
+            <!-- <div class="display-choice">
               <h3><label class="mr-2 mt-4" >Compare Two Stratifications</label>
                 <input class="mr-4 custom-checkbox"
                 type="checkbox"
@@ -309,7 +320,7 @@ const downloadTable = () => {
                 @change="onDisplayChoiceChange"
                 />
               </h3>
-            </div>
+            </div> -->
 
           </div>
 
@@ -376,15 +387,22 @@ const downloadTable = () => {
           color="primary"
           height="5"
         ></v-progress-linear>
-        <div v-if="chosen_variants.length > 0">
+        <!-- <div v-if="chosen_variants.length > 0">
           <PhewasPlot :key="refreshKey" :variantList="chosen_variants" :uniqueCategoriesList="category_list"/>
+        </div> -->
+        <div v-if="selectedStratifications.length > 0">
+          <div v-for="stratification in selectedStratifications" :key="stratification + '-' + refreshKey">
+            <PhewasPlot2 :stratification="stratification" :uniqueCategoriesList="category_list" />
+          </div>
         </div>
-
-        <div v-if="!isDisplayAllChecked">
-          <VariantTable class="mb-10" :key="refreshKey" :selectedStratifications="selectedStratifications" :variantList="variant_list" :categoryList="selectedCategories" :compare="isDisabled"></VariantTable>
-        </div>
-        <div v-else>
-          <VariantCompareTable class="mb-10" :key="refreshKey" :selectedStratification1="selectedStratifications[0]" :selectedStratification2="selectedStratifications[1]" :variantList="variant_list" :categoryList="selectedCategories" :compare="isDisabled"></VariantCompareTable>
+        
+        <div v-if="variant_list.length > 0 && selectedStratifications.length > 0">
+          <div v-if="!isDisplayAllChecked">
+            <VariantTable class="mb-10" :key="refreshKey" :selectedStratifications="selectedStratifications" :variantList="variant_list" :categoryList="selectedCategories"></VariantTable>
+          </div>
+          <div v-else>
+            <VariantCompareTable class="mb-10" :key="refreshKey" :selectedStratification1="selectedStratifications[0]" :selectedStratification2="selectedStratifications[1]" :variantList="variant_list" :categoryList="selectedCategories"></VariantCompareTable>
+          </div>
         </div>
 
       </div>
