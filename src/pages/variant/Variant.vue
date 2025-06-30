@@ -49,7 +49,7 @@ onMounted(async () => {
     pheno_list.value = JSON.parse(JSON.stringify(response_phenolist.data))
 
     // set chosen variants to be male and female automatically
-    selectedStratifications.value = stratification_list.value;
+    selectedStratifications.value = [selectedStratification1.value, selectedStratification2.value];
     selectedCategories.value = category_list.value;
 
     // we need to map here to get rid of the proxy
@@ -59,8 +59,6 @@ onMounted(async () => {
 
     variant.value = variant_list.value[0];
 
-    console.log(variant_list.value)
-    console.log(variant.value)
     rsids.value = variant.value.rsids ?  variant.value.rsids.split(',') : [];
 
 
@@ -296,7 +294,7 @@ const downloadTable = () => {
 
         <div class="d-flex align-items-center col-12 mt-1">
 
-            <div class="interaction d-none d-md-flex">
+            <div class="mb-1 d-none d-md-flex">
                 <div >
                   <v-chip
                     size="x-large"
@@ -392,7 +390,7 @@ const downloadTable = () => {
         </div> -->
         <div v-if="selectedStratifications.length > 0">
           <div v-for="stratification in selectedStratifications" :key="stratification + '-' + refreshKey">
-            <PhewasPlot2 :stratification="stratification" :uniqueCategoriesList="category_list" />
+            <PhewasPlot2 :stratification="stratification" :categoryList="selectedCategories" />
           </div>
         </div>
         

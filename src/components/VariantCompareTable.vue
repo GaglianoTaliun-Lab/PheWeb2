@@ -2,7 +2,7 @@
   <div v-if="formattedVariantList.length > 0" class="mt-1">
     <!-- Previous template code remains the same until the category search field -->
     <v-card elevation="5">
-      <v-data-table :items="filteredVariantList" :headers="headers" fixed-header :items-per-page="100"
+      <v-data-table :items="filteredVariantList" :headers="headers" fixed-header :items-per-page="10"
         hover :sort-by="[{ key: 'pval', order: 'asc' }]">
         <!-- Top slot remains the same -->
 
@@ -66,7 +66,7 @@
 
         <!-- Other template slots remain the same -->
         <template v-slot:item.phenostring="{ item }">
-          <router-link :to="`/phenotypes/${item.phenocode}`">{{ item.phenostring }}</router-link>
+          <router-link :to="`/phenotypes/${item.phenocode_variant1 ?? item.phenocode_variant2}`">{{ item.phenostring }}</router-link>
         </template>
 
         <template v-slot:item.pval="{ item }">
@@ -141,10 +141,6 @@ import { STRATIFICATION_CATEGORIES } from "@/config.js";
   });
 
   onMounted(() => {
-    console.log("variantList")
-    console.log(props.variantList);
-    console.log(props.selectedStratification1)
-    console.log(props.selectedStratification2)
 
     headers.value = [{ 
       title: 'Category', 
@@ -252,6 +248,7 @@ import { STRATIFICATION_CATEGORIES } from "@/config.js";
               return {
                   category: pheno.category,
                   phenostring: pheno.phenostring,
+                  phenocode: pheno.phenocode,
                   stratification: strat,
                   ...stratFields,
                   pval: isPvalNegative ? "" : pheno.pval,
@@ -300,7 +297,6 @@ import { STRATIFICATION_CATEGORIES } from "@/config.js";
         return merged;
     });
 
-    console.log("formattedList", formattedList);
     return formattedList;
 };
 

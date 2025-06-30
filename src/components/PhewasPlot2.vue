@@ -17,7 +17,7 @@ const props = defineProps({
     stratification: {
         type: String
     },
-    uniqueCategoriesList : {
+    categoryList : {
         type: Array,
         required : false,
     }
@@ -171,23 +171,42 @@ function generatePlot(variant_list){
         }
     })
 
-    var first_of_each_category_list = []
+    // Build global list of unique categories from all variants or props
+    let global_unique_categories = [];
 
-    variant_list.forEach(variant => {
-      first_of_each_category_list.push(
-        (function() {
-          var categories_seen = {};
-          return variant.phenos.filter(function(pheno) {
-              if (categories_seen.hasOwnProperty(pheno.category)) {
-                  return false;
-              } else {
-                  categories_seen[pheno.category] = 1;
-                  return true;
-              }
-          });
-      })()
-      )
-    })
+    if (!props.categoryList) {
+        const all_categories = new Set();
+        variant_list.forEach(variant => {
+            variant.phenos.forEach(pheno => {
+                all_categories.add(pheno.category);
+            });
+        });
+        global_unique_categories = Array.from(all_categories);
+    } else {
+        global_unique_categories = [...props.categoryList];
+    }
+
+    // Use the same global category list for each variant
+    const unique_categories_list = variant_list.map(() =>
+        JSON.parse(JSON.stringify(global_unique_categories))
+    );
+
+    // Build global, stable category-to-color mapping
+    const category_palette = d3.schemeCategory10.concat(d3.schemeCategory10); // 20 fixed colors
+    const color_by_category_all = d3.scaleOrdinal()
+        .domain(global_unique_categories)
+        .range(category_palette.slice(0, global_unique_categories.length));
+
+    const first_of_each_category_list = variant_list.map((variant, j) => {
+    const seen = {};
+    const allowed_categories = new Set(unique_categories_list[j]);
+    return variant.phenos.filter(pheno => {
+        if (!allowed_categories.has(pheno.category)) return false;
+        if (seen[pheno.category]) return false;
+        seen[pheno.category] = true;
+        return true;
+    });
+    });
 
     var category_order_list = []
 
@@ -210,39 +229,25 @@ function generatePlot(variant_list){
       });
     })
 
-    var unique_categories_list = [];
 
-    if (!props.uniqueCategoriesList){
 
-        variant_list.forEach((variant, i) => {
-            unique_categories_list.push(
-                d3.set(variant.phenos.map(_.property('category'))).values()
-            )
-        })
+    // const category20 = d3.schemeCategory10.concat(d3.schemeCategory10);  /* d3 removed category20, so I make this terrible version */
 
-    } else {
-
-        variant_list.forEach((variant, i ) => {
-            unique_categories_list.push(
-                JSON.parse(JSON.stringify(props.uniqueCategoriesList))
-            )
-        })
-    }
-
-    const category20 = d3.schemeCategory10.concat(d3.schemeCategory10);  /* d3 removed category20, so I make this terrible version */
-
-    var largest_number_of_categories = unique_categories_list.reduce((a, b) => (b.length > a.length ? b : a));
-    var color_by_category_all = d3.scaleOrdinal((largest_number_of_categories.length > 10) ? category20 : d3.schemeCategory10).domain(largest_number_of_categories)
+    // var largest_number_of_categories = unique_categories_list.reduce((a, b) => (b.length > a.length ? b : a));
+    // var color_by_category_all = d3.scaleOrdinal((largest_number_of_categories.length > 10) ? category20 : d3.schemeCategory10).domain(largest_number_of_categories)
 
     variant_list.forEach((variant, j) => {
-      variant.phenos.forEach(function(d, i) {
-          d.phewas_code = d.phenocode;
-          d.phewas_string = (d.phenostring || d.phenocode);
-          d.category_name = d.category;
-          d.color = color_by_category_all(d.category);
-          d.idx = i;
-      });
-    })
+        // remove variants which do not belong to unique_categories_list (unchecked categories)
+        variant.phenos = variant.phenos.filter(pheno => unique_categories_list[j].includes(pheno.category));
+
+        variant.phenos.forEach(function(d, i) {
+            d.phewas_code = d.phenocode;
+            d.phewas_string = (d.phenostring || d.phenocode);
+            d.category_name = d.category;
+            d.color = color_by_category_all(d.category);
+            d.idx = i;
+        });
+    });
 
     var data_sources = new LocusZoom.DataSources()
     .add("phewas", ["PheWebSource", {url: '/this/is/not/used'}])
@@ -340,6 +345,15 @@ function generatePlot(variant_list){
         },
         dashboard: {
             components: [
+                {
+                        type: 'remove_panel',          
+                        id: 'remove_panel',  
+                        title: 'Remove Panel',   
+                        label: 'Remove Panel', 
+                        position: "right",
+                        color: 'red',
+                        suppress_confirm : 'true'
+                },
                 {type: "download", position: "right"},
                 {type: "download_png", position: "right"},
             ],
