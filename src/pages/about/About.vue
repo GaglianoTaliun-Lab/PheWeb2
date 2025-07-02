@@ -134,25 +134,129 @@
                         <p>The TOPMed reference panel version r3, contains 133,597 reference samples belonging to diverse genetic ancestries and 445,600,184 genetic variants. EAGLE v2.4 and Minimac v2.0.0-beta3 were used to pre-phase and impute the genotyping data. </p>
                     </div>
 
-                <!-- Ancestry Check and European Subset  -->
-                <div v-if="selectedContent === 'AncestryEuro'" id='AncestryEuro'>
-                    <h2 class="text-center">Subsetting the European sub-population</h2>
-                    <hr>
-                    <p>We ran our own ancestry check and filtering using a custom pipeline implementing methods seen <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9900804/" target="_blank">here</a>. The pipeline can be found <a href="https://github.com/CERC-Genomic-Medicine/HGDP_1KG_ancestry_inference" target="_blank">here</a></p>
-                    <p>We subset individuals of predicted European genetic ancestry. For ancestry prediction we followed the following steps:</p>
-                    <ol>
-                        <li>We used <a href="https://csg.sph.umich.edu/chaolong/LASER/TRACE_Manual.pdf" target = "_blank">TRACE</a> to project principal components onto Human Genome Diversity Project (HGDP) and 1000 Genomes Project (1KG) combined references (Figure 1). We removed individuals that had a Z score of <span>&#177;</span>5.</li>
-                        <li>Using the projection results, we used a RandomForestModel to calculate probabilities of ancestry group.</li>
-                        <li>We used 0.79 probability as the inclusion threshold for the European subset.</li>
-                    </ol>
-                    <p>These steps resulted in 24,505 individuals in the European subset for analysis.</p>
-                    <br/>
-                    <!-- Insert the image here -->
-                    <v-card>
-                        <b>Figure 1.</b>CLSA sample's with inferred European ancestry projected onto the HGDP and 1KG's PCA space.
-                        <img src="../../assets/pca.png" alt="Figure 1 - PCA Projection" class="img-fluid mt-3" />
-                    </v-card>
-                </div>
+                    <!-- Ancestry Check and European Subset  -->
+                    <div v-if="selectedContent === 'AncestryEuro'" id='AncestryEuro'>
+                        <h2 class="text-center">Subsetting the European sub-population</h2>
+                        <hr>
+                        <p>We ran our own ancestry check and filtering using a custom pipeline implementing methods seen <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9900804/" target="_blank">here</a>. The pipeline can be found <a href="https://github.com/CERC-Genomic-Medicine/HGDP_1KG_ancestry_inference" target="_blank">here</a></p>
+                        <p>We subset individuals of predicted European genetic ancestry. For ancestry prediction we followed the following steps:</p>
+                        <ol>
+                            <li>We used <a href="https://csg.sph.umich.edu/chaolong/LASER/TRACE_Manual.pdf" target = "_blank">TRACE</a> to project principal components onto Human Genome Diversity Project (HGDP) and 1000 Genomes Project (1KG) combined references (Figure 1). We removed individuals that had a Z score of <span>&#177;</span>5.</li>
+                            <li>Using the projection results, we used a RandomForestModel to calculate probabilities of ancestry group.</li>
+                            <li>We used 0.79 probability as the inclusion threshold for the European subset.</li>
+                        </ol>
+                        <p>These steps resulted in 24,505 individuals in the European subset for analysis.</p>
+                        <br/>
+                        <!-- Insert the image here -->
+                        <v-card>
+                            <img src="../../assets/eur_vs_reference_square_pcs.png" alt="Figure 1 - PCA Projection" class="img-fluid mt-3" />
+                            <b>Figure 1.</b>CLSA samples with inferred European ancestry projected onto the HGDP and 1KG's PCA space.
+                        </v-card>
+                        <v-card>
+                            <img src="../../assets/incrfont_top3pcs_eur_subset_square_title.png" alt="Figure 2 - Top 3 Principal Components" class="img-fluid mt-3" />
+                            <b>Figure 2.</b>Top 3 principal components of CLSA samples with inferred European ancestry (N=24505).
+                        </v-card>
+                        
+                    </div>
+
+                    <div v-if="selectedContent === 'BinaryPhenotype'" id = 'BinaryPhenotype'>
+                        <h3>Selecting Binary Phenotypes</h3>
+                        <hr></hr>
+                        <p>Binary phenotypes were selected with the following criteria (Figure 2):</p>
+                        <ol>
+                            <li>The variable is binary (2 choices)</li>
+                            <li>The variable has more than 1000 cases</li>
+                            <li>The variable has GWAS relevance</li>
+                        </ol>
+                        <p>The final number of continuous phenotypes was 348.</p>
+                        <br>
+                        <v-card>
+                            <b>Figure 2.</b>Flow chart of filtering criteria for binary variables.
+                            <img src="../../assets/binary_diagram.png" alt="Figure 2 - Binary Diagram" class="img-fluid mt-3" />
+                        </v-card>
+                    </div>
+
+                    <div v-if="selectedContent === 'ContinuousPhenotype'" id = 'ContinuousPhenotype'>
+                        <h3>Selecting Continuous Phenotypes</h3>
+                        <hr></hr>
+                        <p>Continous phenotypes were selected with the following criteria (Figure 3):</p>
+                        <ol>
+                            <li>Removed outliers <span>&#177;</span>5 standard deviations from the mean</li>
+                            <li>The variable has more than 20 uniques numeric values, as to remove semi-quantitative variables that are not modeled correctly in linear regression.</li>
+                            <li>The variable has more than 1000 total numeric values</li>
+                            <li>The variable has does not have one value which accounts for more than 10% of all values</li>
+                            <li>The variable has GWAS relevance</li>
+                        </ol>
+                        <p>The final number of continuous phenotypes was 357.</p>
+                        <br>
+                        <v-card>
+                            <b>Figure 3.</b>Flow chart of filtering criteria for continuous variables.
+                            <img src="../../assets/continuous_diagram.png" alt="Figure 3 - Continuous Diagram" class="img-fluid mt-3" />
+                        </v-card>
+                    </div>
+
+                    <div v-if="selectedContent === 'Regenie'" id="Regenie">
+                        <h3>Regenie</h3>
+                        <hr></hr>
+                        <p>Association testing was performed using <a href="https://rgcgithub.github.io/regenie/" target="_blank">Regenie</a> v3.2.1, which handles unbalanced case-control ratios and accounts for population structure and relatedness. Our automated Nextflow pipeline for executing Regenie in a highly parallel way is available <a href="https://github.com/CERC-Genomic-Medicine/Regenie_nextflow" target = "_blank" >here</a>.</p>
+                        <p>After filtering european sub-population, we proceeded to further filter common non-imputed variants for step 1 of Regenie.</p>
+                        <p>We performed the following:</p>
+                        <ol>
+                            <li>Removed variants with sample missingness of > 0.1</li>
+                            <li>Removed samples with genotype missingness of > 0.1</li>
+                            <li>Variants departing from Hardy-Weinberg equilibrium with a p-value less than 1e-15</li>
+                            <li>Linkage disequilibrium pruning of correlated variants with window size of 1000, step size of 100 and Rsq threshold of 0.9</li>
+                        </ol>
+                        <p>At the end, we had this distribution of variants per chromosome for 24,505 individuals:</p>
+                        <v-data-table-virtual
+                            :items="SNPdistribution_regenie" 
+                            :headers="headers"
+                            height="300"
+                            >
+                            <template v-slot:item.snp="{ value }">
+                                <v-chip>
+                                    {{ value }}
+                                </v-chip>
+                            </template>
+                        </v-data-table-virtual>
+                        <p>For a total of 338,706 SNPs.</p>
+                        <p>For both binary and continuous variables, we used a block size of 1000, leave-one-out cross validation</p>
+                        <p>For binary variables, the firth approximation was used for variants with p-value less than 0.05 for both steps.</p>
+                        <p>For continuous variables, rank inverse normal transformation was used for both steps.</p>
+                        <p>For both steps, we used the covariates of: genotyping batch (1-5), sex, age, age<sup>2</sup>, 1-20 PCs</p>
+                    </div>
+                    
+                    <div v-if="selectedContent === 'PheWeb'" id="PheWeb"> 
+                        <p>The CLSA PheWeb is built on the Vue.js platform</p>
+                    </div>
+                    <div v-if="selectedContent === 'UpdateHistory'" id='UpdateHistory'>
+                        <h2 class="text-center">Update History</h2>
+                        <hr>
+                        <ul>
+                            <li>Added external links for gene page: link to NCBI, Emsemble and Open Targets (11/07/2024); </li>
+                            <li>Added filtering in phenotypes page (11/01/2024);</li>
+                            <li>Added support for Miami plot and Manhattan plot filtering (10/23/2024);</li>
+                            <li>Enabled selecting sex from the GWAS table (10/23/2024);</li>
+                            <li>Enabled filtering functionality by sex (10/22/2024);</li>
+                            <li>Enabled displaying tophits table & download functionality for the phenotypes table (10/22/2024);</li>
+                            <li>The rsid and nearest genes columns now features clickable rsid/gene names, allowing users to easily access detailed information on external databases (10/17/2024);</li>
+                            <li>Enabled sorting and searching functionalities in the phenotypes table (10/10/2024);</li>
+                            <li>Added support to download Manhattan plot and Miami plot in PNG and SVG format (10/10/2024);</li>
+                            <li>Added LocusZoom panels for all stratifications in LocusZoom region plots (09/07/2024);</li>
+                            <li>Added LocusZoom panels for all stratification combinations in LocusZoom PheWAS plots (09/07/2024);</li>
+                            <li>Added functionality to MAF filtering for Miami plot (07/29/2024);</li>
+                            <li>Added buttons to order 'category', 'phenotype', '# samples', '# Loci&lt;5e-8' and 'P-value' in all phenotypes page (07/19/2024);</li>
+                            <li>Added stratification, ancestry and interaction term columns to tables (07/18/2024);</li>
+                            <li>Added functionality to allow multiple of same phenotype names, if they have unique stratification combination (07/03/2024);</li>
+                            <li>Added Miami plot functionality: allow users to choose 'male' and 'female' on page loading, if it exists (05/23/2024);</li>
+                            <li>Added drop downs, where users can alternate data on top and bottom plots, or generate simple Manhattan plot (05/20/2024);</li>
+                            <li>Added stratifications to 'all phenotypes' table as columns in all phenotypes page (05/03/2024);</li>    
+                            <li>Download button now includes stratification in all phenotypes page (04/30/2024);</li>
+                            <li>Added functionality to show all QQ plots (04/18/2024).</li>
+                        </ul>    
+
+                    </div>
+
 
                 <div v-if="selectedContent === 'BinaryPhenotype'" id = 'BinaryPhenotype'>
                     <h3>Selecting Binary Phenotypes</h3>
