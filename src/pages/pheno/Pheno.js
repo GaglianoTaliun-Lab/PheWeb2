@@ -14,6 +14,7 @@ export const tooltip_underscoretemplate = `
 <% if(_.has(d, 'control_af')) { %>AF among controls: <b><%= d['control_af'] %></b><br><% } %>
 <% if(_.has(d, 'ac')) { %>AC: <b><%= d['ac'] %></b><br><% } %>
 <% if(_.has(d, 'r2')) { %>R2: <b><%= d['r2'] %></b><br><% } %>
+<% if(_.has(d, 'imp_quality')) { %>Imp. Quality: <b><%= d['imp_quality'] %></b><br><% } %>
 <% if(_.has(d, 'tstat')) { %>Tstat: <b><%= d['tstat'] %></b><br><% } %>
 <% if(_.has(d, 'num_cases')) { %>#cases: <b><%= d['num_cases'] %></b><br><% } %>
 <% if(_.has(d, 'num_controls')) { %>#controls: <b><%= d['num_controls'] %></b><br><% } %>
@@ -47,7 +48,7 @@ export function keyToLabel(phenoLabel){
         label[0] = "Interaction: " + label[0].split("-")[1]
     }
 
-    return label.join(', ')
+    return label.join(', ').replace(/\b\w/g, l => l.toUpperCase())
 }
 
 function capitalizeFirstLetter(str) {

@@ -64,13 +64,74 @@
           </div>
         </template>
 
+        <template v-slot:header.num_samples="{ column, isSorted, getSortIcon, }">
+          <div style="display: flex; align-items: center; justify-content: center; text-align: center;">
+            <span style="white-space: nowrap;">{{ column.title }}</span>
+            <v-tooltip text="Sample size" location="top">
+              <template v-slot:activator="{ props }">
+                <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
+              </template>
+            </v-tooltip>
+            <template v-if="isSorted(column)">
+              <v-icon :icon="getSortIcon(column)"></v-icon>
+            </template>
+          </div>
+        </template>
+
+        <template v-slot:header.eaf="{ column }">
+          <div style="display: flex; align-items: center; justify-content: center; text-align: center;">
+            <span style="white-space: nowrap;">{{ "EAF" }}</span>
+            <v-tooltip location="top">
+              <template v-slot:activator="{ props }">
+                <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
+              </template>
+              <span style="white-space: normal;">
+                Effect allele frequency
+              </span>
+            </v-tooltip>
+          </div>
+        </template>
+
+        <template v-slot:header.beta_se="{ column }">
+          <div style="display: flex; align-items: center; justify-content: center; text-align: center;">
+            <span style="white-space: nowrap;">{{ column.title }}</span>
+            <v-tooltip location="top">
+              <template v-slot:activator="{ props }">
+                <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
+              </template>
+              <span style="white-space: normal; max-width: 200px; display: block; word-wrap: break-word;">
+                Effect size displayed with the standard error (shown in the bracket)
+              </span>
+            </v-tooltip>
+          </div>
+        </template>
+
+        <template v-slot:header.pval="{ column }">
+          <div style="display: flex; align-items: center; justify-content: center; text-align: center; ">
+            <span style="white-space: nowrap;">{{ column.title }}</span>
+            <v-tooltip location="top">
+              <template v-slot:activator="{ props }">
+                <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
+              </template>
+              <span style="white-space: normal;">
+                P-value significant threshold: 5e-8 <br>
+                green: significant <br>
+                grey: unsignificant <br>
+              </span>
+            </v-tooltip>
+          </div>
+        </template>
+
         <!-- Other template slots remain the same -->
         <template v-slot:item.phenostring="{ item }">
           <router-link :to="`/phenotypes/${item.phenocode}`">{{ item.phenostring }}</router-link>
         </template>
 
         <template v-slot:item.pval="{ item }">
-          <span style="white-space: nowrap;">{{ item.pval }}</span>
+          <!-- <span style="white-space: nowrap;">{{ item.pval }}</span> -->
+          <v-chip v-if="item.pval !== 'NA'" :color="getColour(item.pval)">
+            {{ formatScientific(item.pval) }}
+          </v-chip>
         </template>
 
       </v-data-table>
@@ -82,53 +143,57 @@
 import { onMounted } from 'vue';
 import { ref, computed } from 'vue';
 
-  // Add this function in your script setup
-  const downloadTable = () => {
-  // Convert all data to CSV format (using formattedVariantList instead of filteredVariantList)
+import { STRATIFICATION_CATEGORIES } from "@/config.js";
 
-  const variant1 = ref('');
-  const variant2 = ref('');
 
-  const csv_headers = [
-    'Category',
-    'Phenotype',
-    'Sex',
-    'Ancestry',
-    'P-value',
-    'Effect Allele Frequency',
-    'Effect Size (se)',
-    'Number of Samples',
-    'Number of Cases',
-    'Number of Controls'
-  ];
+//   // Add this function in your script setup
+//   const downloadTable = () => {
+//   // Convert all data to CSV format (using formattedVariantList instead of filteredVariantList)
+
+//   const variant1 = ref('');
+//   const variant2 = ref('');
+
+//   const csv_headers = [
+//     'Category',
+//     'Phenotype',
+//     'Sex',
+//     'Ancestry',
+//     'P-value',
+//     'Effect Allele Frequency',
+//     'Effect Size (se)',
+//     'Number of Samples',
+//     'Number of Cases',
+//     'Number of Controls'
+//   ];
   
-  const csvContent = [
-    csv_headers.join(','),
-    ...formattedVariantList.value.map(item => [
-      item.category,
-      item.phenostring,
-      item.sex,
-      item.ancestry,
-      item.af,
-      item.pval,
-      item.beta_se,
-      item.num_samples,
-      item.num_cases,
-      item.num_controls,
-    ].join(','))
-  ].join('\n');
+//   const csvContent = [
+//     csv_headers.join(','),
+//     ...formattedVariantList.value.map(item => [
+//       item.category,
+//       item.phenostring,
+//       item.sex,
+//       item.ancestry,
+//       item.af,
+//       item.pval,
+//       item.beta_se,
+//       item.num_samples,
+//       item.num_cases,
+//       item.num_controls,
+//     ].join(','))
+//   ].join('\n');
 
-  // Create and trigger download
-  const blob = new Blob([csvContent], { type: 'text/csv' });
-  const url = window.URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.setAttribute('download', 'variant_data.csv');
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  window.URL.revokeObjectURL(url);
-};  
+//   // Create and trigger download
+//   const blob = new Blob([csvContent], { type: 'text/csv' });
+//   const url = window.URL.createObjectURL(blob);
+//   const link = document.createElement('a');
+//   link.href = url;
+//   link.setAttribute('download', 'variant_data.csv');
+//   document.body.appendChild(link);
+//   link.click();
+//   document.body.removeChild(link);
+//   window.URL.revokeObjectURL(url);
+// };  
+
   const props = defineProps({
     selectedStratification1 : Object,
     selectedStratification2 : Object,
@@ -220,31 +285,39 @@ import { ref, computed } from 'vue';
 
     // Flatten and filter phenos
     const phenos = props.variantList.flatMap((v) => {
-        const strat = v.stratification.slice(1); // Extract stratification value
+      const strat = v.stratification.slice(1); // e.g., '.AFR' or similar
 
-        if (!props.selectedStratification1.includes(strat) && 
-            !props.selectedStratification2.includes(strat)) return [];
+      if (
+          !props.selectedStratification1.includes(strat) &&
+          !props.selectedStratification2.includes(strat)
+      ) return [];
 
-        return v.phenos
-            .filter(pheno => props.categoryList.includes(pheno.category))
-            .map(pheno => {
-                const isPvalNegative = pheno.pval === -1;
-                
-                return {
-                    category: pheno.category,
-                    phenostring: pheno.phenostring,
-                    stratification: strat, 
-                    sex: isPvalNegative ? "" : pheno.stratification.sex,
-                    ancestry: isPvalNegative ? "" : pheno.stratification.ancestry,
-                    pval: isPvalNegative ? "" : pheno.pval,
-                    eaf: isPvalNegative ? "" : pheno.af,
-                    beta_se: isPvalNegative ? "" : `${pheno.beta} (${pheno.sebeta})`,
-                    num_samples: isPvalNegative ? "" : pheno.num_samples,
-                    cases: isPvalNegative ? "" : pheno.num_cases,
-                    controls: isPvalNegative ? "" : pheno.num_controls
-                };
-            });
-    });
+      return v.phenos
+          .filter(pheno => props.categoryList.includes(pheno.category))
+          .map(pheno => {
+              const isPvalNegative = pheno.pval === -1;
+
+              const stratFields = Object.fromEntries(
+                  STRATIFICATION_CATEGORIES.map(key => [
+                      key,
+                      isPvalNegative ? "" : pheno.stratification[key]
+                  ])
+              );
+
+              return {
+                  category: pheno.category,
+                  phenostring: pheno.phenostring,
+                  stratification: strat,
+                  ...stratFields,
+                  pval: isPvalNegative ? "" : pheno.pval,
+                  eaf: isPvalNegative ? "" : pheno.af,
+                  beta_se: isPvalNegative ? "" : `${pheno.beta} (${pheno.sebeta})`,
+                  num_samples: isPvalNegative ? "" : pheno.num_samples,
+                  cases: isPvalNegative ? "" : pheno.num_cases,
+                  controls: isPvalNegative ? "" : pheno.num_controls
+              };
+          });
+  });
 
     // Group by phenostring
     const grouped = {};
@@ -332,6 +405,18 @@ import { ref, computed } from 'vue';
       return categoryMatch && phenoMatch;
     });
   });
+
+  // p value colours
+  const getColour = (pval) => {
+    if (pval < 5e-8 && pval !== null) return 'green';
+    else if (pval === "NA") return null;
+    return '#grey';
+  };
+
+  const formatScientific = (num) => {
+    if (!num || isNaN(num)) return 'N/A';  
+    return Number(num).toExponential(2);  
+  };
   </script>
   
   <style scoped>

@@ -1,10 +1,10 @@
 <script setup>
 import LocusZoom from 'locuszoom';
-import {onMounted, ref, watch, defineEmits} from 'vue'
+import {onMounted, ref, watch} from 'vue'
 import { useRoute } from 'vue-router';
 
 
-import * as utils from '@/pages/region/Region.js'
+import * as utils from '../pages/region/Region.js'
 
 const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URL
 
@@ -15,13 +15,12 @@ const props = defineProps({
     },
 });
 
-const emit = defineEmits(['panelRemoved'])
-
 const plot = ref(null)
 const info = ref(null)
 
 const route = useRoute();
 const phenocode = route.params.phenocode;
+const currentPhenoList = ref(null);
 
 var region = route.params.region;
 
@@ -34,56 +33,64 @@ if (!route.params.region){
 //need to check if it already exists incase user presses the back arrow
 if (!LocusZoom.Adapters._items.has('AssociationPheWeb')){
 
-    LocusZoom.Adapters.extend("AssociationLZ", "AssociationPheWeb", {
-    getURL: function (state, chain, fields) {
-        return this.url + state.chr + ":" + state.start + "-" + state.end;
-    },
-    // Although the layout fields array is useful for specifying transforms, this source will magically re-add
-    //  any data that was not explicitly requested
-    extractFields: function(data, fields, outnames, trans) {
-        // The field "all" has a special meaning, and only exists to trigger a request to this source.
-        // We're not actually trying to request a field by that name.
-
-        var has_all = fields.indexOf("all");
-        if (has_all !== -1) {
-            fields.splice(has_all, 1);
-            outnames.splice(has_all, 1);
-            trans.splice(has_all, 1);
+    // replace the .extend method with ES6 class
+    class AssociationPheWeb extends LocusZoom.Adapters.get('AssociationLZ') {
+        getURL(state, chain, fields) {
+            return this.url + state.chr + ":" + state.start + "-" + state.end;
         }
-        // Find all fields that have not been requested (sans transforms), and add them back to the fields array
+        
+        // Although the layout fields array is useful for specifying transforms, this source will magically re-add
+        //  any data that was not explicitly requested
+        extractFields(data, fields, outnames, trans) {
+            // The field "all" has a special meaning, and only exists to trigger a request to this source.
+            // We're not actually trying to request a field by that name.
 
-        if (data.length) {
-            var fieldnames = Object.keys(data[0]);
-            var ns = this.source_id + ":"; // ensure that namespacing is applied to the fields
-            fieldnames.forEach(function(item) {
-                var ref = fields.indexOf(item);
-                if (ref === -1 || trans[ref]) {
-                    fields.push(item);
-                    outnames.push(ns + item);
-                    trans.push(null);
-                }
-            });
-        }
-        return LocusZoom.Adapters.get('AssociationLZ').prototype.extractFields.call(this, data, fields, outnames, trans);
-    },
+            var has_all = fields.indexOf("all");
+            if (has_all !== -1) {
+                fields.splice(has_all, 1);
+                outnames.splice(has_all, 1);
+                trans.splice(has_all, 1);
+            }
+            // Find all fields that have not been requested (sans transforms), and add them back to the fields array
 
-    normalizeResponse(data) {
-        // The PheWeb region API has a fun quirk where if there is no data, there are also no keys
-        //   (eg data = {} instead of  {assoc:[]} etc. Explicitly detect and handle the edge case in PheWeb;
-        //   we won't handle this in LZ core because we don't want squishy-blob API schemas to catch on.
-        if (!Object.keys(data).length) {
-            return [];
+            if (data.length) {
+                var fieldnames = Object.keys(data[0]);
+                var ns = this.source_id + ":"; // ensure that namespacing is applied to the fields
+                fieldnames.forEach(function(item) {
+                    var ref = fields.indexOf(item);
+                    if (ref === -1 || trans[ref]) {
+                        fields.push(item);
+                        outnames.push(ns + item);
+                        trans.push(null);
+                    }
+                });
+            }
+            return super.extractFields(data, fields, outnames, trans);
         }
 
-        if (data.max_log10p > max_y_value){
-            max_y_value = Math.ceil(data.max_log10p);
+        normalizeResponse(data) {
+            // The PheWeb region API has a fun quirk where if there is no data, there are also no keys
+            //   (eg data = {} instead of  {assoc:[]} etc. Explicitly detect and handle the edge case in PheWeb;
+            //   we won't handle this in LZ core because we don't want squishy-blob API schemas to catch on.
+            if (!Object.keys(data).length) {
+                return [];
+            }
+
+            // console.log("given_max : ", data.max_log10p)
+            if (data.max_log10p > max_y_value){
+                max_y_value = Math.ceil(data.max_log10p);
+                // console.log(plot.refresh())
+            }
+            // console.log(max_y_value)
+
+            delete data.max_log10p
+
+            return super.normalizeResponse(data);
         }
-
-        delete data.max_log10p
-
-        return LocusZoom.Adapters.get('AssociationLZ').prototype.normalizeResponse.call(this, data);
     }
-});
+    
+    // register the adapter to LocusZoom
+    LocusZoom.Adapters._items.set('AssociationPheWeb', AssociationPheWeb);
 }
 
 if (!LocusZoom.TransformationFunctions._items.has('percent')){
@@ -96,22 +103,26 @@ if (!LocusZoom.TransformationFunctions._items.has('percent')){
     });
 }
 
+const data_sources_new = ref(null)
+const phenocode_list = ref(null)
 const fetchData = async () => {
+    if (props.data.length === 0 || !props.data){
+        return;
+    }
+    
     info.value = props.data
 
-    if (info.value.length === 0){
-        return 0;
+    if (info.value[0].stratification){
+        phenocode_list.value = info.value.map((pheno) => {return pheno.phenocode + "." + Object.values(pheno.stratification).join('.')})
+    } else {
+        phenocode_list.value = info.value.map((pheno) => {return pheno.phenocode})
     }
 
-    if (info.value[0].stratification){
-        var phenocode_list = info.value.map((pheno) => {return pheno.phenocode + "." + Object.values(pheno.stratification).join('.')})
-    } else {
-        var phenocode_list = info.value.map((pheno) => {return pheno.phenocode})
-    }
+    currentPhenoList.value = phenocode_list;
 
     var remoteBase = "https://portaldev.sph.umich.edu/api/v1/";
 
-    var data_sources_new = new LocusZoom.DataSources()
+    data_sources_new.value = new LocusZoom.DataSources()
         .add("catalog", ["GwasCatalogLZ", {url: remoteBase + 'annotation/gwascatalog/results/', params: { build: "GRCh38" }}])
         .add("ld", ["LDServer", { url: "https://portaldev.sph.umich.edu/ld/",
             params: { source: '1000G', build: 'GRCh38', population: 'ALL' }
@@ -119,12 +130,13 @@ const fetchData = async () => {
         .add("gene", ["GeneLZ", { url: remoteBase + "annotation/genes/", params: {build: 'GRCh38'} }])
         .add("recomb", ["RecombLZ", { url: remoteBase + "annotation/recomb/results/", params: {build:'GRCh38'} }]);
 
-    phenocode_list.forEach( function (phenocode, i){
+    phenocode_list.value.forEach( function (phenocode, i){
         var phenocode_list = phenocode.split(".")
         var stratification = '.' + phenocode_list.slice(1).join('.')
-        data_sources_new.add(utils.fmt("assoc_study{0}",i+1), ["AssociationPheWeb", {url: api + "/phenotypes/"+ phenocode_list[0] +"/"+ stratification + "/region/", source: i+1}])
+        data_sources_new.value.add(utils.fmt("assoc_study{0}",i+1), ["AssociationPheWeb", {url: api + "/phenotypes/"+ phenocode_list[0] +"/"+ stratification + "/region/", source: i+1}])
 
     });
+
 
     var all_panels = []
 
@@ -157,14 +169,9 @@ const fetchData = async () => {
             }()
     );
 
-    // create a dict that stores key-value pairs of dynamicPart : phenocode
-    var phenocodes = {}
-
-    phenocode_list.forEach( function (phenocode, i){
+    phenocode_list.value.forEach( function (phenocode, i){
         
         let dynamicPart = utils.fmt("assoc_study{0}", i + 1);
-
-        phenocodes[dynamicPart] = phenocode
 
         var template = utils.tooltip_lztemplate.replace(/{{/g, `{{${dynamicPart}:`)
                             .replace(new RegExp(`{{${dynamicPart}:#if `, 'g'), `{{#if ${dynamicPart}:`)
@@ -245,33 +252,6 @@ const fetchData = async () => {
                                         }
                                     }
                                 ]
-                            },
-                            {
-                                type: 'move_panel_down',          
-                                id: 'move_panel_down',  
-                                title: 'Move Panel Down',   
-                                label: 'Move Panel Down', 
-                                group_position: 'end',
-                                position: "right"
-                            },
-
-                            {
-                                type: 'move_panel_up',          
-                                id: 'move_panel_up',  
-                                title: 'Move Panel Up',   
-                                label: 'Move Panel Up', 
-                                group_position: 'middle',
-                                position: "right"
-                            },
-                            {
-                                type: 'remove_panel',          
-                                id: 'remove_panel',  
-                                title: 'Remove Panel',   
-                                label: 'Remove Panel', 
-                                group_position: 'start',
-                                position: "right",
-                                color: 'red',
-                                suppress_confirm : 'true'
                             }
                         ]
                     },
@@ -290,6 +270,21 @@ const fetchData = async () => {
                                     "{{namespace[catalog]}}rsid", "{{namespace[catalog]}}trait", "{{namespace[catalog]}}log_pvalue"
                                 ],
                                 id_field: "{{namespace[assoc]}}id",
+                                // tooltip: {
+                                //     closable: true,
+                                //     show: {
+                                //         "or": ["highlighted", "selected"]
+                                //     },
+                                //     hide: {
+                                //         "and": ["unhighlighted", "unselected"]
+                                //     },
+                                //     html: "<strong>{{{{namespace[assoc]}}id}}</strong><br><br>" +
+                                //         template +
+                                //         "<br>" +
+                                //         "<a href=\"" + window.location.origin+ "/variant/{{{{namespace[assoc]}}chr}}-{{{{namespace[assoc]}}position}}-{{{{namespace[assoc]}}ref}}-{{{{namespace[assoc]}}alt}}\"" + ">Go to PheWAS</a>" +
+                                //         "{{#if {{namespace[catalog]}}rsid}}<br><a href=\"https://www.ebi.ac.uk/gwas/search?query={{{{namespace[catalog]}}rsid}}\" target=\"_new\">See hits in GWAS catalog</a>{{/if}}" +
+                                //         "<br>{{#if {{namespace[ld]}}isrefvar}}<strong>LD Reference Variant</strong>{{#else}}<a href=\"javascript:void(0);\" onclick=\"var data = this.parentNode.__data__;data.getDataLayer().makeLDReference(data);\">Make LD Reference</a>{{/if}}<br>"
+                                // },
                                 tooltip: {
                                     closable: true,
                                     show: {
@@ -337,8 +332,7 @@ const fetchData = async () => {
                     type: "resize_to_data",
                     position: "right",
                     color: "blue"
-                }, 
-                LocusZoom.Layouts.get('toolbar_widgets', 'gene_selector_menu')]
+                }, LocusZoom.Layouts.get('toolbar_widgets', 'gene_selector_menu')]
             },
             data_layers: [
                 LocusZoom.Layouts.get("data_layer", "genes_filtered", {
@@ -439,7 +433,8 @@ const fetchData = async () => {
     function add_toolbar_button(name, click_handler) {
         if (!LocusZoom.Widgets._items.has(name)){
 
-            LocusZoom.Widgets.extend('BaseWidget', name, {
+            // use ES6 class instead of .extend method
+            class CustomWidget extends LocusZoom.Widgets.get('BaseWidget') {
                 update() {
                     if (this.button)
                         return this;
@@ -451,7 +446,10 @@ const fetchData = async () => {
                     this.button.show();
                     return this.update();
                 }
-            });
+            }
+            
+            // register the widget to LocusZoom
+            LocusZoom.Widgets._items.set(name, CustomWidget);
         }
     }
 
@@ -472,13 +470,7 @@ const fetchData = async () => {
     });
 
 
-    plot.value = LocusZoom.populate("#lz", data_sources_new, layout_new);
-
-    plot.value.on('panel_removed', event => {
-        const removedPanelId = event.data;  // ID of removed panel
-        var phenocode_removed = phenocodes[removedPanelId]
-        emit('panelRemoved', phenocode_removed);
-    });
+    plot.value = LocusZoom.populate("#lz", data_sources_new.value, layout_new);
 
     // Handle double-click on a variant point
     // var doubleclick_delay_ms = 400;
@@ -498,8 +490,6 @@ const fetchData = async () => {
     //         });
     //     }
     // })
-
-
 }
 
 onMounted(() => {

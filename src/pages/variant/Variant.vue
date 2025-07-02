@@ -5,12 +5,12 @@ import { useRoute } from 'vue-router';
 
 import { maf_range, keyToLabel } from './Variant.js';
 
-import Navbar2 from '../../components/Navbar2.vue';
-import PhewasPlot from '../../components/PhewasPlot.vue';
-import VariantTable from '../../components/VariantTable.vue';
-import VariantCompareTable from '../../components/VariantCompareTable.vue';
+import Navbar from '@/components/Navbar.vue';
+import PhewasPlot from '@/components/PhewasPlot.vue';
+import VariantTable from '@/components/VariantTable.vue';
+import VariantCompareTable from '@/components/VariantCompareTable.vue';
 
-import { HG_BUILD_NUMBER, PRIORITY_STRATIFICATIONS } from "../../config.js";
+import { HG_BUILD_NUMBER, PRIORITY_STRATIFICATIONS, STRATIFICATION_CATEGORIES } from "@/config.js";
 
 const route = useRoute();
 
@@ -55,6 +55,7 @@ onMounted(async () => {
     //maf_text.value = maf_range(variant_list.value).replace(/\n/g, "<br>");
     variant.value = variant_list.value[0];
 
+    console.log(variant_list.value)
     console.log(variant.value)
     rsids.value = variant.value.rsids ?  variant.value.rsids.split(',') : [];
 
@@ -143,52 +144,53 @@ const handleCheckboxChange = () => {
 
 const formattedVariantList = computed(() => {
     return variant_list.value.flatMap((v) => {
-
-        var phenos = v.phenos
+        return v.phenos
             .filter((pheno) => pheno.pval > 0)
-            .map((pheno) => ({
-                category: pheno.category,
-                phenostring: pheno.phenostring,
-                sex: pheno.stratification.sex,
-                ancestry: pheno.stratification.ancestry,
-                pval: pheno.pval,
-                eaf : pheno.af,
-                beta_se: `${pheno.beta} (${pheno.sebeta})`,
-                num_samples: pheno.num_samples,
-                cases: pheno.num_cases,
-                controls: pheno.num_controls,
-            }));
+            .map((pheno) => {
+                // Extract stratification fields dynamically
+                const stratFields = Object.fromEntries(
+                    STRATIFICATION_CATEGORIES.map((key) => [key, pheno.stratification[key]])
+                );
 
-        return phenos
-    })
+                return {
+                    category: pheno.category,
+                    phenostring: pheno.phenostring,
+                    ...stratFields, // dynamic stratification values
+                    pval: pheno.pval,
+                    eaf: pheno.af,
+                    beta_se: `${pheno.beta} (${pheno.sebeta})`,
+                    num_samples: pheno.num_samples,
+                    cases: pheno.num_cases,
+                    controls: pheno.num_controls,
+                };
+            });
+    });
 });
 
+
 const downloadTable = () => {
-  // Convert all data to CSV format (using formattedVariantList instead of filteredVariantList)
+  // Dynamic headers
   const headers = [
     'Category',
     'Phenotype',
-    'Sex',
-    'Ancestry',
+    ...STRATIFICATION_CATEGORIES.map(key => key.charAt(0).toUpperCase() + key.slice(1)),
     'P-value',
     'Effect Size (se)',
     'Number of Samples'
   ];
-  
-  var csvContent = [
+
+  const csvContent = [
     headers.join(','),
     ...formattedVariantList.value.map(item => [
       item.category,
       item.phenostring,
-      item.sex,
-      item.ancestry,
+      ...STRATIFICATION_CATEGORIES.map(key => item[key]),
       item.pval,
       item.beta_se,
       item.num_samples
     ].join(','))
   ].join('\n');
 
-  // Create and trigger download
   const blob = new Blob([csvContent], { type: 'text/csv' });
   const url = window.URL.createObjectURL(blob);
   const link = document.createElement('a');
@@ -198,21 +200,21 @@ const downloadTable = () => {
   link.click();
   document.body.removeChild(link);
   window.URL.revokeObjectURL(url);
-};  
+};
 
 </script>
 
 <template>
   <v-app>
-    <Navbar2 />
+    <Navbar />
     <v-main class="responsive-main">
       <!-- Loading Bar -->
-    <v-progress-linear
+    <!-- <v-progress-linear
       v-if="isLoading"
       indeterminate
       color="primary"
       height="5"
-    ></v-progress-linear>
+    ></v-progress-linear> -->
 
       <div class="ml-4 mt-2">
         <h1 class="mb-0">{{ variantCodeToLabel(variantCode) }}</h1>
@@ -368,9 +370,12 @@ const downloadTable = () => {
               </v-row>
             </div>  
           </div>
-
-
-
+        <v-progress-linear
+          v-if="isLoading"
+          indeterminate
+          color="primary"
+          height="5"
+        ></v-progress-linear>
         <div v-if="chosen_variants.length > 0">
           <PhewasPlot :key="refreshKey" :variantList="chosen_variants" :uniqueCategoriesList="category_list"/>
         </div>

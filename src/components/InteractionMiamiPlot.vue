@@ -6,7 +6,7 @@ import * as d3 from 'd3';
 import d3Tip from 'd3-tip';
 import _ from 'underscore'
 
-import * as utils from '../pages/pheno/Pheno.js'
+import * as utils from '@/pages/pheno/Pheno.js'
 
 const point_radius = 2.3;
 
@@ -503,6 +503,9 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
         stratification_label1.shift()
         stratification_label2.shift()
 
+        stratification_label1.shift()
+        stratification_label2.shift()
+
         miami_svg.append('text')
             .style('text-anchor', 'middle')
             .attr('transform', utils.fmt('translate({0},{1})rotate(-90)',
@@ -528,14 +531,19 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
                     };
                 });
             })();
+
+            var color_by_chrom_numbers = d3.scaleOrdinal()
+                .domain(get_chrom_offsets_data1.value().chroms)
+                .range(['rgb(167, 133, 178)', 'rgb(86, 56, 101)']);
+
             if (variants === "filtered"){
                 var color_by_chrom_dim = d3.scaleOrdinal()
-                .domain(get_chrom_offsets.value().chroms)
-                .range(['rgb(237,221,221)', 'rgb(208,191,191)']);
+                .domain(get_chrom_offsets_data1.value().chroms)
+                .range(['rgb(242, 233, 233)', 'rgb(232, 227, 227)']);
             } else {
                 var color_by_chrom_dim = d3.scaleOrdinal()
-                .domain(get_chrom_offsets.value().chroms)
-                .range(['rgb(170,4,4)', 'rgb(70,4,4)']);
+                .domain(get_chrom_offsets_data1.value().chroms)
+                .range(['rgb(167, 133, 178)', 'rgb(86, 56, 101)']);
             }
 
         } else if ( variant_bins2 != null){
@@ -548,10 +556,15 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
                     };
                 });
             })();
+
+            var color_by_chrom_numbers = d3.scaleOrdinal()
+                .domain(get_chrom_offsets_data1.value().chroms)
+                .range(['rgb(167, 133, 178)', 'rgb(86, 56, 101)']);
+
             if (variants === "filtered"){
                 var color_by_chrom_dim = d3.scaleOrdinal()
                 .domain(get_chrom_offsets.value().chroms)
-                .range(['rgb(237,221,221)', 'rgb(208,191,191)']);
+                .range(['rgb(242, 233, 233)', 'rgb(232, 227, 227)']);
             } else {
                 var color_by_chrom_dim = d3.scaleOrdinal()
                 .domain(get_chrom_offsets.value().chroms)
@@ -576,7 +589,7 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
                 return d.chrom;
             })
             .style('fill', function(d) {
-                return color_by_chrom_dim(d.chrom);
+                return color_by_chrom_numbers(d.chrom);
             });
         
         if (variant_bins1 != null){
@@ -939,7 +952,7 @@ var miami_filter_view = {
         var gwas_plot = d3.select("#miami_plot");
         var color_by_chrom = d3.scaleOrdinal()
             .domain(get_chrom_offsets_data1.value().chroms)
-            .range(['rgb(120,120,186)', 'rgb(0,0,66)']);
+            .range(['rgb(167, 133, 178)', 'rgb(86, 56, 101)']);
 
         var point_selection_upper = d3.select('#filtered_variant_points_upper')
             .selectAll('a.variant_point_upper')

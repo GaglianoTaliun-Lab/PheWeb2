@@ -6,7 +6,7 @@ import * as d3 from 'd3';
 import d3Tip from 'd3-tip';
 import _ from 'underscore'
 
-import * as utils from '../pages/pheno/Pheno.js'
+import * as utils from '@/pages/pheno/Pheno.js'
 
 const point_radius = 2.3;
 
@@ -562,6 +562,11 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
                     };
                 });
             })();
+
+            var color_by_chrom_numbers = d3.scaleOrdinal()
+                .domain(get_chrom_offsets_data1.value().chroms)
+                .range(['rgb(120,120,186)', 'rgb(0,0,66)']);
+                
             if (variants === "filtered"){
                 var color_by_chrom_dim = d3.scaleOrdinal()
                 .domain(get_chrom_offsets_data1.value().chroms)
@@ -582,6 +587,11 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
                     };
                 });
             })();
+
+            var color_by_chrom_numbers = d3.scaleOrdinal()
+                .domain(get_chrom_offsets_data1.value().chroms)
+                .range(['rgb(120,120,186)', 'rgb(0,0,66)']);
+
             if (variants === "filtered"){
                 var color_by_chrom_dim = d3.scaleOrdinal()
                 .domain(get_chrom_offsets_data1.value().chroms)
@@ -604,13 +614,13 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
             .attr('transform', function(d) {
                 return utils.fmt('translate({0},{1})',
                             plot_margin.left + x_scale.value(d.midpoint),
-                            svg_height/2 + 5); // divide by two to have it midway // TODO : why do I need to +5 here to have it perfectly centered??
+                            svg_height/2 + 5); // divide by two to have it midway
             })
             .text(function(d) {
                 return d.chrom;
             })
             .style('fill', function(d) {
-                return color_by_chrom_dim(d.chrom);
+                return color_by_chrom_numbers(d.chrom);
             });
         
         if (variant_bins1 != null){
@@ -647,7 +657,7 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
             "<% if(_.has(d, 'num_significant_in_peak') && d.num_significant_in_peak>1) { %>#significant variants in peak: <%= d.num_significant_in_peak %><br><% } %>" +
     
             // add link
-            "<br>Region Plot: <a href='<%= `${window.location}/region/${d.chrom}:${Math.max(0, d.pos - 200 * 1000)}-${d.pos + 200 * 1000}` %>' target='_blank'>View</a>"
+            "<br>Region Plot: <a href='<%= `${window.location.toString().split('?')[0]}/region/${d.chrom}:${Math.max(0, d.pos - 200 * 1000)}-${d.pos + 200 * 1000}` %>' target='_blank'>View</a>"
         );
 
             point_tooltip.value = d3Tip()
@@ -659,14 +669,69 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
                 .offset([-6,0]);
         miami_svg.call(point_tooltip.value);
 
-        // TODO: if the label touches any circles or labels, skip it?
-        var variants_to_label_data1 = _.sortBy(_.where(variant_unbinned1, {peak: true}), _.property('pval'))
-            .filter(function(d) { return d.pval < 5e-8; })
-            .slice(0,7);
+        var sorted_variants = _.sortBy(_.where(variant_unbinned1, {peak: true}), _.property('pval'))
+            .filter(function(d) { return d.pval < 5e-8; });
 
-        var variants_to_label_data2 = _.sortBy(_.where(variant_unbinned2, {peak: true}), _.property('pval'))
-            .filter(function(d) { return d.pval < 5e-8; })
-            .slice(0,7);
+        var selected_variants = [];
+
+        sorted_variants.forEach(function(variant) {
+            var is_close = selected_variants.some(function(selected) {
+                return selected.chrom === variant.chrom && Math.abs(selected.pos - variant.pos) <= 10000000;
+            });
+
+            if (!is_close) {
+                selected_variants.push(variant);
+            }
+        });
+        var variants_to_label = selected_variants;
+
+        var filtered_variants = [];
+
+        variants_to_label.forEach(function(variant) {
+            var logp = -Math.log10(variant.pval);
+            var is_too_close = filtered_variants.some(function(existing) {
+                return existing.chrom === variant.chrom &&
+                    Math.abs(-Math.log10(existing.pval) - logp) < 1;
+            });
+
+            if (!is_too_close) {
+                filtered_variants.push(variant);
+            }
+        });
+
+        var variants_to_label_data1 = filtered_variants.slice(0, 7);
+
+        var sorted_variants = _.sortBy(_.where(variant_unbinned2, {peak: true}), _.property('pval'))
+            .filter(function(d) { return d.pval < 5e-8; });
+
+        var selected_variants = [];
+
+        sorted_variants.forEach(function(variant) {
+            var is_close = selected_variants.some(function(selected) {
+                return selected.chrom === variant.chrom && Math.abs(selected.pos - variant.pos) <= 10000000;
+            });
+
+            if (!is_close) {
+                selected_variants.push(variant);
+            }
+        });
+        var variants_to_label = selected_variants;
+
+        var filtered_variants = [];
+
+        variants_to_label.forEach(function(variant) {
+            var logp = -Math.log10(variant.pval);
+            var is_too_close = filtered_variants.some(function(existing) {
+                return existing.chrom === variant.chrom &&
+                    Math.abs(-Math.log10(existing.pval) - logp) < 2;
+            });
+
+            if (!is_too_close) {
+                filtered_variants.push(variant);
+            }
+        });
+
+        var variants_to_label_data2 = filtered_variants.slice(0, 7);
 
         var genenames_data1 = miami_plot.append('g')
             .attr('class', 'genenames_data1')
@@ -1341,7 +1406,7 @@ function reset_for_miami_plot() {
     </svg>
     `
 }
-
+const dialog = ref(false);
 watch(
     () => props.hoverVariant,
     (newHoverVariant) => {
@@ -1355,97 +1420,178 @@ watch(
     <div class="shadow-sm border rounded mt-3 mb-3">
       <div class="container-fluid mt-2 ml-1 mr-2">
         <!-- Left: Filter Button and Filter Options -->
-        <div class="d-flex flex-grow-0 flex-shrink-0" @mouseleave="showExpanded = false"
-        >
-          <button 
-            class="btn btn-primary" 
-            @click="toggleExpanded" 
-            @mouseover="showExpanded = true" 
-            ref="hiddenToggle"
-          > 
-            Filter Variants 
-          </button>
-  
-          <transition name="slide-fade">
-            <div v-if="showExpanded || showExpandedClick" class="expanded-content rounded" >
-              <label class="mr-1 ml-2" ><b>Minor Allele Freq Range:</b></label>
-  
-              <input
-                type="number"
-                v-model="minFreq"
-                class="form-control form-control-sm mr-1"
-                style="width:70px; border: 1px solid black; color: black; font-size: 16px;"
-                :min="0"
-                :max="0.5"
-                :step="0.05"
-              />
-              <span class="mr-1">-</span>
-              <input
-                type="number"
-                v-model="maxFreq"
-                class="form-control form-control-sm mr-3"
-                style="width:70px; border: 1px solid black; color: black; font-size: 16px;"
-                :min="0"
-                :max="0.5"
-                :step="0.05"
-              />
-  
-              <div class="btn-group mr-2">
-                <button
-                  type="button"
-                  class="btn btn-primary"
-                  style="color: white;"
-                  :class="{ active: selectedType === 'SNP' }"
-                  @click="selectType('SNP')"
-                >
-                  SNP
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-primary"
-                  style="color: white;"
-                  :class="{ active: selectedType === 'Indel' }"
-                  @click="selectType('Indel')"
-                >
-                  Indel
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-primary"
-                  style="color: white;"
-                  :class="{ active: selectedType === 'Both' }"
-                  @click="selectType('Both')"
-                >
-                  Both
-                </button>
+        <div class="d-flex flex-grow-0 flex-shrink-0" @mouseleave="showExpanded = false">
+          <div class="d-none d-md-flex">
+            <button 
+              class="btn btn-primary" 
+              @click="toggleExpanded" 
+              @mouseover="showExpanded = true" 
+              ref="hiddenToggle"
+            > 
+              Filter Variants 
+            </button>
 
+            <transition name="slide-fade">
+              <div v-if="showExpanded || showExpandedClick" class="expanded-content rounded" >
+                <label class="mr-1 ml-2" ><b>Minor Allele Freq Range:</b></label>
+
+                <input
+                  type="number"
+                  v-model="minFreq"
+                  class="form-control form-control-sm mr-1"
+                  style="width:70px; border: 1px solid black; color: black; font-size: 16px;"
+                  :min="0"
+                  :max="0.5"
+                  :step="0.05"
+                />
+                <span class="mr-1">-</span>
+                <input
+                  type="number"
+                  v-model="maxFreq"
+                  class="form-control form-control-sm mr-3"
+                  style="width:70px; border: 1px solid black; color: black; font-size: 16px;"
+                  :min="0"
+                  :max="0.5"
+                  :step="0.05"
+                />
+
+                <div class="btn-group mr-2">
+                  <button
+                    type="button"
+                    class="btn btn-primary"
+                    style="color: white;"
+                    :class="{ active: selectedType === 'SNP' }"
+                    @click="selectType('SNP')"
+                  >
+                    SNP
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-primary"
+                    style="color: white;"
+                    :class="{ active: selectedType === 'Indel' }"
+                    @click="selectType('Indel')"
+                  >
+                    Indel
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-primary"
+                    style="color: white;"
+                    :class="{ active: selectedType === 'Both' }"
+                    @click="selectType('Both')"
+                  >
+                    Both
+                  </button>
+                </div>
+                <button class="btn btn-primary blue-button mr-2" @click="applyFilter">
+                  Filter
+                </button>
+                <button class="btn btn-secondary" @click="cancelFilter()">
+                  Cancel
+                </button>
               </div>
-              <button class="btn btn-primary blue-button mr-2" @click="applyFilter">
-                Filter
-              </button>
-              <button class="btn btn-secondary" @click="cancelFilter()">
-                Cancel
-              </button>
-            </div>
-          </transition>
+            </transition>
+          </div>
+
+          <div class="d-flex d-md-none">
+            <button
+              type="button" 
+              class="btn btn-primary"
+              @click="dialog = true"
+              style="color: white;"
+            >
+              Filter Variants
+            </button>
+
+            <v-dialog
+              v-model="dialog"
+              width="auto"
+            >
+              <v-card>
+                <v-card-title>Filter Variants</v-card-title>
+                <v-card-text>
+                  <v-row>
+                    <v-col cols="12">
+                      <label><b>Minor Allele Freq Range:</b></label>
+                      <div class="d-flex align-center">
+                        <v-text-field
+                          v-model="minFreq"
+                          type="number"
+                          :min="0"
+                          :max="0.5"
+                          :step="0.05"
+                          density="compact"
+                          class="mr-2"
+                        ></v-text-field>
+                        <span>-</span>
+                        <v-text-field
+                          v-model="maxFreq"
+                          type="number"
+                          :min="0"
+                          :max="0.5"
+                          :step="0.05"
+                          density="compact"
+                          class="ml-2"
+                        ></v-text-field>
+                      </div>
+                    </v-col>
+                    <v-col cols="12">
+                      <v-btn-group>
+                        <v-btn
+                          :color="selectedType === 'SNP' ? 'primary' : ''"
+                          @click="selectType('SNP')"
+                        >SNP</v-btn>
+                        <v-btn
+                          :color="selectedType === 'Indel' ? 'primary' : ''"
+                          @click="selectType('Indel')"
+                        >Indel</v-btn>
+                        <v-btn
+                          :color="selectedType === 'Both' ? 'primary' : ''"
+                          @click="selectType('Both')"
+                        >Both</v-btn>
+                      </v-btn-group>
+                    </v-col>
+                  </v-row>
+                </v-card-text>
+                <v-card-actions>
+                  <v-spacer></v-spacer>
+                  <v-btn
+                    color="primary"
+                    @click="applyFilter(); dialog = false"
+                  >
+                    Filter
+                  </v-btn>
+                  <v-btn
+                    color="grey"
+                    @click="cancelFilter(); dialog = false"
+                  >
+                    Cancel
+                  </v-btn>
+                </v-card-actions>
+              </v-card>
+            </v-dialog>
+          </div>
         </div>
 
         <div class="d-flex flex-grow-0 flex-shrink-0">
           <button 
             type="button" 
             class="btn btn-light border bg-body rounded"
-            style="width:150px" 
+
             @click="downloadPNG"
           >
-            Download PNG
+            <span class="d-none d-sm-inline">Download PNG</span>
+            <span class="d-sm-none"><v-icon>mdi-download</v-icon>PNG</span>
           </button>
           <button 
             type="button" 
             class="btn btn-light border ml-2 bg-body rounded"
-            style="width:150px" 
+
             @click="downloadSVG"
           >
-            Download SVG
+            <span class="d-none d-sm-inline">Download SVG</span>
+            <span class="d-sm-none"><v-icon>mdi-download</v-icon>SVG</span>
           </button>
         </div>
       </div>

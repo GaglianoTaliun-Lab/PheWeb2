@@ -1,11 +1,11 @@
 <template >
   <v-app>
-    <Navbar2 />
+    <Navbar />
     <v-main class="centered-content">
         <v-card elevation="0">
-          <img src="../../assets/CLSA_logo.png" class="img-fluid mb-3 custom-img" alt="...">
-          <h1 class="fw-bold">{{appTitle}}</h1>
-          <small class="text-body-secondary">{{appSubtitle}}</small>
+          <img src="@/assets/CLSA_logo.png" class="img-fluid mb-3 custom-img" alt="...">
+          <h1 class="fw-bold">{{ VITE_APP_TITLE }}</h1>
+          <small class="text-body-secondary">{{ VITE_APP_SUBTITLE1 }}</small>
         </v-card>
 
         <v-container class="centered-content" style="margin-top: 2%;">
@@ -24,16 +24,16 @@
   
 
 <script setup name="Home">
-  import { ref } from 'vue'
-  import HomeInfo from '../../components/HomeInfo.vue';
-  import SearchBox from '../../components/SearchBox.vue';
-  import Acknowledge_Image from '../../components/AcknowledgeImage.vue';
-  import Navbar2 from '../../components/Navbar2.vue';
-  import Citations from '../../components/Citations.vue';
+  import HomeInfo from '@/components/HomeInfo.vue';
+  import SearchBox from '@/components/SearchBox.vue';
+  import Acknowledge_Image from '@/components/AcknowledgeImage.vue';
+  import Navbar from '@/components/Navbar.vue';
+  import Citations from '@/components/Citations.vue';
 
-  const appTitle = ref(import.meta.env.VITE_APP_TITLE);
-  const appSubtitle = ref(import.meta.env.VITE_APP_SUBTITLE1);
-  // console.log(appTitle.value);
+  import { VITE_APP_SUBTITLE1, VITE_APP_TITLE } from "@/config";
+
+  // const appTitle = ref(import.meta.env.VITE_APP_TITLE);
+  // const appSubtitle = ref(import.meta.env.VITE_APP_SUBTITLE1);
 </script>
 
    

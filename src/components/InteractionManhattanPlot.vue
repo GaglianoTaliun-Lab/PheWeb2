@@ -6,7 +6,7 @@ import * as d3 from 'd3';
 import d3Tip from 'd3-tip';
 import _ from 'underscore'
 
-import * as utils from '../pages/pheno/Pheno.js'
+import * as utils from '@/pages/pheno/Pheno.js'
 
 const point_radius = 2.3;
 
@@ -384,10 +384,14 @@ function create_manhattan_plot(variant_bins, unbinned_variants, variants = "filt
             });
         })();
 
+        var color_by_chrom_numbers = d3.scaleOrdinal()
+                .domain(get_chrom_offsets.value().chroms)
+                .range(['rgb(167, 133, 178)', 'rgb(86, 56, 101)']);
+
         if (variants === "filtered"){
             var color_by_chrom_dim = d3.scaleOrdinal()
             .domain(get_chrom_offsets.value().chroms)
-            .range(['rgb(220, 198, 224)', 'rgb(191, 165, 214)']);
+            .range(['rgb(242, 233, 233)', 'rgb(232, 227, 227)']);
         } else {
             var color_by_chrom_dim = d3.scaleOrdinal()
             .domain(get_chrom_offsets.value().chroms)
@@ -411,7 +415,7 @@ function create_manhattan_plot(variant_bins, unbinned_variants, variants = "filt
                 return d.chrom;
             })
             .style('fill', function(d) {
-                return color_by_chrom_dim(d.chrom);
+                return color_by_chrom_numbers(d.chrom);
             });
 
         gwas_plot.append('line')

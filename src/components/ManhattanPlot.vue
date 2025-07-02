@@ -6,7 +6,7 @@ import * as d3 from 'd3';
 import d3Tip from 'd3-tip';
 import _ from 'underscore'
 
-import * as utils from '../pages/pheno/Pheno.js'
+import * as utils from '@/pages/pheno/Pheno.js'
 
 const point_radius = 2.3;
 
@@ -390,6 +390,10 @@ function create_manhattan_plot(variant_bins, unbinned_variants, variants = "filt
             });
         })();
 
+        var color_by_chrom_numbers = d3.scaleOrdinal()
+                .domain(get_chrom_offsets.value().chroms)
+                .range(['rgb(120,120,186)', 'rgb(0,0,66)']);
+
         if (variants === "filtered"){
             var color_by_chrom_dim = d3.scaleOrdinal()
             .domain(get_chrom_offsets.value().chroms)
@@ -417,7 +421,7 @@ function create_manhattan_plot(variant_bins, unbinned_variants, variants = "filt
                 return d.chrom;
             })
             .style('fill', function(d) {
-                return color_by_chrom_dim(d.chrom);
+                return color_by_chrom_numbers(d.chrom);
             });
 
         gwas_plot.append('line')
@@ -438,7 +442,7 @@ function create_manhattan_plot(variant_bins, unbinned_variants, variants = "filt
             "<% if(_.has(d, 'num_significant_in_peak') && d.num_significant_in_peak>1) { %>#significant variants in peak: <%= d.num_significant_in_peak %><br><% } %>" +
     
             // add link
-            "<br>Region Plot: <a href='<%= `${window.location}/region/${d.chrom}:${Math.max(0, d.pos - 200 * 1000)}-${d.pos + 200 * 1000}` %>' target='_blank'>View</a>"
+            "<br>Region Plot: <a href='<%= `${window.location.toString().split('?')[0]}/region/${d.chrom}:${Math.max(0, d.pos - 200 * 1000)}-${d.pos + 200 * 1000}` %>' target='_blank'>View</a>"
         );
 
         point_tooltip.value = d3Tip()
@@ -450,9 +454,37 @@ function create_manhattan_plot(variant_bins, unbinned_variants, variants = "filt
         gwas_svg.call(point_tooltip.value);
 
         // TODO: if the label touches any circles or labels, skip it?
-        var variants_to_label = _.sortBy(_.where(unbinned_variants, {peak: true}), _.property('pval'))
-            .filter(function(d) { return d.pval < 5e-8; })
-            .slice(0,7);
+        var sorted_variants = _.sortBy(_.where(unbinned_variants, {peak: true}), _.property('pval'))
+            .filter(function(d) { return d.pval < 5e-8; });
+
+        var selected_variants = [];
+
+        sorted_variants.forEach(function(variant) {
+            var is_close = selected_variants.some(function(selected) {
+                return selected.chrom === variant.chrom && Math.abs(selected.pos - variant.pos) <= 10000000;
+            });
+
+            if (!is_close) {
+                selected_variants.push(variant);
+            }
+        });
+        var variants_to_label = selected_variants;
+
+        var filtered_variants = [];
+
+        variants_to_label.forEach(function(variant) {
+            var logp = -Math.log10(variant.pval);
+            var is_too_close = filtered_variants.some(function(existing) {
+                return existing.chrom === variant.chrom &&
+                    Math.abs(-Math.log10(existing.pval) - logp) < 1;
+            });
+
+            if (!is_too_close) {
+                filtered_variants.push(variant);
+            }
+        });
+
+        variants_to_label = filtered_variants.slice(0, 7);
 
         var genenames = gwas_plot.append('g')
             .attr('class', 'genenames')
@@ -523,7 +555,6 @@ function create_manhattan_plot(variant_bins, unbinned_variants, variants = "filt
                     point_tooltip.value.show(d, this);
                     tooltip_showing.value = true;
                     chosenVariant.value = `${d.chrom}-${d.pos}-${d.ref}-${d.alt}`;
-                    console.log(chosenVariant.value)
                     emit('updateChosenVariant', chosenVariant)
                 }
             });
@@ -765,8 +796,6 @@ var url = url_base + get_params.join('&');
 try {
     const response = await axios.get(url);
     var data = response.data ;
-
-    console.log("data", data)
     manhattan_filter_view.set_variants(data.variant_bins , data.unbinned_variants, data.weakest_pval );
     
     emit('updateFilteringParams', { min: minFreq.value, max: maxFreq.value, type : selectedType.value });

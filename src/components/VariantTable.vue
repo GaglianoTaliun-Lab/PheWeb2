@@ -3,8 +3,15 @@
     <!-- Previous template code remains the same until the category search field -->
 
     <v-card elevation="5">
-      <v-data-table :items="filteredVariantList" :headers="headers" fixed-header :items-per-page="100"
-        hover :sort-by="[{ key: 'pval', order: 'asc' }]">
+      <v-data-table 
+        :items="filteredVariantList" 
+        :headers="headers" 
+        fixed-header 
+        :items-per-page="10"
+        hover 
+        :sort-by="[{ key: 'pval', order: 'asc' }]"
+        :search="search"
+      >
         <!-- Top slot remains the same -->
 
         <template v-slot:header.category="{ column }">
@@ -65,7 +72,48 @@
           </div>
         </template>
 
-        <!-- Other template slots remain the same -->
+	      <template v-slot:header.num_samples="{ column, isSorted, getSortIcon, }">
+          <div style="display: flex; align-items: center;">
+            <span style="white-space: nowrap;">{{ column.title }}</span>
+            <v-tooltip text="Sample size" location="top">
+              <template v-slot:activator="{ props }">
+                <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
+              </template>
+            </v-tooltip>
+            <template v-if="isSorted(column)">
+              <v-icon :icon="getSortIcon(column)"></v-icon>
+            </template>
+          </div>
+        </template>
+
+        <template v-slot:header.eaf="{ column }">
+          <div style="display: flex; align-items: start; justify-content: start; text-align: start;">
+            <span style="white-space: nowrap;">{{ "EAF" }}</span>
+            <v-tooltip location="top">
+              <template v-slot:activator="{ props }">
+                <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
+              </template>
+              <span style="white-space: normal;">
+                Effect allele frequency
+              </span>
+            </v-tooltip>
+          </div>
+        </template>
+
+        <template v-slot:header.beta_se="{ column }">
+          <div style="display: flex; align-items: start; justify-content: start; text-align: start;">
+            <span style="white-space: nowrap;">{{ column.title }}</span>
+            <v-tooltip location="top">
+              <template v-slot:activator="{ props }">
+                <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
+              </template>
+              <span style="white-space: normal; max-width: 200px; display: block; word-wrap: break-word;">
+                Effect size displayed with the standard error (shown in the bracket)
+              </span>
+            </v-tooltip>
+          </div>
+        </template>
+
         <template v-slot:item.phenostring="{ item }">
           <router-link :to="`/phenotypes/${item.phenocode}`">{{ item.phenostring }}</router-link>
         </template>
@@ -80,44 +128,46 @@
   
   <script setup>
   import { ref, computed } from 'vue';
-
-  // Add this function in your script setup
-  const downloadTable = () => {
-  // Convert all data to CSV format (using formattedVariantList instead of filteredVariantList)
-  const headers = [
-    'Category',
-    'Phenotype',
-    'Sex',
-    'Ancestry',
-    'P-value',
-    'Effect Size (se)',
-    'Number of Samples'
-  ];
+  import { STRATIFICATION_CATEGORIES } from '@/config.js'
   
-  const csvContent = [
-    headers.join(','),
-    ...formattedVariantList.value.map(item => [
-      item.category,
-      item.phenostring,
-      item.sex,
-      item.ancestry,
-      item.pval,
-      item.beta_se,
-      item.num_samples
-    ].join(','))
-  ].join('\n');
+//   // Add this function in your script setup
+//   const downloadTable = () => {
+//   // Convert all data to CSV format (using formattedVariantList instead of filteredVariantList)
+//   const headers = [
+//     'Category',
+//     'Phenotype',
+//     'Sex',
+//     'Ancestry',
+//     'P-value',
+//     'Effect Size (se)',
+//     'Number of Samples'
+//   ];
+  
+//   const csvContent = [
+//     headers.join(','),
+//     ...formattedVariantList.value.map(item => [
+//       item.category,
+//       item.phenostring,
+//       item.sex,
+//       item.ancestry,
+//       item.pval,
+//       item.beta_se,
+//       item.num_samples
+//     ].join(','))
+//   ].join('\n');
 
-  // Create and trigger download
-  const blob = new Blob([csvContent], { type: 'text/csv' });
-  const url = window.URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.setAttribute('download', 'variant_data.csv');
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  window.URL.revokeObjectURL(url);
-};  
+//   // Create and trigger download
+//   const blob = new Blob([csvContent], { type: 'text/csv' });
+//   const url = window.URL.createObjectURL(blob);
+//   const link = document.createElement('a');
+//   link.href = url;
+//   link.setAttribute('download', 'variant_data.csv');
+//   document.body.appendChild(link);
+//   link.click();
+//   document.body.removeChild(link);
+//   window.URL.revokeObjectURL(url);
+// };  
+
   const props = defineProps({
     selectedStratifications: Object,
     variantList: Object,
@@ -137,43 +187,48 @@
       key: 'phenostring',
       sortable: false 
     },
-    { 
-      title: 'Sex', 
-      key: 'sex',
-      sortable: false 
-    },
-    { 
-      title: 'Ancestry', 
-      key: 'ancestry',
-      sortable: false 
-    },
+    ...STRATIFICATION_CATEGORIES.map((cat) => ({
+        title: cat.charAt(0).toUpperCase() + cat.slice(1).toLowerCase(),
+        key: cat.toLowerCase(),                           
+        sortable: false
+    })),
+    // { 
+    //   title: 'Sex', 
+    //   key: 'sex',
+    //   sortable: false 
+    // },
+    // { 
+    //   title: 'Ancestry', 
+    //   key: 'ancestry',
+    //   sortable: false 
+    // },
     { 
       title: 'P-value', 
       key: 'pval',
       sortable: true
     },
-    { title: 'Effect Allele Frequency',
+    { title: 'EAF',
       key: 'eaf',
       sortable: false
     },
     { 
-      title: 'Effect Size (se)', 
+      title: 'Effect Size', 
       key: 'beta_se',
       sortable: false 
     },
     { 
-      title: 'Number of Samples', 
+      title: '#Samples', 
       key: 'num_samples',
       sortable: false 
     },
-    { title: 'Number of Cases',
-      key: 'cases',
-      sortable: false
-    },
-    { title: 'Number of Controls',
-      key: 'controls',
-      sortable: false
-    },
+    //{ title: 'Number of Cases',
+    //  key: 'cases',
+    //  sortable: false
+    //},
+    //{ title: 'Number of Controls',
+    //  key: 'controls',
+    //  sortable: false
+    //},
   ]);
   
   const categoryMenu = ref(false);
@@ -185,31 +240,36 @@
   
   // Format variant list (same as before)
   const formattedVariantList = computed(() => {
-    return props.variantList?.flatMap((v) => {
+  return props.variantList?.flatMap((v) => {
+    if (!props.selectedStratifications.includes(v.stratification.slice(1))) return [];
 
-        if (!props.selectedStratifications.includes(v.stratification.slice(1))) return [];
+    return v.phenos
+      .filter((pheno) => props.categoryList.includes(pheno.category))
+      .filter((pheno) => pheno.pval > 0)
+      .map((pheno) => {
+        const stratifications = Object.fromEntries(
+          STRATIFICATION_CATEGORIES.map((cat) => [
+            cat.toLowerCase(),
+            pheno.stratification?.[cat.toLowerCase()] || '',
+          ])
+        );
 
-        console.log(props.categoryList)
-
-        var phenos = v.phenos
-            .filter((pheno) => props.categoryList.includes(pheno.category))
-            .filter((pheno) => pheno.pval > 0)
-            .map((pheno) => ({
-                category: pheno.category,
-                phenostring: pheno.phenostring,
-                sex: pheno.stratification.sex,
-                ancestry: pheno.stratification.ancestry,
-                pval: pheno.pval,
-                eaf : pheno.af,
-                beta_se: `${pheno.beta} (${pheno.sebeta})`,
-                num_samples: pheno.num_samples,
-                cases: pheno.num_cases,
-                controls: pheno.num_controls,
-            }));
-
-        return phenos
-    })
+        return {
+          category: pheno.category,
+          phenostring: pheno.phenostring,
+          phenocode: pheno.phenocode,
+          ...stratifications,
+          pval: pheno.pval,
+          eaf: pheno.af,
+          beta_se: `${pheno.beta} (${pheno.sebeta})`,
+          num_samples: pheno.num_samples,
+          cases: pheno.num_cases,
+          controls: pheno.num_controls,
+        };
+      });
+  });
 });
+
   
   // New computed properties for dynamic hints
   const firstCategory = computed(() => {

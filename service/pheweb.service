@@ -1,0 +1,16 @@
+[Unit]
+Description=PheWeb2
+After=network.target
+
+[Service]
+Type=simple
+User=/your/username
+WorkingDirectory=/path/to/your/pheweb/dir
+ExecStart=/usr/bin/npm run preview -- --port 8080
+Restart=always
+RestartSec=10
+Environment=NODE_ENV=production
+
+[Install]
+WantedBy=multi-user.target
+pheweb.service (END)

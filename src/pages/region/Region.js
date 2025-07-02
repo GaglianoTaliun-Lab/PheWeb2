@@ -18,8 +18,26 @@ export const tooltip_lztemplate = `
 {{#if control_af}}AF among controls: <strong>{{control_af|percent}}</strong><br>{{/if}}
 {{#if ac}}AC: <strong>{{ac}}</strong><br>{{/if}}
 {{#if r2}}R2: <strong>{{r2}}</strong><br>{{/if}}
+{{#if imp_quality}}Imp. Quality: <strong>{{imp_quality}}</strong><br>{{/if}}
 {{#if tstat}}Tstat: <strong>{{tstat}}</strong><br>{{/if}}
 {{#if num_cases}}#cases: <strong>{{num_cases}}</strong><br>{{/if}}
 {{#if num_controls}}#controls: <strong>{{num_controls}}</strong><br>{{/if}}
 {{#if num_samples}}#samples: <strong>{{num_samples}}</strong><br>{{/if}}
 `
+
+export function keyToLabel(phenoLabel){
+
+    if (!phenoLabel){
+        return null
+    }
+    var label = phenoLabel.split(".")
+    if (label.length < 1){
+        return []
+    }
+
+    return label.join(', ')
+}
+
+export function stratificationsToLabel(stratifications){
+    return Object.values(stratifications).join('.');
+}

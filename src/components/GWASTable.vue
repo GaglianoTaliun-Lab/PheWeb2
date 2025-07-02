@@ -1,5 +1,11 @@
 <template>
   <v-card elevation="5" class="">
+    <!-- <v-progress-linear
+      v-if="props.isLoadingData"
+      indeterminate
+      color="primary"
+      height="5"
+    ></v-progress-linear> -->
     <v-row>
     <v-col :cols="selectedStratification2 !== 'None' ? 12 : 12">
       <v-data-table 
@@ -13,20 +19,41 @@
         :sort-by.sync="sortBy"
         must-sort
         hover
+        loading-text="Loading Data..."
         :loading="isTableLoading"
         @update:sort-by="updateSortBy"
         dense
         v-model:page="page"
         >
 
+        <template v-slot:loading>
+          <v-skeleton-loader type="table-row@10"></v-skeleton-loader>
+        </template>
+
         <template v-slot:body="{ items }" >
           <!-- <tr v-for="item in items" :key="item.variantid" :class="{ 'selected-row': item.variantid === props.chosenVariant }"> -->
-          <tr v-for="item in items" 
+          <tr v-if="isTableLoading">
+            <td :colspan=9 class="text-center pa-4">
+              <v-progress-circular indeterminate color="primary"></v-progress-circular>
+              <span class="mt-2">Loading Data... please wait </span>
+              <v-skeleton-loader type="table-row@7"></v-skeleton-loader>
+            </td>
+          </tr>
+
+          <tr v-else-if="isFailed">
+            <td :colspan=9 class="text-center pa-4">
+              <v-icon color="error" size="large">mdi-alert-circle</v-icon>
+              <span class="mt-2">Failed to load data. Please try again later.</span>
+            </td>
+          </tr>
+
+          <tr v-else v-for="item in items" 
           :key="item.variantid" 
           :class="{ 'selected-row': item.variantid === props.chosenVariant }"
           @mouseover="hoveredVariantId = item.variantid"
           @mouseleave="hoveredVariantId = 'None' "
           >
+            
             <td>
               <!-- variantid -->
               <a :href="`/variant/${item.variantid}`" style="white-space: pre-line;">{{ item.variantName }}</a>
@@ -56,19 +83,19 @@
             <td>
               <!-- pval1 -->
               <v-chip v-if="item.pval_pheno1 !== 'NA'" :color="getColour(item.pval_pheno1)">
-                {{ item.pval_pheno1 }}
+                {{ formatScientific(item.pval_pheno1) }}
               </v-chip>
               <span v-else>
-                {{ item.pval_pheno1 }}
+                {{ formatScientific(item.pval_pheno1) }}
               </span>
             </td>
             <td v-if="props.selectedStratification2 !== props.selectedStratification1 && props.selectedStratification2 !== 'No stratification'" style="border-right:thin dashed rgba(var(--v-border-color), var(--v-border-opacity));">
               <!-- pval2 w/ divider -->
               <v-chip v-if="item.pval_pheno2 !== 'NA'" :color="getColour(item.pval_pheno2)" >
-                {{ item.pval_pheno2 }}
+                {{ formatScientific(item.pval_pheno2) }}
               </v-chip>
               <span v-else>
-                {{ item.pval_pheno2 }}
+                {{ formatScientific(item.pval_pheno2) }}
               </span>
             </td>
             <td>
@@ -151,7 +178,7 @@
         </template>
 
         <template v-slot:header.ea="{ column }">
-          <div style="display: flex; align-items: center; justify-content: center; text-align: center;">
+          <div style="display: flex; align-items: left; justify-content: left; text-align: left;">
             <span style="white-space: nowrap;">{{ "EA" }}</span>
             <v-tooltip location="top">
               <template v-slot:activator="{ props }">
@@ -344,8 +371,8 @@
         minFreq: Number,
         maxFreq: Number,
         selectedType: String,
-        miamiData: Object,
         chosenVariant: String,
+        isInteractionChecked: Boolean,
       });
       const tableInfo = ref([]);
       
@@ -359,6 +386,7 @@
       const errorMessage = ref('');
       const search = ref('');
       const isTableLoading = ref(true);
+      const isFailed = ref(false);
       const page = ref(3);
       const hoveredVariantId = ref('None');
       const emit = defineEmits(['updateHoverVariant']);
@@ -369,6 +397,12 @@
         sortBy.value = newSort; 
       };
 
+      // scientific notation
+      const formatScientific = (num) => {
+        if (!num || isNaN(num)) return 'N/A';  
+        return Number(num).toExponential(2);  
+      };
+
       const headers = computed(() => [
         { title: 'Top Variant', key: 'variantid', sortable: false },
         { title: 'EA', key: 'ea', sortable: false },
@@ -377,10 +411,10 @@
           title: 'EAF', 
           key: 'af',
           children: [
-            { title: pheno1.value.split('.').slice(-2).join(', '), key: 'af_pheno1' }, 
+            { title: pheno1.value.split('.').slice(-2).join(', ').replace(/\b\w/g, l => l.toUpperCase()), key: 'af_pheno1' }, 
             ...(props.selectedStratification2 !== props.selectedStratification1 && props.selectedStratification2 !== "No stratification"
             ? [
-                { title: pheno2.value.split('.').slice(-2).join(', '), key: 'af_pheno2' }, 
+                { title: pheno2.value.split('.').slice(-2).join(', ').replace(/\b\w/g, l => l.toUpperCase()), key: 'af_pheno2' }, 
               ]
             : [])
           ],
@@ -389,14 +423,14 @@
         { 
           title: 'P-value', 
           children: [
-            { title: pheno1.value.split('.').slice(-2).join(', '), 
+            { title: pheno1.value.split('.').slice(-2).join(', ').replace(/\b\w/g, l => l.toUpperCase()), 
             key: 'pval_pheno1',
             class: 'with-divider'
             }, 
             ...(props.selectedStratification2 !== props.selectedStratification1 && props.selectedStratification2 !== "No stratification"
             ? [
                 { 
-                  title: pheno2.value.split('.').slice(-2).join(', '), 
+                  title: pheno2.value.split('.').slice(-2).join(', ').replace(/\b\w/g, l => l.toUpperCase()), 
                   key: 'pval_pheno2'
                 }
               ]
@@ -408,10 +442,10 @@
         { 
           title: 'Effect Size', 
           children: [
-            { title: pheno1.value.split('.').slice(-2).join(', '), key: 'effect_size_pheno1' }, 
+            { title: pheno1.value.split('.').slice(-2).join(', ').replace(/\b\w/g, l => l.toUpperCase()), key: 'effect_size_pheno1' }, 
             ...(props.selectedStratification2 !== props.selectedStratification1 && props.selectedStratification2 !== "No stratification"
             ? [
-                { title: pheno2.value.split('.').slice(-2).join(', '), key: 'effect_size_pheno2' }, 
+                { title: pheno2.value.split('.').slice(-2).join(', ').replace(/\b\w/g, l => l.toUpperCase()), key: 'effect_size_pheno2' }, 
               ]
             : [])
           ],
@@ -429,14 +463,37 @@
         isTableLoading.value = true;
         errorMessage.value = '';
         try {
-          // instead of using API call, directly use plot data from parent page
-          tableInfo.value = await props.miamiData;
-          var keys = Object.keys(tableInfo.value)
-          pheno1.value = keys[0];
-          pheno2.value = keys[1] || keys[0];
+          const phenotype = await props.selectedStratification1.split('.')[0]
+          const stratification1 = '.' + props.selectedStratification1.split('.').slice(-2).join('.')
+          const stratification2 = '.' + props.selectedStratification2.split('.').slice(-2).join('.')
+          console.log(props.selectedStratification1)
+          console.log(props.selectedStratification2)
+
+          const response1 = await axios.get(`${api}/phenotypes/${phenotype}/${stratification1}/manhattan`)
+          // const response2 = await axios.get(`${api}/phenotypes/${phenotype}/${stratification2}`)
+
+
+          // tableInfo.value = await props.miamiData;
+
+          // var keys = Object.keys(tableInfo.value)
+          // pheno1.value = keys[0];
+          // pheno2.value = keys[1] || keys[0];
+          pheno1.value = props.selectedStratification1;
+          pheno2.value = props.selectedStratification2;
           // TODO: make this more efficient when stratification2 is None 
 
-          variants1.value = tableInfo.value[pheno1.value]?.unbinned_variants.map(item => ({
+          // variants1.value = tableInfo.value[pheno1.value]?.unbinned_variants.map(item => ({
+          //   ...item,
+          //   variantid: `${item.chrom}-${item.pos}-${item.ref}-${item.alt}`,
+          //   variantName: item.rsids 
+          //     ? `${item.chrom}: ${item.pos} ${item.ref} / ${item.alt} (${item.rsids})`
+          //     : `${item.chrom}: ${item.pos} ${item.ref} / ${item.alt}`,
+          //   nearest_genes: item.nearest_genes ? item.nearest_genes.split(',') : [], 
+          //   effect_size: item.beta > 0
+          //         ? `${item.beta} (${item.sebeta}) △`
+          //         : `${item.beta} (${item.sebeta}) ▽`
+          // }));
+          variants1.value = response1.data.unbinned_variants.map(item => ({
             ...item,
             variantid: `${item.chrom}-${item.pos}-${item.ref}-${item.alt}`,
             variantName: item.rsids 
@@ -447,9 +504,11 @@
                   ? `${item.beta} (${item.sebeta}) △`
                   : `${item.beta} (${item.sebeta}) ▽`
           }));
-          
-          if (props.selectedStratification2 !== "No stratification" && props.selectedStratification2 !== props.selectedStratification1){
-            variants2.value = tableInfo.value[pheno2.value]?.unbinned_variants.map(item => ({
+
+
+          if (props.selectedStratification2 != "No stratification" && props.selectedStratification2 !== props.selectedStratification1){
+            const response2 = await axios.get(`${api}/phenotypes/${phenotype}/${stratification2}/manhattan`)
+            variants2.value = response2.data.unbinned_variants.map(item => ({
               ...item,
               variantid: `${item.chrom}-${item.pos}-${item.ref}-${item.alt}`,
               variantName: item.rsids 
@@ -461,12 +520,17 @@
                   : `${item.beta} (${item.sebeta}) ▽`
             }));
           } else {
+            console.log("here")
             variants2.value = variants1.value
           }
 
           // merge two datasets using map
           const variants1Map = new Map(variants1.value.map(variant => [variant.variantid, variant]));
           const variants2Map = new Map(variants2.value.map(variant => [variant.variantid, variant]));
+
+          // console.log("variants1Map")
+          // console.log(variants1Map)
+          // console.log(variants2.value)
 
           if (props.selectedStratification2 !== "No stratification" && props.selectedStratification2 !== props.selectedStratification1 ){
             const unmatchedVariants = {
@@ -480,6 +544,8 @@
                 .sort((a, b) => a.localeCompare(b))
             };
 
+            // console.log(unmatchedVariants)
+
             const apiUrl_post = `${api}/phenotypes/variants`;
             const response = await axios.post(apiUrl_post, unmatchedVariants, {
               headers: {
@@ -487,6 +553,9 @@
               }
             })
             .then(response => {
+              // console.log("response data data")
+              // console.log(response.data.data)
+              // console.log(props.selectedStratification1)
               const missingData1 = response.data.data[props.selectedStratification1].map(item => ({ 
                 ...item,
                 variantid: `${item.chrom}-${item.pos}-${item.ref}-${item.alt}`,
@@ -510,6 +579,7 @@
                   : `${item.beta} (${item.sebeta}) ▽`
               }));;
 
+              // console.log("POST triggered")
               if (missingData1 && Array.isArray(missingData1) && missingData2 && Array.isArray(missingData2)) {
                 // console.log("missingData")
                 // console.log(missingData1)
@@ -560,6 +630,7 @@
         } catch (error) {
           console.error("There was an error fetching the sample data:", error);
           errorMessage.value = "Failed to load data. Please try again later.";
+          isFailed.value = true;
         } finally {
           isTableLoading.value = false;
         }
@@ -584,18 +655,22 @@
       const filterVariants = () => {
         // variantSearchLoading.value = false;
         filteredVariant.value = selectedVariant.value;
+        menu.value = false; 
         // console.log(filteredVariant)
       };
       const filterGene = () => {
         filteredGene.value = selectedGene.value;
+        menu2.value = false;
       };
       const clearVariants = () => {
         selectedVariant.value = '';
         filteredVariant.value = '';
+        menu.value = false; 
       };
       const clearGene = () => {
         selectedGene.value = '';
         filteredGene.value = '';
+        menu2.value = false; 
       };
       const filteredMergedVariants = computed(() => {
         return mergedVariants.value.filter(item => {
@@ -657,18 +732,19 @@
         URL.revokeObjectURL(url);
       };
   
-      onMounted(() => {
+      onMounted(async () => {
         // if (pheno1.value) {
         //   fetchSampleData();
         // }
-        fetchSampleData();
+        if (props.selectedStratification1 && props.selectedStratification2) {
+          fetchSampleData();
+        }
       });
 
       watch(() => [props.selectedStratification1, props.selectedStratification2], (newSelectedStratification1, newSelectedStratification2) => {
         // console.log(`Selected value changed to: ${newSelectedStratification1}, ${newSelectedStratification2}`);
         // console.log(`here ${newChosenVariant}`)
-        //fetchSampleData();
-        page.value = chosenPage.value;
+        fetchSampleData();
         
         // const unbinnedVariants = props.miamiData[props.selectedStratification1]["unbinned_variants"];
         // console.log("Unbinned Variants:", unbinnedVariants);
@@ -688,14 +764,7 @@
         },
         { deep: true }
       );
-      watch(
-        () => props.miamiData,
-        (newValue) => {
-          // console.log(`Chosen data updated: ${newValue}`);
-          fetchSampleData();
-        },
-        // { deep: true }
-      );
+
       watch(
         () => hoveredVariantId.value,
         (newValue) => {
