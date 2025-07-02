@@ -48,7 +48,7 @@ export function keyToLabel(phenoLabel){
         label[0] = "Interaction: " + label[0].split("-")[1]
     }
 
-    return label.join(', ')
+    return label.join(', ').replace(/\b\w/g, l => l.toUpperCase())
 }
 
 function capitalizeFirstLetter(str) {

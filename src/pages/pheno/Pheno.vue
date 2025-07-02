@@ -1,3 +1,262 @@
+<template>
+  <v-app>
+      <Navbar2 />
+      <v-main class="responsive-main">
+          <div>
+            <h1 v-if="phenostring">{{phenocode}}: {{phenostring}}</h1>
+            <h1 v-else>{{phenocode}}</h1>
+            <!-- <v-progress-linear
+              v-if="isLoading"
+              indeterminate
+              color="primary"
+              height="5"
+            ></v-progress-linear> -->
+            <div class="links m-1 d-flex justify-space-between align-center text-center">
+              
+              <div class="interaction d-none d-md-flex">
+                  <div v-if="Object.keys(allInteractionPlottingData).length > 0">
+                    <v-chip
+                      size="x-large"
+                      label
+                      :color="isInteractionChecked ? 'primary' : 'default'"
+                      filter
+                      :filter-icon="isInteractionChecked ? 'mdi-check' : ''"
+                      @click="isInteractionChecked = !isInteractionChecked; onInteractionCheckboxChange()"
+                    >
+                      Show Genotypes x Sex Interaction Results
+                    </v-chip>
+                  </div>
+              </div>
+              <div class="data-portal d-flex d-md-none justify-center align-center text-center">
+                <div v-if="Object.keys(allInteractionPlottingData).length > 0">
+                    <v-chip
+                    size="x-large"
+                    label
+                    :color="isInteractionChecked ? 'primary' : 'default'"
+                    filter
+                    :filter-icon="isInteractionChecked ? 'mdi-check' : ''"
+                    @click="isInteractionChecked = !isInteractionChecked; onInteractionCheckboxChange()"
+                  >
+                  Show Interaction
+                  </v-chip>
+                </div>
+              </div>
+              <div class="data-portal d-none d-md-flex">
+                <a  v-if="linkUrl" :href="linkUrl" target="_blank" rel="noopener noreferrer"><u><b>Data Preview Portal</b></u> <i class="fas fa-external-link-alt"></i></a>
+              </div>
+              <div class="data-portal d-flex d-md-none justify-center align-center text-center">
+                <a  v-if="linkUrl" :href="linkUrl" target="_blank" rel="noopener noreferrer"><u><b></b></u> <v-icon>mdi-printer-eye</v-icon></a>
+              </div>
+            </div>
+
+          </div>
+
+
+          <div v-if="!isInteractionChecked" class="non-interaction">
+            <div class="pheno-info col-12 d-flex justify-left align-center text-center mt-0">
+              <div class="dropdown p-1" id="dropdown-data1">
+                  <button class="btn btn-primary btn-drop" id="button-data1">{{keyToLabel(selectedStratification1)+ " (" + sampleSizeLabel[selectedStratification1] + ")"}}<span class="arrow-container"><span class="arrow-down"></span></span></button>
+                  <div class="dropdown-menu" id="dropdown-content-data1">
+                      <label v-for="(pheno, index) in info">
+                          <input 
+                          :checked="index === 1" 
+                          type="radio" 
+                          :value="pheno.phenocode + returnExtraInfoString(pheno)" 
+                          :name="pheno.phenocode + '1'" 
+                          v-model="selectedStratification1"
+                          @change="handleRadioChange">
+                          {{ returnExtraInfoLabel(pheno) + " (" + sampleSizeLabel[pheno.phenocode + returnExtraInfoString(pheno)] + ")"}} 
+                      </label> 
+                  </div>
+                </div>
+                <div class="dropdown p-1" id="dropdown-data2">
+                  <button v-if="selectedStratification2 == 'No stratification'" class="btn btn-primary btn-drop" id="button-data2"> No stratification <span class="arrow-container"><span class="arrow-down"></span></span></button>
+                  <button v-else class="btn btn-primary btn-drop" id="button-data2"> {{keyToLabel(selectedStratification2) + " (" + sampleSizeLabel[selectedStratification2] + ")"}} <span class="arrow-container"><span class="arrow-down"></span></span></button>
+                  <div class="dropdown-menu" id="dropdown-content-data2">
+                      <label v-for="(pheno, index) in info" >
+                          <input 
+                          :checked="index === 2" 
+                          type="radio" 
+                          :value="pheno.phenocode + returnExtraInfoString(pheno)" 
+                          :name="pheno.phenocode + '2'"
+                          v-model="selectedStratification2"
+                          @change="handleRadioChange"> 
+                          {{ returnExtraInfoLabel(pheno) + " (" + sampleSizeLabel[pheno.phenocode + returnExtraInfoString(pheno)] + ")" }} 
+                      </label>
+                      <label v-if="info">
+                          <input type="radio" value="No stratification" :name="info[0].phenocode + '2'" v-model="selectedStratification2" @change="handleRadioChange"> No stratification
+                      </label>
+                  </div>
+                </div>
+
+                <div class="dropdown p-1 float-right" style="margin-left: auto;" id="dropdown-sumstats">
+                  <div>
+                    <button v-if="isLargeScreen" class="btn btn-primary btn-drop">
+                      Download Summary Statistics
+                      <span class="arrow-container"><span class="arrow-down"></span></span>
+                    </button>
+
+                    <button v-else class="btn btn-primary btn-drop">
+                      <v-icon>mdi-download</v-icon>
+                    </button>
+                  </div>
+                  <!-- <button class="btn btn-primary btn-drop d-none d-md-flex">  Download Summary Statistics  <span class="arrow-container"><span class="arrow-down"></span></span></button>
+                  <button class="btn btn-primary btn-drop d-flex d-md-none"><v-icon>mdi-download</v-icon></button> -->
+                  <div class="dropdown-menu dropdown-menu-right p-1" id="dropdown-content-sumstats">
+                    <button class="sec-button btn w-100 mt-1 mb-1"  id="download-all-button" @click="downloadAll">Download All</button>
+                    <button class="sec-button btn w-100 mt-1 mb-1"  id="download-current-button" @click="downloadCurrent">Download Plotted Variants</button>
+                  </div>
+                </div>
+          </div> 
+
+          <IsLoading v-if="isLoading" :loadingText="loadingText" />
+          <IsFailing v-if="isFailedPlotting" :isLoading="isLoading" :isFailed="isFailedPlotting" />
+
+          <div v-if="miamiToggle && Object.keys(miamiData).length > 0 && !isFailedPlotting">
+              <MiamiPlot :key="refreshKey" :data="miamiData" :hoverVariant="hoverVariant" @updateFilteringParams="updateFilteringParameters" @updateChosenVariant="updateChosenVariantMehod"/>
+          </div>
+
+          <div v-else-if="!miamiToggle && Object.keys(manhattanData).length > 0 && !isFailedPlotting">
+            <ManhattanPlot :key="refreshKey" :data="manhattanData" :hoverVariant="hoverVariant"  @updateFilteringParams="updateFilteringParameters" @updateChosenVariant="updateChosenVariantMehod"/>
+          </div>
+
+          <div v-if="!isInteractionChecked">
+            <GWASTable
+              :isInteractionChecked="isInteractionChecked"
+              :selectedStratification1= "selectedStratification1"
+              :selectedStratification2= "selectedStratification2"
+              :phenocode= "phenocode"
+              :minFreq="minFreq"
+              :maxFreq="maxFreq"
+              :selectedType= "selectedType"
+              :chosenVariant="chosenVariant"
+              @updateHoverVariant="updateHoverVariantMethod"
+            />
+          </div>
+        
+          <br>
+          <div v-if="qqData && dimension" class="mt-10 mb-5"> 
+            <h2> QQ Plot(s): </h2>
+            <v-row align="start" justify="start" no-gutters>
+              <v-col 
+                v-for="qq in Object.keys(qqSubset)" 
+                :key="qq + qqRefreshKey"
+                cols="12" 
+                sm="6" 
+                lg="3"
+                class="qq-col d-flex justify-left"
+              >
+                <div class="qq-plot-wrapper">
+                  <p class="qq-title">{{ qq.split(".").slice(1).join(", ").replace(/\b\w/g, l => l.toUpperCase()) }}</p>
+                  <QQPlot :data="{
+                      qq : qqSubset[qq],
+                      dimensions : dimension
+                  }" /> 
+                </div>
+              </v-col>
+            </v-row>
+          </div>
+          </div>
+          <div v-else class="interaction">
+            <div class="pheno-info col-12 mt-0">
+                <div class="dropdown p-1" id="dropdown-data1">
+                  <button class="btn btn-primary btn-drop" id="button-data1">{{keyToLabel(selectedInteractionStratification1) + " (" + sampleSizeInteractionLabel[selectedInteractionStratification1] + ")"}}<span class="arrow-container"><span class="arrow-down"></span></span></button>
+                  <div class="dropdown-menu" id="dropdown-content-data1">
+                      <label v-for="(pheno, index) in infoInteraction">
+                          <input 
+                          :checked="index === 1" 
+                          type="radio" 
+                          :value="pheno.phenocode + returnExtraInfoString(pheno)" 
+                          :name="pheno.phenocode + '1'" 
+                          v-model="selectedInteractionStratification1"
+                          @change="handleInteractionRadioChange">
+                          {{ returnExtraInfoLabel(pheno) + " (" + sampleSizeInteractionLabel[pheno.phenocode + returnExtraInfoString(pheno)] + ")"}} 
+                      </label> 
+                  </div>
+                </div>
+                <div class="dropdown p-1" id="dropdown-data2">
+                  <button v-if="selectedInteractionStratification2 == 'No stratification'" class="btn btn-primary btn-drop" id="button-data2"> No stratification <span class="arrow-container"><span class="arrow-down"></span></span></button>
+                  <button v-else class="btn btn-primary btn-drop" id="button-data2"> {{keyToLabel(selectedInteractionStratification2) + " (" + sampleSizeInteractionLabel[selectedInteractionStratification2] + ")"}} <span class="arrow-container"><span class="arrow-down"></span></span></button>
+                  <div class="dropdown-menu" id="dropdown-content-data2">
+                      <label v-for="(pheno, index) in infoInteraction" >
+                          <input 
+                          :checked="index === 2" 
+                          type="radio" 
+                          :value="pheno.phenocode + returnExtraInfoString(pheno)" 
+                          :name="pheno.phenocode + '2'"
+                          v-model="selectedInteractionStratification2"
+                          @change="handleInteractionRadioChange"> 
+                          {{ returnExtraInfoLabel(pheno) + " (" + sampleSizeInteractionLabel[pheno.phenocode + returnExtraInfoString(pheno)] + ")" }} 
+                      </label>
+                      <label v-if="infoInteraction">
+                          <input type="radio" value="No stratification" :name="infoInteraction[0].phenocode + '2'" v-model="selectedInteractionStratification2" @change="handleInteractionRadioChange"> No stratification
+                      </label>
+                  </div>
+                </div>
+
+                <div class="dropdown p-1 float-right" id="dropdown-sumstats">
+                  <button class="btn btn-primary btn-drop">  Download Summary Statistics  <span class="arrow-container"><span class="arrow-down"></span></span></button>
+                  <div class="dropdown-menu dropdown-menu-right p-1" id="dropdown-content-sumstats">
+                    <button class="sec-button w-100 mt-1 mb-1"  id="download-all-button" @click="downloadAll">Download All</button>
+                    <button class="sec-button w-100 mt-1 mb-1"  id="download-current-button" @click="downloadCurrent">Download Plotted Variants</button>
+                  </div>
+                </div>
+          </div> 
+          <div v-if="miamiInteractionToggle && Object.keys(miamiInteractionData).length > 0">
+              <InteractionMiamiPlot :key="refreshKey" :data="miamiInteractionData" :hoverVariant="hoverVariant" @updateChosenVariant="updateChosenVariantMehod"/>
+              <InteractionTable 
+                :selectedStratification1= "selectedInteractionStratification1"
+                :selectedStratification2= "selectedInteractionStratification2"
+                :phenocode= "phenocode"
+                :minFreq="minFreq"
+                :maxFreq="maxFreq"
+                :selectedType= "selectedType"
+                :miamiData="miamiInteractionData"
+                :chosenVariant="chosenVariant"
+                @updateHoverVariant="updateHoverVariantMethod"
+              />
+          </div>
+          <div v-else-if="!miamiInteractionToggle && Object.keys(manhattanInteractionData).length > 0">
+              <InteractionManhattanPlot :key="refreshKey" :data="manhattanInteractionData" :hoverVariant="hoverVariant" @updateChosenVariant="updateChosenVariantMehod"/>
+              <InteractionTable 
+                :selectedStratification1= "selectedInteractionStratification1"
+                :selectedStratification2= "selectedInteractionStratification2"
+                :phenocode= "phenocode"
+                :minFreq="minFreq"
+                :maxFreq="maxFreq"
+                :selectedType= "selectedType"
+                :miamiData="manhattanInteractionData"
+                :chosenVariant="chosenVariant"
+                @updateHoverVariant="updateHoverVariantMethod"
+              />
+          </div>
+
+            <div v-if="qqInteractionData && dimensionInteraction" class="mt-10 mb-5"> 
+                <h2> QQ Plot(s): </h2>
+                <v-row align="start" justify="start" no-gutters>
+                  <v-col 
+                    v-for="qq in Object.keys(qqInteractionSubset)" 
+                    :key="qq + qqRefreshKey"
+                    cols="12" 
+                    sm="6" 
+                    lg="3"
+                    class="qq-col d-flex justify-left"
+                  >
+                    <div class="qq-plot-wrapper">
+                      <p class="qq-title">{{ qq.split(".").slice(1).join(", ").replace(/\b\w/g, l => l.toUpperCase()) }}</p>
+                      <QQPlot :data="{
+                          qq : qqInteractionSubset[qq],
+                          dimensions : dimensionInteraction
+                      }" /> 
+                    </div>
+                  </v-col>
+                </v-row>
+            </div>
+          </div>
+      </v-main>
+  </v-app>
+</template>
+
 <script setup name="Pheno">
 
 import axios from 'axios';
@@ -14,6 +273,8 @@ import GWASTable from '@/components/GWASTable.vue';
 import InteractionManhattanPlot from '@/components/InteractionManhattanPlot.vue'
 import InteractionMiamiPlot from '@/components/InteractionMiamiPlot.vue'
 import InteractionTable from '@/components/InteractionTable.vue';
+import IsFailing from '@/components/IsFailing.vue';
+import IsLoading from '@/components/IsLoading.vue';
 
 import * as functions from './Pheno.js';
 
@@ -76,6 +337,9 @@ const updateHoverVariantMethod = (variant) => {
 };
 
 const isLoading = ref(false);
+const isFailedPlotting = ref(false);
+const isFailedInteractionPlotting = ref(false);
+const loadingText = ref('Loading Miami / Manhattan plot... please wait');
 
 onMounted(async () => {
     try {
@@ -91,13 +355,23 @@ onMounted(async () => {
         if (error.response && error.response.status === 404) {
           console.warn(`Interaction list not found for ${phenocode}`);
           responseInteraction.data = [];
+          isFailedInteractionPlotting.value = true;
         } else {
           console.error("Unexpected error:", error);
+          isFailedInteractionPlotting.value = true;
           throw error; // rethrow if it's not a 404
         }
       }
 
       info.value = response.data;
+
+      //logic for choosing first two stratifications displayed on load
+      // TODO: could likely improve speed here
+      var strats = chooseDefaultPhenos(info.value, url_query)
+
+      selectedStratification1.value = strats[0].phenocode +returnExtraInfoString(strats[0])
+      selectedStratification2.value = strats[1] ? strats[1].phenocode + returnExtraInfoString(strats[1]): "No stratification"
+
 
       // just take the first instance...they will all be the same
       phenostring.value = info.value[0].phenostring
@@ -150,18 +424,13 @@ onMounted(async () => {
 
       populateDataPreview(phenocode)
       
-      //logic for choosing first two stratifications displayed on load
-      // TODO: could likely improve speed here
-      var strats = chooseDefaultPhenos(info.value, url_query)
-
-      selectedStratification1.value = strats[0].phenocode +returnExtraInfoString(strats[0])
-      selectedStratification2.value = strats[1] ? strats[1].phenocode + returnExtraInfoString(strats[1]): "No stratification"
-
+      
       // call plotting function to populate plot
       handleRadioChange(); 
     }
     catch (error) {
       console.log(error);
+      isFailedPlotting.value = true;
     }
     finally {
       isLoading.value = false; // Stop loading
@@ -327,7 +596,7 @@ function returnExtraInfoLabel(pheno) {
     extraInfoLabel += Object.values(pheno.stratification).join(", ");
   }
 
-  return extraInfoLabel;
+  return extraInfoLabel.replace(/\b\w/g, l => l.toUpperCase());
 }
 
 
@@ -468,6 +737,8 @@ function calculate_qq_dimension(combined_data){
   return dimensions
 }
 
+//TODO: change extraInfo to stratification
+
 async function generateQQs(phenocode, extraInfo){
 
   try {
@@ -491,10 +762,11 @@ async function generateInteractionQQs(phenocode, extraInfo){
 async function fetchPlottingData(phenocode, extraInfo){
 
   try {
-    const response = await axios.get(`${api}/phenotypes/${phenocode}/${extraInfo}`);
+    const response = await axios.get(`${api}/phenotypes/${phenocode}/${extraInfo}/manhattan`);
     allPlottingData.value[phenocode + extraInfo] = response.data ; 
   } catch (error) {
       console.log(`Error fetching plotting data for ${phenocode}:`, error);
+      isFailedPlotting.value = true;
   }
 
 }
@@ -502,10 +774,11 @@ async function fetchPlottingData(phenocode, extraInfo){
 async function fetchInteractionPlottingData(phenocode, extraInfo){
 
   try {
-      const response = await axios.get(`${api}/phenotypes/${phenocode}/${extraInfo}`);
+      const response = await axios.get(`${api}/phenotypes/${phenocode}/${extraInfo}/manhattan`);
       allInteractionPlottingData.value[phenocode + extraInfo] = response.data ; 
   } catch (error) {
       console.log(`Error fetching plotting data for ${phenocode}:`, error);
+      isFailedInteractionPlotting.value = true;
   }
 
 }
@@ -548,275 +821,7 @@ onUnmounted(() => {
 
 </script>
 
-<template>
-    <v-app>
-        <Navbar2 />
-        <v-main class="responsive-main">
-            <div>
-              <h1 v-if="phenostring">{{phenocode}}: {{phenostring}}</h1>
-              <h1 v-else>{{phenocode}}</h1>
-              <!-- <v-progress-linear
-                v-if="isLoading"
-                indeterminate
-                color="primary"
-                height="5"
-              ></v-progress-linear> -->
-              <div class="links m-1 d-flex justify-space-between align-center text-center">
-                
-                <div class="interaction d-none d-md-flex">
-                    <div v-if="Object.keys(allInteractionPlottingData).length > 0">
-                      <v-chip
-                        size="x-large"
-                        label
-                        :color="isInteractionChecked ? 'primary' : 'default'"
-                        filter
-                        :filter-icon="isInteractionChecked ? 'mdi-check' : ''"
-                        @click="isInteractionChecked = !isInteractionChecked; onInteractionCheckboxChange()"
-                      >
-                        Show Genotypes x Sex Interaction Results
-                      </v-chip>
-                    </div>
-                </div>
-                <div class="data-portal d-flex d-md-none justify-center align-center text-center">
-                  <div v-if="Object.keys(allInteractionPlottingData).length > 0">
-                      <v-chip
-                      size="x-large"
-                      label
-                      :color="isInteractionChecked ? 'primary' : 'default'"
-                      filter
-                      :filter-icon="isInteractionChecked ? 'mdi-check' : ''"
-                      @click="isInteractionChecked = !isInteractionChecked; onInteractionCheckboxChange()"
-                    >
-                    Show Interaction
-                    </v-chip>
-                  </div>
-                </div>
-                <div class="data-portal d-none d-md-flex">
-                  <a  v-if="linkUrl" :href="linkUrl" target="_blank" rel="noopener noreferrer"><u><b>Data Preview Portal</b></u> <i class="fas fa-external-link-alt"></i></a>
-                </div>
-                <div class="data-portal d-flex d-md-none justify-center align-center text-center">
-                  <a  v-if="linkUrl" :href="linkUrl" target="_blank" rel="noopener noreferrer"><u><b></b></u> <v-icon>mdi-printer-eye</v-icon></a>
-                </div>
-              </div>
 
-            </div>
-
-
-            <div v-if="!isInteractionChecked" class="non-interaction">
-              <div class="pheno-info col-12 d-flex justify-left align-center text-center mt-0">
-                <div class="dropdown p-1" id="dropdown-data1">
-                    <button class="btn btn-primary btn-drop" id="button-data1">{{keyToLabel(selectedStratification1).replace(/\b\w/g, l => l.toUpperCase())+ " (" + sampleSizeLabel[selectedStratification1] + ")"}}<span class="arrow-container"><span class="arrow-down"></span></span></button>
-                    <div class="dropdown-menu" id="dropdown-content-data1">
-                        <label v-for="(pheno, index) in info">
-                            <input 
-                            :checked="index === 1" 
-                            type="radio" 
-                            :value="pheno.phenocode + returnExtraInfoString(pheno)" 
-                            :name="pheno.phenocode + '1'" 
-                            v-model="selectedStratification1"
-                            @change="handleRadioChange">
-                            {{ returnExtraInfoLabel(pheno).replace(/\b\w/g, l => l.toUpperCase()) + " (" + sampleSizeLabel[pheno.phenocode + returnExtraInfoString(pheno)] + ")"}} 
-                        </label> 
-                    </div>
-                  </div>
-                  <div class="dropdown p-1" id="dropdown-data2">
-                    <button v-if="selectedStratification2 == 'No stratification'" class="btn btn-primary btn-drop" id="button-data2"> No stratification <span class="arrow-container"><span class="arrow-down"></span></span></button>
-                    <button v-else class="btn btn-primary btn-drop" id="button-data2"> {{keyToLabel(selectedStratification2).replace(/\b\w/g, l => l.toUpperCase()) + " (" + sampleSizeLabel[selectedStratification2] + ")"}} <span class="arrow-container"><span class="arrow-down"></span></span></button>
-                    <div class="dropdown-menu" id="dropdown-content-data2">
-                        <label v-for="(pheno, index) in info" >
-                            <input 
-                            :checked="index === 2" 
-                            type="radio" 
-                            :value="pheno.phenocode + returnExtraInfoString(pheno)" 
-                            :name="pheno.phenocode + '2'"
-                            v-model="selectedStratification2"
-                            @change="handleRadioChange"> 
-                            {{ returnExtraInfoLabel(pheno).replace(/\b\w/g, l => l.toUpperCase()) + " (" + sampleSizeLabel[pheno.phenocode + returnExtraInfoString(pheno)] + ")" }} 
-                        </label>
-                        <label v-if="info">
-                            <input type="radio" value="No stratification" :name="info[0].phenocode + '2'" v-model="selectedStratification2" @change="handleRadioChange"> No stratification
-                        </label>
-                    </div>
-                  </div>
-
-                  <div class="dropdown p-1 float-right" style="margin-left: auto;" id="dropdown-sumstats">
-                    <div>
-                      <button v-if="isLargeScreen" class="btn btn-primary btn-drop">
-                        Download Summary Statistics
-                        <span class="arrow-container"><span class="arrow-down"></span></span>
-                      </button>
-
-                      <button v-else class="btn btn-primary btn-drop">
-                        <v-icon>mdi-download</v-icon>
-                      </button>
-                    </div>
-                    <!-- <button class="btn btn-primary btn-drop d-none d-md-flex">  Download Summary Statistics  <span class="arrow-container"><span class="arrow-down"></span></span></button>
-                    <button class="btn btn-primary btn-drop d-flex d-md-none"><v-icon>mdi-download</v-icon></button> -->
-                    <div class="dropdown-menu dropdown-menu-right p-1" id="dropdown-content-sumstats">
-                      <button class="sec-button btn w-100 mt-1 mb-1"  id="download-all-button" @click="downloadAll">Download All</button>
-                      <button class="sec-button btn w-100 mt-1 mb-1"  id="download-current-button" @click="downloadCurrent">Download Plotted Variants</button>
-                    </div>
-                  </div>
-            </div> 
-            <v-progress-linear
-              v-if="isLoading"
-              indeterminate
-              color="primary"
-              height="5"
-            ></v-progress-linear>
-            <div v-if="miamiToggle && Object.keys(miamiData).length > 0">
-                <MiamiPlot :key="refreshKey" :data="miamiData" :hoverVariant="hoverVariant" @updateFilteringParams="updateFilteringParameters" @updateChosenVariant="updateChosenVariantMehod"/>
-                <GWASTable
-                  :selectedStratification1= "selectedStratification1"
-                  :selectedStratification2= "selectedStratification2"
-                  :phenocode= "phenocode"
-                  :minFreq="minFreq"
-                  :maxFreq="maxFreq"
-                  :selectedType= "selectedType"
-                  :miamiData="miamiData"
-                  :chosenVariant="chosenVariant"
-                  @updateHoverVariant="updateHoverVariantMethod"
-                  :isLoadingData="isLoading"
-                />
-              </div>
-            <div v-else-if="!miamiToggle && Object.keys(manhattanData).length > 0">
-                <ManhattanPlot :key="refreshKey" :data="manhattanData" :hoverVariant="hoverVariant"  @updateFilteringParams="updateFilteringParameters" @updateChosenVariant="updateChosenVariantMehod"/>
-                <GWASTable
-                  :selectedStratification1= "selectedStratification1"
-                  :selectedStratification2= "selectedStratification2"
-                  :phenocode= "phenocode"
-                  :minFreq="minFreq"
-                  :maxFreq="maxFreq"
-                  :selectedType= "selectedType"
-                  :miamiData="manhattanData"
-                  :chosenVariant="chosenVariant"
-                  @updateHoverVariant="updateHoverVariantMethod"
-                  :isLoadingData="isLoading"
-                />
-              </div>
-            
-            <br>
-            <div v-if="qqData && dimension" class="mt-10 mb-5"> 
-              <h2> QQ Plot(s): </h2>
-              <v-row justify="left" align="start" no-gutters class="qq-row">
-                <v-col 
-                  v-for="qq in Object.keys(qqSubset)" 
-                  :key="qq + qqRefreshKey"
-                  cols="12" 
-                  sm="6" 
-                  lg="3"
-                  class="qq-col d-flex justify-left"
-                >
-                  <div class="qq-plot-wrapper">
-                    <p class="qq-title">{{ qq.split(".").slice(1).join(", ").replace(/\b\w/g, l => l.toUpperCase()) }}</p>
-                    <QQPlot :data="{
-                        qq : qqSubset[qq],
-                        dimensions : dimension
-                    }" /> 
-                  </div>
-                </v-col>
-              </v-row>
-            </div>
-            </div>
-            <div v-else class="interaction">
-              <div class="pheno-info col-12 mt-0">
-                  <div class="dropdown p-1" id="dropdown-data1">
-                    <button class="btn btn-primary btn-drop" id="button-data1">{{keyToLabel(selectedInteractionStratification1).replace(/\b\w/g, l => l.toUpperCase()) + " (" + sampleSizeInteractionLabel[selectedInteractionStratification1] + ")"}}<span class="arrow-container"><span class="arrow-down"></span></span></button>
-                    <div class="dropdown-menu" id="dropdown-content-data1">
-                        <label v-for="(pheno, index) in infoInteraction">
-                            <input 
-                            :checked="index === 1" 
-                            type="radio" 
-                            :value="pheno.phenocode + returnExtraInfoString(pheno)" 
-                            :name="pheno.phenocode + '1'" 
-                            v-model="selectedInteractionStratification1"
-                            @change="handleInteractionRadioChange">
-                            {{ returnExtraInfoLabel(pheno).replace(/\b\w/g, l => l.toUpperCase()) + " (" + sampleSizeInteractionLabel[pheno.phenocode + returnExtraInfoString(pheno)] + ")"}} 
-                        </label> 
-                    </div>
-                  </div>
-                  <div class="dropdown p-1" id="dropdown-data2">
-                    <button v-if="selectedInteractionStratification2 == 'No stratification'" class="btn btn-primary btn-drop" id="button-data2"> No stratification <span class="arrow-container"><span class="arrow-down"></span></span></button>
-                    <button v-else class="btn btn-primary btn-drop" id="button-data2"> {{keyToLabel(selectedInteractionStratification2).replace(/\b\w/g, l => l.toUpperCase()) + " (" + sampleSizeInteractionLabel[selectedInteractionStratification2] + ")"}} <span class="arrow-container"><span class="arrow-down"></span></span></button>
-                    <div class="dropdown-menu" id="dropdown-content-data2">
-                        <label v-for="(pheno, index) in infoInteraction" >
-                            <input 
-                            :checked="index === 2" 
-                            type="radio" 
-                            :value="pheno.phenocode + returnExtraInfoString(pheno)" 
-                            :name="pheno.phenocode + '2'"
-                            v-model="selectedInteractionStratification2"
-                            @change="handleInteractionRadioChange"> 
-                            {{ returnExtraInfoLabel(pheno).replace(/\b\w/g, l => l.toUpperCase()) + " (" + sampleSizeInteractionLabel[pheno.phenocode + returnExtraInfoString(pheno)] + ")" }} 
-                        </label>
-                        <label v-if="infoInteraction">
-                            <input type="radio" value="No stratification" :name="infoInteraction[0].phenocode + '2'" v-model="selectedInteractionStratification2" @change="handleInteractionRadioChange"> No stratification
-                        </label>
-                    </div>
-                  </div>
-
-                  <div class="dropdown p-1 float-right" id="dropdown-sumstats">
-                    <button class="btn btn-primary btn-drop">  Download Summary Statistics  <span class="arrow-container"><span class="arrow-down"></span></span></button>
-                    <div class="dropdown-menu dropdown-menu-right p-1" id="dropdown-content-sumstats">
-                      <button class="sec-button w-100 mt-1 mb-1"  id="download-all-button" @click="downloadAll">Download All</button>
-                      <button class="sec-button w-100 mt-1 mb-1"  id="download-current-button" @click="downloadCurrent">Download Plotted Variants</button>
-                    </div>
-                  </div>
-            </div> 
-            <div v-if="miamiInteractionToggle && Object.keys(miamiInteractionData).length > 0">
-                <InteractionMiamiPlot :key="refreshKey" :data="miamiInteractionData" :hoverVariant="hoverVariant" @updateChosenVariant="updateChosenVariantMehod"/>
-                <InteractionTable 
-                  :selectedStratification1= "selectedInteractionStratification1"
-                  :selectedStratification2= "selectedInteractionStratification2"
-                  :phenocode= "phenocode"
-                  :minFreq="minFreq"
-                  :maxFreq="maxFreq"
-                  :selectedType= "selectedType"
-                  :miamiData="miamiInteractionData"
-                  :chosenVariant="chosenVariant"
-                  @updateHoverVariant="updateHoverVariantMethod"
-                />
-            </div>
-            <div v-else-if="!miamiInteractionToggle && Object.keys(manhattanInteractionData).length > 0">
-                <InteractionManhattanPlot :key="refreshKey" :data="manhattanInteractionData" :hoverVariant="hoverVariant" @updateChosenVariant="updateChosenVariantMehod"/>
-                <InteractionTable 
-                  :selectedStratification1= "selectedInteractionStratification1"
-                  :selectedStratification2= "selectedInteractionStratification2"
-                  :phenocode= "phenocode"
-                  :minFreq="minFreq"
-                  :maxFreq="maxFreq"
-                  :selectedType= "selectedType"
-                  :miamiData="manhattanInteractionData"
-                  :chosenVariant="chosenVariant"
-                  @updateHoverVariant="updateHoverVariantMethod"
-                />
-            </div>
-
-              <div v-if="qqInteractionData && dimensionInteraction" class="mt-10 mb-5"> 
-                  <h2> QQ Plot(s): </h2>
-                  <v-row justify="left" align="start" no-gutters class="qq-row">
-                    <v-col 
-                      v-for="qq in Object.keys(qqInteractionSubset)" 
-                      :key="qq + qqRefreshKey"
-                      cols="12" 
-                      sm="6" 
-                      lg="3"
-                      class="qq-col d-flex justify-left"
-                    >
-                      <div class="qq-plot-wrapper">
-                        <p class="qq-title">{{ qq.split(".").slice(1).join(", ").replace(/\b\w/g, l => l.toUpperCase()) }}</p>
-                        <QQPlot :data="{
-                            qq : qqInteractionSubset[qq],
-                            dimensions : dimensionInteraction
-                        }" /> 
-                      </div>
-                    </v-col>
-                  </v-row>
-              </div>
-            </div>
-        </v-main>
-    </v-app>
-</template>
 
 <style lang="scss" scoped>
   // .qq-container {

@@ -83,7 +83,7 @@
       :search="search" 
       height=700 
       fixed-header 
-      :items-per-page="10"
+      :items-per-page="100"
       :sort-by="[{ key: 'pval', order: 'asc' }]"
       :loading="props.isLoading"
       must-sort
@@ -217,7 +217,7 @@
                     class="mt-3"
                     variant="outlined"
                   >
-                    Save
+                    Apply
                   </v-btn>
                 </v-col>
               </v-row>
@@ -284,7 +284,7 @@
                     class="mt-3"
                     variant="outlined"
                   >
-                    Save
+                    Apply
                   </v-btn>
                 </v-col>
               </v-row>

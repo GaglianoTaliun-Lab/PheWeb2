@@ -71,7 +71,8 @@
             </v-menu>
           </div>
         </template>
-	<template v-slot:header.num_samples="{ column, isSorted, getSortIcon, }">
+
+	      <template v-slot:header.num_samples="{ column, isSorted, getSortIcon, }">
           <div style="display: flex; align-items: center;">
             <span style="white-space: nowrap;">{{ column.title }}</span>
             <v-tooltip text="Sample size" location="top">
@@ -82,6 +83,34 @@
             <template v-if="isSorted(column)">
               <v-icon :icon="getSortIcon(column)"></v-icon>
             </template>
+          </div>
+        </template>
+
+        <template v-slot:header.eaf="{ column }">
+          <div style="display: flex; align-items: start; justify-content: start; text-align: start;">
+            <span style="white-space: nowrap;">{{ "EAF" }}</span>
+            <v-tooltip location="top">
+              <template v-slot:activator="{ props }">
+                <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
+              </template>
+              <span style="white-space: normal;">
+                Effect allele frequency
+              </span>
+            </v-tooltip>
+          </div>
+        </template>
+
+        <template v-slot:header.beta_se="{ column }">
+          <div style="display: flex; align-items: start; justify-content: start; text-align: start;">
+            <span style="white-space: nowrap;">{{ column.title }}</span>
+            <v-tooltip location="top">
+              <template v-slot:activator="{ props }">
+                <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
+              </template>
+              <span style="white-space: normal; max-width: 200px; display: block; word-wrap: break-word;">
+                Effect size displayed with the standard error (shown in the bracket)
+              </span>
+            </v-tooltip>
           </div>
         </template>
 
@@ -178,12 +207,12 @@
       key: 'pval',
       sortable: true
     },
-    { title: 'Effect Allele Frequency',
+    { title: 'EAF',
       key: 'eaf',
       sortable: false
     },
     { 
-      title: 'Effect Size (se)', 
+      title: 'Effect Size', 
       key: 'beta_se',
       sortable: false 
     },
