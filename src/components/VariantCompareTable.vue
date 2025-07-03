@@ -298,9 +298,7 @@ import { STRATIFICATION_CATEGORIES } from "@/config.js";
     });
 
     return formattedList;
-};
-
-
+  };
   
   // New computed properties for dynamic hints
   const firstCategory = computed(() => {
