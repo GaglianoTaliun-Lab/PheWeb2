@@ -9,6 +9,7 @@ import Gene from '../pages/gene/Gene.vue';
 import Region from '../pages/region/Region.vue';
 import Contact from '../pages/contactUs/Contact.vue';
 import API from '../pages/api/API.vue';
+import Github from '../pages/github/Github.vue';
 
 const routes = [
   {
@@ -84,11 +85,19 @@ const routes = [
     }
   },
   {
-    path: '/api',
+    path: '/ui/api',
     name: 'API',
     component: API,
     meta: {
       title: 'CLSA-PheWeb: API'
+    }
+  },
+  {
+    path: '/github',
+    name: 'Github',
+    component: Github,
+    meta: {
+      title: 'CLSA-PheWeb: Github'
     }
   }
 ];

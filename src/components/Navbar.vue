@@ -20,10 +20,16 @@
           <v-btn text variant="plain" class="custom-btn" :to="{ name: 'API' }">API</v-btn>
         </v-col>
         <v-col cols="auto" class="d-none d-md-flex">
+          <v-btn text variant="plain" class="custom-btn" :to="{ name: 'Github' }">
+            <v-icon>mdi-github</v-icon>
+            GitHub
+          </v-btn>
+        </v-col>
+        <v-col cols="auto" class="d-none d-md-flex">
           <v-btn text variant="plain" class="custom-btn" :to="{ name: 'About' }">About</v-btn>
         </v-col>
         <v-col cols="auto" class="d-none d-md-flex">
-          <v-btn text variant="plain" class="custom-btn" :to="{ name: 'Contact' }">Contact Us</v-btn>
+          <v-btn text variant="plain" class="custom-btn" :to="{ name: 'Contact' }">Contact</v-btn>
         </v-col>
         <v-col cols="auto" class="d-flex d-md-none">
           <v-btn icon @click="sheet = true">
@@ -51,6 +57,12 @@
                 </v-list-item>
                 <v-list-item link :to="{ name: 'API' }">
                   <v-list-item-title text variant="plain" class="custom-btn2">API</v-list-item-title>
+                </v-list-item>
+                <v-list-item link :to="{ name: 'Github' }">
+                  <v-list-item-title text variant="plain" class="custom-btn2">
+                    <v-icon>mdi-github</v-icon>
+                    GitHub
+                  </v-list-item-title>
                 </v-list-item>
                 <v-list-item link :to="{ name: 'About' }">
                   <v-list-item-title text variant="plain" class="custom-btn2">About</v-list-item-title>
