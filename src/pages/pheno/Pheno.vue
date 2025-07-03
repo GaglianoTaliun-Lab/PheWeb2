@@ -145,9 +145,12 @@
             </div>
           
           <br>
+          <IsLoading v-if="isLoading" :loadingText="loadingTextQQ" />
+          <IsFailing v-if="isFailedPlotting" :isLoading="isLoading" :isFailed="isFailedPlotting" />
           <div v-if="qqData && dimension" class="mt-10 mb-5"> 
-            <h2> QQ Plot(s): </h2>
-            <v-row justify="left" align="start" no-gutters class="qq-row">
+
+            <!-- <h2> QQ Plot(s): </h2> -->
+            <v-row align="start" justify="start" no-gutters>
               <v-col 
                 v-for="qq in Object.keys(qqSubset)" 
                 :key="qq + qqRefreshKey"
@@ -242,8 +245,9 @@
           </div>
 
             <div v-if="qqInteractionData && dimensionInteraction" class="mt-10 mb-5"> 
-                <h2> QQ Plot(s): </h2>
-                <v-row justify="left" align="start" no-gutters class="qq-row">
+
+                <!-- <h2> QQ Plot(s): </h2> -->
+                <v-row align="start" justify="start" no-gutters>
                   <v-col 
                     v-for="qq in Object.keys(qqInteractionSubset)" 
                     :key="qq + qqRefreshKey"
@@ -350,6 +354,7 @@ const isLoading = ref(false);
 const isFailedPlotting = ref(false);
 const isFailedInteractionPlotting = ref(false);
 const loadingText = ref('Loading Miami / Manhattan plot... please wait');
+const loadingTextQQ = ref('Loading QQ plot... please wait');
 
 onMounted(async () => {
     try {
