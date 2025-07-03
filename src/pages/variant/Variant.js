@@ -1,5 +1,23 @@
 import * as d3 from "d3";
 
+// TODO : This works for our purposes, but we need to investigate why it was passed as a variable in the pheweb v1.
+export var lz_template = `{{#if rsid}}<strong>{{rsid}}</strong><br>{{/if}}\n
+{{#if consequence}}consequence: <strong>{{consequence}}</strong><br>{{/if}}\n
+{{#if pvalue|is_numeric}}P-value: <strong>{{pvalue|scinotation}}</strong><br>{{/if}}\n
+{{#if pval|is_numeric}}P-value: <strong>{{pval|scinotation}}</strong><br>{{/if}}\n
+{{#if beta}}Beta: <strong>{{beta}}</strong>{{#if sebeta|is_numeric}} (se:<strong>{{sebeta}}</strong>){{/if}}<br>{{/if}}\n
+{{#if or}}Odds Ratio: <strong>{{or}}</strong><br>{{/if}}\n
+{{#if maf}}MAF: <strong>{{maf|percent}}</strong><br>{{/if}}\n
+{{#if af}}AF: <strong>{{af|percent}}</strong><br>{{/if}}\n
+{{#if case_af}}AF among cases: <strong>{{case_af|percent}}</strong><br>{{/if}}\n
+{{#if control_af}}AF among controls: <strong>{{control_af|percent}}</strong><br>{{/if}}\n
+{{#if ac}}AC: <strong>{{ac}}</strong><br>{{/if}}\n
+{{#if r2}}R2: <strong>{{r2}}</strong><br>{{/if}}\n
+{{#if tstat}}Tstat: <strong>{{tstat}}</strong><br>{{/if}}\n
+{{#if num_cases}}#cases: <strong>{{num_cases}}</strong><br>{{/if}}\n
+{{#if num_controls}}#controls: <strong>{{num_controls}}</strong><br>{{/if}}\n
+{{#if num_samples}}#samples: <strong>{{num_samples}}</strong><br>{{/if}}\n`
+
 function two_digit_format(x) { return (x>=.1)? x.toFixed(2) : (x>=.01)? x.toFixed(3) : x.toExponential(1); }
 
 function fmt(format) {

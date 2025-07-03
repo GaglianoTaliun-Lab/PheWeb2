@@ -468,51 +468,61 @@ function create_manhattan_plot(variant_bins, unbinned_variants, variants = "filt
                     return d.nearest_genes.split(',').slice(0,2).join(',')+',...';
                 }
             });
+            function pp2() {
+            // First clear any existing groups (optional, to avoid duplicates)
+            d3.select('#variant_points').selectAll('g.variant_point_group').remove();
 
-        function pp2() {
-            d3.select('#variant_points')
-            .selectAll('a.variant_point')
-            .data(unbinned_variants)
-            .enter()
-            .append('a')
-            .attr('class', 'variant_point')
-            // .attr('xlink:href', get_link_to_LZ)
-            .append('circle')
-            .attr('id', function(d) {
-                return utils.fmt('variant-point-{0}-{1}-{2}-{3}', d.chrom, d.pos, d.ref, d.alt);
-            })
-            .attr('cx', function(d) {
-                return x_scale.value(get_genomic_position(d));
-            })
-            .attr('cy', function(d) {
-                return y_scale_data.value(-Math.log10(d.pval));
-            })
-            .attr('r', 2.3)
-            .style('fill', function(d) {
-                return color_by_chrom_dim(d.chrom);
-            })
-            .on('mouseover', function(d) {
-                //Note: once a tooltip has been explicitly placed once, it must be explicitly placed forever after.
-                point_tooltip.value.show(d, this);
-                // chosenVariant.value = `${d.chrom}-${d.pos}-${d.ref}-${d.alt}`;
-                    // console.log(chosenVariant.value)
-                // emit('updateChosenVariant', chosenVariant)
-            })
-            .on('mouseout', point_tooltip.value.hide)
-            .on('click', function (d) {
-                d3.event.stopPropagation();
-                chosenVariant.value = `${d.chrom}-${d.pos}-${d.ref}-${d.alt}`;
-                emit('updateChosenVariant', chosenVariant)
-                if (tooltip_showing.value) {
-                    // Hide the tooltip if it’s already showing and was clicked again
-                    point_tooltip.value.hide(d, this);
-                    tooltip_showing.value = false;
-                } else {
-                    // Show the tooltip and make it stay open
-                    point_tooltip.value.show(d, this);
-                    tooltip_showing.value = true;
-                }
-            });
+            // Create groups for each variant point, positioned by cx, cy
+            const groups = d3.select('#variant_points')
+                .selectAll('g.variant_point_group')
+                .data(unbinned_variants)
+                .enter()
+                .append('g')
+                .attr('class', 'variant_point_group')
+                .attr('transform', d => 
+                    `translate(${x_scale.value(get_genomic_position(d))}, ${y_scale_data.value(-Math.log10(d.pval))})`
+                );
+
+            // Add invisible bigger circle for interaction (click, hover)
+            groups.append('circle')
+                .attr('r', 4)  // bigger clickable radius
+                .style('fill', 'transparent')
+                .style('cursor', 'pointer')
+                .on('mouseover', function (d) {
+                    // Show the tooltip on hover
+                    if (!tooltip_showing.value) {
+                        point_tooltip.value.show(d, this);
+                    }
+                })
+                .on('mouseout', function (d) {
+                    // Only hide the tooltip on mouseout if it wasn't clicked to stay open
+                    if (!tooltip_showing.value) {
+                        point_tooltip.value.hide(d, this);
+                    }
+                })
+                .on('click', function (d) {
+                    d3.event.stopPropagation();
+                    if (tooltip_showing.value) {
+                        // Hide the tooltip if it’s already showing and was clicked again
+                        point_tooltip.value.hide(d, this);
+                        tooltip_showing.value = false;
+                    } else {
+                        // Show the tooltip and make it stay open
+                        point_tooltip.value.show(d, this);
+                        tooltip_showing.value = true;
+                        chosenVariant.value = `${d.chrom}-${d.pos}-${d.ref}-${d.alt}`;
+                        emit('updateChosenVariant', chosenVariant)
+                    }
+                });
+
+            // Add the visible small circle on top
+            groups.append('circle')
+                .attr('class', 'variant_point')
+                .attr('id', d => utils.fmt('variant-point-{0}-{1}-{2}-{3}', d.chrom, d.pos, d.ref, d.alt))
+                .attr('r', 2.3)
+                .style('fill', d => color_by_chrom_dim(d.chrom))
+                .style('cursor', 'default')
+                .style('pointer-events', 'none'); // disable pointer events so clicks go to bigger circle below
         }
         pp2();
 

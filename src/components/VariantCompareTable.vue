@@ -2,7 +2,7 @@
   <div v-if="formattedVariantList.length > 0" class="mt-1">
     <!-- Previous template code remains the same until the category search field -->
     <v-card elevation="5">
-      <v-data-table :items="filteredVariantList" :headers="headers" fixed-header :items-per-page="100"
+      <v-data-table :items="filteredVariantList" :headers="headers" fixed-header :items-per-page="10"
         hover :sort-by="[{ key: 'pval', order: 'asc' }]">
         <!-- Top slot remains the same -->
 
@@ -124,7 +124,7 @@
 
         <!-- Other template slots remain the same -->
         <template v-slot:item.phenostring="{ item }">
-          <router-link :to="`/phenotypes/${item.phenocode}`">{{ item.phenostring }}</router-link>
+          <router-link :to="`/phenotypes/${item.phenocode_variant1 ?? item.phenocode_variant2}`">{{ item.phenostring }}</router-link>
         </template>
 
         <template v-slot:item.pval="{ item }">
@@ -198,19 +198,12 @@ import { STRATIFICATION_CATEGORIES } from "@/config.js";
     selectedStratification1 : Object,
     selectedStratification2 : Object,
     variantList: Object,
-    categoryList: Object,
-    compare: Boolean,
+    categoryList: Object
   });
 
   onMounted(() => {
-    console.log("variantList")
-    console.log(props.variantList);
-  })
 
-  
-  // ... Previous header definitions and other refs remain the same ...
-  const headers = ref([
-    { 
+    headers.value = [{ 
       title: 'Category', 
       key: 'category_variant1',
       sortable: false 
@@ -269,18 +262,27 @@ import { STRATIFICATION_CATEGORIES } from "@/config.js";
           ]
         : [])
       ],
-      sortable: false    },
-  ]);
+      sortable: false    }];
+
+      formattedVariantList.value = computeFormattedVariantList();
+
+  })
+
   
+  // ... Previous header definitions and other refs remain the same ...
+  const headers = ref([]); 
   const categoryMenu = ref(false);
   const phenoMenu = ref(false);
   const selectedCategory = ref('');
   const selectedPheno = ref('');
   const filteredCategory = ref('All');
   const filteredPheno = ref('All');
-  
+  const formattedVariantList = ref([]);
+
+
+
   // Format variant list (same as before)
-  const formattedVariantList = computed(() => {
+  function computeFormattedVariantList() {
     if (!props.variantList) return [];
 
     // Flatten and filter phenos
@@ -307,6 +309,7 @@ import { STRATIFICATION_CATEGORIES } from "@/config.js";
               return {
                   category: pheno.category,
                   phenostring: pheno.phenostring,
+                  phenocode: pheno.phenocode,
                   stratification: strat,
                   ...stratFields,
                   pval: isPvalNegative ? "" : pheno.pval,
@@ -317,7 +320,7 @@ import { STRATIFICATION_CATEGORIES } from "@/config.js";
                   controls: isPvalNegative ? "" : pheno.num_controls
               };
           });
-  });
+    });
 
     // Group by phenostring
     const grouped = {};
@@ -355,11 +358,8 @@ import { STRATIFICATION_CATEGORIES } from "@/config.js";
         return merged;
     });
 
-    console.log("formattedList", formattedList);
     return formattedList;
-});
-
-
+  };
   
   // New computed properties for dynamic hints
   const firstCategory = computed(() => {

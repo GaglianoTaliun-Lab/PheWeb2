@@ -172,7 +172,6 @@
     selectedStratifications: Object,
     variantList: Object,
     categoryList: Object,
-    compare: Boolean,
   });
   
   // ... Previous header definitions and other refs remain the same ...
