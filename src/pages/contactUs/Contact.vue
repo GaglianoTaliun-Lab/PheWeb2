@@ -48,7 +48,7 @@ import Navbar from '../../components/Navbar.vue';
 import { ref } from 'vue';
 const selectedContent = ref('Acknowledgements');
 
-const drawer = ref(false);
+const drawer = ref(true);
 
 function selectContent(content) {
     selectedContent.value = content; 

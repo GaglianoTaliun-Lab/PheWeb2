@@ -77,7 +77,7 @@
     <v-data-table
       elevation="5"
       v-model="selectedItems"
-      :loading="props.isLoading"
+      :loading="isLoading"
       :headers="headers"
       :items="filteredPhenotypes"
       item-value="phenocode"
@@ -211,6 +211,8 @@
       </template>
 
       <template v-slot:loading>
+        <v-progress-circular indeterminate color="primary"></v-progress-circular>
+        <span class="mt-2">Loading Data... please wait </span>
         <v-skeleton-loader type="table-row@3"></v-skeleton-loader>
       </template>
       
@@ -221,9 +223,11 @@
 
 <script setup>
   import { ref, onMounted, watch, computed} from 'vue';
+  import axios from 'axios';
 
   const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URL
-  const phenotypes = ref(["CCC_MACDEG_COM.european.both"]);
+  const phenotypes = ref([]);
+  const geneData = ref(null);
   const isLoading = ref(false);
   const props = defineProps({
     geneName: String,
@@ -255,7 +259,10 @@
   const fetchData = async () => {
     try {
       isLoading.value = true;
-      phenotypes.value = props.data.map(item => ({
+      // console.log(props.data)
+      const gene_response = await axios.get(`${api}/gene/${props.geneName}`);
+      geneData.value = gene_response.data.data;
+      phenotypes.value = geneData.value.map(item => ({
           ...item,
           phenocode_router: item.phenocode.split('.').slice(0, 1).join('.') ,
           ancestry: `${item.stratification.ancestry.replace(/\b\w/g, l => l.toUpperCase())}`, // TODO: don't hardcode these
@@ -263,6 +270,14 @@
           abs_distance_to_true_start: item.is_in_real_range ? 0 : Math.abs(item.distance_to_true_start),
           category: item.category ? String(item.category).replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : ''
         }));
+      // phenotypes.value = props.data.map(item => ({
+      //     ...item,
+      //     phenocode_router: item.phenocode.split('.').slice(0, 1).join('.') ,
+      //     ancestry: `${item.stratification.ancestry.replace(/\b\w/g, l => l.toUpperCase())}`, // TODO: don't hardcode these
+      //     sex: `${item.stratification.sex.replace(/\b\w/g, l => l.toUpperCase())}`,
+      //     abs_distance_to_true_start: item.is_in_real_range ? 0 : Math.abs(item.distance_to_true_start),
+      //     category: item.category ? String(item.category).replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : ''
+      //   }));
     } catch (error) {
       console.error('Error fetching data for gene table:', error);
     } finally {
@@ -346,9 +361,14 @@
     return '#grey';
   };
 
-  onMounted( () => {
-    fetchData();
-    selectedItems.value = [filteredPhenotypes.value[0].phenocode];
+  onMounted( async () => {
+    await fetchData();
+    if (filteredPhenotypes.value.length > 0) {
+      selectedItems.value = [filteredPhenotypes.value[0].phenocode];
+    }
+    // console.log(filteredPhenotypes)
+    // console.log(typeof filteredPhenotypes)
+    // selectedItems.value = [filteredPhenotypes.value[0].phenocode];
   });
 
   watch(
@@ -357,12 +377,12 @@
       currentPhenocode.value = newPhenocode;
     }
   );
-  watch(
-    () => props.data,
-    (newValue) => {
-      fetchData();
-    },
-  );
+  // watch(
+  //   () => props.data,
+  //   (newValue) => {
+  //     fetchData();
+  //   },
+  // );
   watch(
     selectedItems,
     (newPhenocode) => {

@@ -133,7 +133,7 @@
 
 
       <!-- Gene table component -->
-      <div v-if="geneData">
+      <div>
         <TableGene 
           :geneName="geneName"
           :data="geneData"
@@ -151,12 +151,14 @@
           <LZ :data="plottingData" :region="region"></LZ>
         </div>
       </v-card> -->
-      <v-card elevation="5" class="pa-2 mt-2" v-if="displayPlot">
+      <IsLoading v-if="isLoading" :loadingText="loadingText" />
+      <IsFailing v-if="isFailed" :isLoading="isLoading" :isFailed="isFailed" />
+      <v-card v-if="!isLoading && displayPlot" elevation="5" class="pa-2 mt-2">
         <div class="pt-2" v-if="plottingData && geneChrom && geneStart && geneStop">
           <LZ2 :data="plottingData" :region="region"></LZ2>
         </div>
       </v-card>
-      <v-card elevation="0" class="pa-2 mt-2 text-center" v-else>
+      <v-card v-if="!isLoading && !displayPlot" elevation="0" class="pa-2 mt-2 text-center">
         <span>No data selected to display LZ plot, please select a phenotype in the table above.</span>
       </v-card>
 
@@ -169,6 +171,8 @@ import { ref, computed, watch} from 'vue';
 import { useRoute } from 'vue-router';
 import Navbar from '../../components/Navbar.vue';
 import TableGene from '../../components/TableGene.vue';
+import IsLoading from '../../components/IsLoading.vue';
+import IsFailing from '../../components/IsFailing.vue';
 
 import RegionPlot from '../../components/LocusZoomRegion.vue';
 import LZ from '../../components/LocusZoom.vue';
@@ -214,6 +218,8 @@ const updateChosenPhenoMethod = (pheno) => {
   // console.log(chosenPheno.value.length)
 };
 const isLoading = ref(false);
+const loadingText = ref('Loading LZ Data... please wait');
+const isFailed = ref(false);
 
 const fetchData = async () => {
   try {
@@ -221,7 +227,7 @@ const fetchData = async () => {
     const gene_response = await axios.get(`${api}/gene/${geneName}`);
 
     geneData.value = gene_response.data.data;
-    // console.log(geneData)
+    // console.log(geneData.value)
 
     const genpos_response = await axios.get(`${api}/gene/${geneName}/gene_position`)
 
@@ -233,6 +239,7 @@ const fetchData = async () => {
 
   } catch (error) {
     console.log(error)
+    isFailed.value = true;
   } finally {
     isLoading.value = false; // Stop loading
   }
@@ -240,6 +247,7 @@ const fetchData = async () => {
 
 // avoid sending multiple requests to the API
 const updatePlotData = async () => {
+  isLoading.value = true;
   if (!geneData.value) {
     displayPlot.value = false;
     plottingData.value = [];
@@ -267,7 +275,7 @@ const updatePlotData = async () => {
     // plottingData.value = tempData.filter((pheno) => pheno.phenocode === chosenPheno.value);
     plottingData.value = tempData.filter((pheno) => chosenPheno.value.includes(pheno.phenocode));
   }
-
+  isLoading.value = false;
   // console.log(plottingData)
 }
 

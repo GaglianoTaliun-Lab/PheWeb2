@@ -64,13 +64,74 @@
           </div>
         </template>
 
+        <template v-slot:header.num_samples="{ column, isSorted, getSortIcon, }">
+          <div style="display: flex; align-items: center; justify-content: center; text-align: center;">
+            <span style="white-space: nowrap;">{{ column.title }}</span>
+            <v-tooltip text="Sample size" location="top">
+              <template v-slot:activator="{ props }">
+                <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
+              </template>
+            </v-tooltip>
+            <template v-if="isSorted(column)">
+              <v-icon :icon="getSortIcon(column)"></v-icon>
+            </template>
+          </div>
+        </template>
+
+        <template v-slot:header.eaf="{ column }">
+          <div style="display: flex; align-items: center; justify-content: center; text-align: center;">
+            <span style="white-space: nowrap;">{{ "EAF" }}</span>
+            <v-tooltip location="top">
+              <template v-slot:activator="{ props }">
+                <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
+              </template>
+              <span style="white-space: normal;">
+                Effect allele frequency
+              </span>
+            </v-tooltip>
+          </div>
+        </template>
+
+        <template v-slot:header.beta_se="{ column }">
+          <div style="display: flex; align-items: center; justify-content: center; text-align: center;">
+            <span style="white-space: nowrap;">{{ column.title }}</span>
+            <v-tooltip location="top">
+              <template v-slot:activator="{ props }">
+                <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
+              </template>
+              <span style="white-space: normal; max-width: 200px; display: block; word-wrap: break-word;">
+                Effect size displayed with the standard error (shown in the bracket)
+              </span>
+            </v-tooltip>
+          </div>
+        </template>
+
+        <template v-slot:header.pval="{ column }">
+          <div style="display: flex; align-items: center; justify-content: center; text-align: center; ">
+            <span style="white-space: nowrap;">{{ column.title }}</span>
+            <v-tooltip location="top">
+              <template v-slot:activator="{ props }">
+                <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
+              </template>
+              <span style="white-space: normal;">
+                P-value significant threshold: 5e-8 <br>
+                green: significant <br>
+                grey: unsignificant <br>
+              </span>
+            </v-tooltip>
+          </div>
+        </template>
+
         <!-- Other template slots remain the same -->
         <template v-slot:item.phenostring="{ item }">
           <router-link :to="`/phenotypes/${item.phenocode_variant1 ?? item.phenocode_variant2}`">{{ item.phenostring }}</router-link>
         </template>
 
         <template v-slot:item.pval="{ item }">
-          <span style="white-space: nowrap;">{{ item.pval }}</span>
+          <!-- <span style="white-space: nowrap;">{{ item.pval }}</span> -->
+          <v-chip v-if="item.pval !== 'NA'" :color="getColour(item.pval)">
+            {{ formatScientific(item.pval) }}
+          </v-chip>
         </template>
 
       </v-data-table>
@@ -344,6 +405,18 @@ import { STRATIFICATION_CATEGORIES } from "@/config.js";
       return categoryMatch && phenoMatch;
     });
   });
+
+  // p value colours
+  const getColour = (pval) => {
+    if (pval < 5e-8 && pval !== null) return 'green';
+    else if (pval === "NA") return null;
+    return '#grey';
+  };
+
+  const formatScientific = (num) => {
+    if (!num || isNaN(num)) return 'N/A';  
+    return Number(num).toExponential(2);  
+  };
   </script>
   
   <style scoped>
