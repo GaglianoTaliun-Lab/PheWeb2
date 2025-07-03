@@ -2,14 +2,14 @@
     <v-app>
         <Navbar />
         <v-main>
-            <h2 style="font-weight: bold;">PheWeb 2.0 API</h2>
+            <!-- <h2 style="font-weight: bold;">PheWeb 2.0 API</h2> -->
             <v-alert
                 density="compact"
                 title="API Usage Warning"
                 type="info"
                 show-icon
                 variant="tonal"
-                class="mt-10"
+
             >
                 Dear User, <br>
                 This is an <strong>open-source API</strong> designed for <strong>small-scale scientific requests</strong>. 
@@ -42,7 +42,11 @@
                 Click the button below to access the API documentation
             </span> -->
             <div class="d-flex justify-center mt-10">
-                <v-btn @click="jumpToAPI"> <v-icon class="mr-2">mdi-file-document-outline</v-icon> PheWeb 2.0 API Documentation</v-btn>
+                <v-btn @click="jumpToAPI"> 
+                    <v-icon class="mr-2">mdi-file-document-outline</v-icon> 
+                    PheWeb 2.0 API Documentation
+                    <v-icon class="ml-2">mdi-open-in-new</v-icon>
+                </v-btn>
             </div>
         </v-main>
     </v-app>

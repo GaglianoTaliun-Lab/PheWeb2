@@ -17,7 +17,10 @@
           rel="noopener noreferrer"
           class="gene-link"
         >
-          NCBI
+          <span class="d-flex align-center">
+            NCBI
+            <v-icon class="ml-0" size="17">mdi-open-in-new</v-icon>
+          </span>
         </a>,
         <a 
           :href="ensemblGeneUrl" 
@@ -25,7 +28,10 @@
           rel="noopener noreferrer"
           class="gene-link"
         >
-          Ensembl
+          <span class="d-flex align-center">
+            Ensembl
+            <v-icon class="ml-0" size="17">mdi-open-in-new</v-icon>
+          </span>
         </a>,
         <a 
           :href="opentargetGeneUrl" 
@@ -33,7 +39,10 @@
           rel="noopener noreferrer"
           class="gene-link"
         >
-          Open Targets
+          <span class="d-flex align-center">
+            Open Targets
+            <v-icon class="ml-0" size="17">mdi-open-in-new</v-icon>
+          </span>
         </a>,
         <a 
           :href="geneCardsUrl" 
@@ -41,7 +50,10 @@
           rel="noopener noreferrer"
           class="gene-link"
         >
-          GeneCards
+          <span class="d-flex align-center">
+            GeneCards
+            <v-icon class="ml-0" size="17">mdi-open-in-new</v-icon>
+          </span>
         </a>,
         <a 
           :href="gwasCatalogUrl" 
@@ -49,7 +61,10 @@
           rel="noopener noreferrer"
           class="gene-link"
         >
-          GWAS Catalog
+          <span class="d-flex align-center">
+            GWAS Catalog
+            <v-icon class="ml-0" size="17">mdi-open-in-new</v-icon>
+          </span>
         </a>,
         <a 
           :href="gnomadUrl" 
@@ -57,7 +72,10 @@
           rel="noopener noreferrer"
           class="gene-link"
         >
-          gnomAD v4
+          <span class="d-flex align-center">
+            gnomAD v4
+            <v-icon class="ml-0" size="17">mdi-open-in-new</v-icon>
+          </span>
         </a>, 
         <a 
           :href="gtExUrl" 
@@ -65,16 +83,19 @@
           rel="noopener noreferrer"
           class="gene-link"
         >
-          GTEx  
-        </a>,
-        <a 
+          <span class="d-flex align-center">
+            GTEx  
+            <v-icon class="ml-0" size="17">mdi-open-in-new</v-icon>
+          </span>
+        </a>
+        <!-- <a 
           :href="ukbTopmedUrl" 
           target="_blank" 
           rel="noopener noreferrer"
           class="gene-link"
         >
           UKB-TOPMed (UMich)
-        </a>
+        </a> -->
       </div>
       <!-- Mobile external links menu -->
       <div class="gene-links d-flex d-md-none justify-left align-center">
@@ -89,44 +110,79 @@
           <v-list>
             <v-list-item>
               <v-list-item-title>
-                <a :href="ncbiGeneUrl" target="_blank" rel="noopener noreferrer">NCBI</a>
+                <a :href="ncbiGeneUrl" target="_blank" rel="noopener noreferrer">
+                  <span class="d-flex align-center">
+                    NCBI
+                    <v-icon class="ml-0" size="17">mdi-open-in-new</v-icon>
+                  </span>
+                </a>
               </v-list-item-title>
             </v-list-item>
             <v-list-item>
               <v-list-item-title>
-                <a :href="ensemblGeneUrl" target="_blank" rel="noopener noreferrer">Ensembl</a>
+                <a :href="ensemblGeneUrl" target="_blank" rel="noopener noreferrer">
+                  <span class="d-flex align-center">
+                    Ensembl
+                    <v-icon class="ml-0" size="17">mdi-open-in-new</v-icon>
+                  </span>
+                </a>
               </v-list-item-title>
             </v-list-item>
             <v-list-item>
               <v-list-item-title>
-                <a :href="opentargetGeneUrl" target="_blank" rel="noopener noreferrer">Open Targets</a>
+                <a :href="opentargetGeneUrl" target="_blank" rel="noopener noreferrer">
+                  <span class="d-flex align-center">
+                    Open Targets
+                    <v-icon class="ml-0" size="17">mdi-open-in-new</v-icon>
+                  </span>
+                </a>
               </v-list-item-title>
             </v-list-item>
             <v-list-item>
               <v-list-item-title>
-                <a :href="geneCardsUrl" target="_blank" rel="noopener noreferrer">GeneCards</a>
+                <a :href="geneCardsUrl" target="_blank" rel="noopener noreferrer">
+                  <span class="d-flex align-center">
+                    GeneCards
+                    <v-icon class="ml-0" size="17">mdi-open-in-new</v-icon>
+                  </span>
+                </a>
               </v-list-item-title>
             </v-list-item>
             <v-list-item>
               <v-list-item-title>
-                <a :href="gwasCatalogUrl" target="_blank" rel="noopener noreferrer">GWAS Catalog</a>
+                <a :href="gwasCatalogUrl" target="_blank" rel="noopener noreferrer">
+                  <span class="d-flex align-center">
+                    GWAS Catalog
+                    <v-icon class="ml-0" size="17">mdi-open-in-new</v-icon>
+                  </span>
+                </a>
               </v-list-item-title>
             </v-list-item>
             <v-list-item>
               <v-list-item-title>
-                <a :href="gnomadUrl" target="_blank" rel="noopener noreferrer">gnomAD v4</a>
+                <a :href="gnomadUrl" target="_blank" rel="noopener noreferrer">
+                  <span class="d-flex align-center">
+                    gnomAD v4
+                    <v-icon class="ml-0" size="17">mdi-open-in-new</v-icon>
+                  </span>
+                </a>
               </v-list-item-title>
             </v-list-item>
             <v-list-item>
               <v-list-item-title>
-                <a :href="gtExUrl" target="_blank" rel="noopener noreferrer">GTEx</a>
+                <a :href="gtExUrl" target="_blank" rel="noopener noreferrer">
+                  <span class="d-flex align-center">
+                    GTEx
+                    <v-icon class="ml-0" size="17">mdi-open-in-new</v-icon>
+                  </span>
+                </a>
               </v-list-item-title>
             </v-list-item>
-            <v-list-item>
+            <!-- <v-list-item>
               <v-list-item-title>
                 <a :href="ukbTopmedUrl" target="_blank" rel="noopener noreferrer">UKB-TOPMed (UMich)</a>
               </v-list-item-title>
-            </v-list-item>
+            </v-list-item> -->
           </v-list>
         </v-navigation-drawer>
       </div>
@@ -158,7 +214,7 @@
           <LZ2 :data="plottingData" :region="region"></LZ2>
         </div>
       </v-card>
-      <v-card v-if="!isLoading && !displayPlot" elevation="0" class="pa-2 mt-2 text-center">
+      <v-card v-if="!isLoading && !displayPlot" elevation="5" class="pa-2 mt-2 text-center">
         <span>No data selected to display LZ plot, please select a phenotype in the table above.</span>
       </v-card>
 
