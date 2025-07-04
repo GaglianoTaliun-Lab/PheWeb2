@@ -221,36 +221,56 @@ const downloadTable = () => {
               target="_blank"
               rel="noopener noreferrer"
               class="variant-link"
-              >UCSC</a
-            >,
+            >
+              <span class="d-flex align-center">
+                UCSC
+                <v-icon class="ml-0" size="17">mdi-open-in-new</v-icon>
+              </span>
+            </a>,
             <a
               :href="`https://www.ncbi.nlm.nih.gov/snp/?term=${variant.chrom}%5BChromosome%5D+AND+${variant.pos}%5BCHRPOS%5D`"
               target="_blank"
               rel="noopener noreferrer"
               class="variant-link"
-              >dbSNP</a
-            >,
+            >
+              <span class="d-flex align-center">
+                dbSNP
+                <v-icon class="ml-0" size="17">mdi-open-in-new</v-icon>
+              </span>
+            </a>,
             <a
               :href="`https://useast.ensembl.org/Homo_sapiens/Location/Variant/Table?r=${variant.chrom}:${variant.pos}-${variant.pos}`"
               target="_blank"
               rel="noopener noreferrer"
               class="variant-link"
-              >Ensembl</a
-            >,
+            >
+              <span class="d-flex align-center">
+                Ensembl
+                <v-icon class="ml-0" size="17">mdi-open-in-new</v-icon>
+              </span>
+            </a>,
             <a
               :href="`https://genetics.opentargets.org/Variant/${variant.chrom}_${variant.pos}_${variant.ref}_${variant.alt}/associations`"
               target="_blank"
               rel="noopener noreferrer"
               class="variant-link"
-              >Open Targets Genetics</a
-            >,
+            >
+              <span class="d-flex align-center">
+                Open Targets Genetics
+                <v-icon class="ml-0" size="17">mdi-open-in-new</v-icon>
+              </span>
+            </a>,
             <a
               :href="`https://gnomad.broadinstitute.org/variant/${variant.chrom}-${variant.pos}-${variant.ref}-${variant.alt}?dataset=gnomad_r4`"
               target="_blank"
               rel="noopener noreferrer"
               class="variant-link"
-              >gnomAD</a
             >
+              <span class="d-flex align-center">
+                gnomAD
+                <v-icon class="ml-0" size="17">mdi-open-in-new</v-icon>
+              </span>
+            </a>
 
             <template v-if="rsids.length === 1">,
               <a               
@@ -258,8 +278,12 @@ const downloadTable = () => {
               rel="noopener noreferrer"
               class="variant-link"
               :href="`https://www.ebi.ac.uk/gwas/search?query=${rsids[0]}`"
-                >GWAS Catalog</a
               >
+                <span class="d-flex align-center">
+                  GWAS Catalog
+                  <v-icon class="ml-0" size="17">mdi-open-in-new</v-icon>
+                </span>
+              </a>
               <!-- <a
               target="_blank"
               rel="noopener noreferrer"
