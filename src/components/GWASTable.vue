@@ -118,6 +118,7 @@
                 <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
               </template>
               <span style="white-space: normal;">
+                Variant with the most significant association P-value <br>
                 1) Chromosome <br>
                 2) Position <br>
                 3) Reference allele <br>
@@ -168,7 +169,7 @@
                       class="mt-3"
                       variant="outlined"
                     >
-                      Save
+                      Apply
                     </v-btn>
                   </v-col>
                 </v-row>
@@ -194,10 +195,13 @@
         <template v-slot:header.nearest_genes="{ column, isSorted, getSortIcon }">
           <div style="display: flex; align-items: center;">
             <span style="white-space: nowrap;">{{ column.title }}</span>
-            <v-tooltip text="Head to internal page" location="top">
+            <v-tooltip location="top">
               <template v-slot:activator="{ props }">
                 <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
               </template>
+              <span style="white-space: normal;">
+                Gene(s) nearest to the top variant
+              </span>
             </v-tooltip>
             <v-menu
               open-on-hover
@@ -241,7 +245,7 @@
                       class="mt-3"
                       variant="outlined"
                     >
-                      Save
+                      Apply
                     </v-btn>
                   </v-col>
                 </v-row>
@@ -290,9 +294,9 @@
                 <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
               </template>
               <span style="white-space: normal;">
-                P-value significant threshold: 5e-8 <br>
-                green: significant <br>
-                grey: unsignificant <br>
+                Most significant association P-value <br>
+                <span style="color: green;">Green</span>: genome-wide significant (5x10<sup>-8</sup>) <br>
+                <span style="color: grey;">Grey</span>: not significant <br>
               </span>
             </v-tooltip>
           </div>
@@ -440,7 +444,7 @@
           sortable: false
         },
         { 
-          title: 'Effect Size', 
+          title: 'Effect Size (SE)', 
           children: [
             { title: pheno1.value.split('.').slice(-2).join(', ').replace(/\b\w/g, l => l.toUpperCase()), key: 'effect_size_pheno1' }, 
             ...(props.selectedStratification2 !== props.selectedStratification1 && props.selectedStratification2 !== "No stratification"

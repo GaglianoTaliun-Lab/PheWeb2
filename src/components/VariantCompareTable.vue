@@ -26,7 +26,7 @@
                   </v-col>
                   <v-col cols="auto">
                     <v-btn @click="filterCategory" color="primary" class="mt-3" variant="outlined">
-                      Save
+                      Apply
                     </v-btn>
                   </v-col>
                 </v-row>
@@ -55,7 +55,7 @@
                   </v-col>
                   <v-col cols="auto">
                     <v-btn @click="filterPheno" color="primary" class="mt-3" variant="outlined">
-                      Save
+                      Apply
                     </v-btn>
                   </v-col>
                 </v-row>
@@ -67,10 +67,13 @@
         <template v-slot:header.num_samples="{ column, isSorted, getSortIcon, }">
           <div style="display: flex; align-items: center; justify-content: center; text-align: center;">
             <span style="white-space: nowrap;">{{ column.title }}</span>
-            <v-tooltip text="Sample size" location="top">
+            <v-tooltip location="top">
               <template v-slot:activator="{ props }">
                 <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
               </template>
+              <span style="white-space: normal;">
+                Number of samples with non-missing data
+              </span>
             </v-tooltip>
             <template v-if="isSorted(column)">
               <v-icon :icon="getSortIcon(column)"></v-icon>
@@ -114,9 +117,8 @@
                 <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
               </template>
               <span style="white-space: normal;">
-                P-value significant threshold: 5e-8 <br>
-                green: significant <br>
-                grey: unsignificant <br>
+                Most significant association P-value <br>
+                genome-wide significant threshold: 5x10<sup>-8</sup> <br>
               </span>
             </v-tooltip>
           </div>
@@ -246,7 +248,7 @@ import { STRATIFICATION_CATEGORIES } from "@/config.js";
       sortable: false
     },
     { 
-      title: 'Effect Size (se)', 
+      title: 'Effect Size (SE)', 
       key: 'beta_se',
       children: [
         { title: props.selectedStratification1.split('.').slice(-2).join(', '), key: 'beta_se_variant1' }, 

@@ -147,7 +147,7 @@
       <template v-slot:header.num_samples="{ column, isSorted, getSortIcon, }">
         <div style="display: flex; align-items: center;">
           <span style="white-space: nowrap;">{{ column.title }}</span>
-          <v-tooltip text="Sample size" location="top">
+          <v-tooltip text="Number of samples with non-missing data" location="top">
             <template v-slot:activator="{ props }">
               <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
             </template>
@@ -161,10 +161,14 @@
       <template v-slot:header.num_peaks="{ column, isSorted, getSortIcon }">
         <div style="display: flex; align-items: center;">
           <span style="white-space: nowrap;">{{ column.title }}</span>
-          <v-tooltip text="# significant peaks" location="top">
+          <v-tooltip location="top">
             <template v-slot:activator="{ props }">
               <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
             </template>
+            <span>
+              Number of non-overlapping regions with a statistically significant
+              (5×10<sup>-8</sup>) association
+            </span>
           </v-tooltip>
           <template v-if="isSorted(column)">
               <v-icon :icon="getSortIcon(column)"></v-icon>
@@ -175,6 +179,15 @@
       <template v-slot:header.nearest_genes="{ column, isSorted, getSortIcon }">
         <div style="display: flex; align-items: center;">
           <span style="white-space: nowrap;">{{ column.title }}</span>
+          <v-tooltip 
+            location="top">
+            <template v-slot:activator="{ props }">
+              <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
+            </template>
+            <span style="white-space: normal;">
+              Gene(s) nearest to the top variant
+            </span>
+          </v-tooltip>
           <v-menu
             open-on-hover
             v-model="menu2"
@@ -235,6 +248,7 @@
               <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
             </template>
             <span style="white-space: normal;">
+              Variant with the most significant association P-value <br>
               1) Chromosome <br>
               2) Position <br>
               3) Reference allele <br>
@@ -301,9 +315,43 @@
               <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
             </template>
             <span style="white-space: normal;">
-              P-value significant threshold: 5e-8 <br>
-              green: significant <br>
-              grey: unsignificant <br>
+              Most significant association P-value <br>
+              <span style="color: green;">Green</span>: genome-wide significant (5x10<sup>-8</sup>) <br>
+              <span style="color: grey;">Grey</span>: not significant <br>
+            </span>
+          </v-tooltip>
+          <template v-if="isSorted(column)">
+            <v-icon :icon="getSortIcon(column)"></v-icon>
+          </template>
+        </div>
+      </template>
+
+      <template v-slot:header.ancestry="{ column, isSorted, getSortIcon }">
+        <div style="display: flex; align-items: left; justify-content: left; text-align: left;">
+          <span style="white-space: nowrap;">{{ column.title }}</span>
+          <v-tooltip location="top">
+            <template v-slot:activator="{ props }">
+              <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
+            </template>
+            <span style="white-space: normal;">
+              Genetic ancestries included in analysis
+            </span>
+          </v-tooltip>
+          <template v-if="isSorted(column)">
+            <v-icon :icon="getSortIcon(column)"></v-icon>
+          </template>
+        </div>
+      </template>
+
+      <template v-slot:header.sex="{ column, isSorted, getSortIcon }">
+        <div style="display: flex; align-items: left; justify-content: left; text-align: left;">
+          <span style="white-space: nowrap;">{{ column.title }}</span>
+          <v-tooltip location="top">
+            <template v-slot:activator="{ props }">
+              <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
+            </template>
+            <span style="white-space: normal;">
+              Sexes included in analysis
             </span>
           </v-tooltip>
           <template v-if="isSorted(column)">
