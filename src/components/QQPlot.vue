@@ -39,7 +39,7 @@ function calculateGCLambda(data){
 
     var gc = ''
     _.sortBy(_.pairs(data.overall.gc_lambda), function(d) {return -d[0];}).forEach(function(d, j) {
-        var text = 'GC lambda ' + d[0] + ': ' + d[1].toFixed(3);
+        var text = 'GC lambda at quartile ' + d[0] + ': ' + d[1].toFixed(3);
         if (j === 0) { text = '<b>' + text + '</b>'; }
         gc += '<br>' + text;
     });
