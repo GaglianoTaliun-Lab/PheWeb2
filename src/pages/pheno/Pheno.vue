@@ -107,44 +107,32 @@
                   </div>
                 </div>
           </div> 
-          <v-progress-linear
-            v-if="isLoading"
-            indeterminate
-            color="primary"
-            height="5"
-          ></v-progress-linear>
-          <div v-if="miamiToggle && Object.keys(miamiData).length > 0">
+
+          <IsLoading v-if="isLoading" :loadingText="loadingText" />
+          <IsFailing v-if="isFailedPlotting" :isLoading="isLoading" :isFailed="isFailedPlotting" />
+          
+          <div v-if="miamiToggle && Object.keys(miamiData).length > 0 && !isFailedPlotting">
               <MiamiPlot :key="refreshKey" :data="miamiData" :hoverVariant="hoverVariant" @updateFilteringParams="updateFilteringParameters" @updateChosenVariant="updateChosenVariantMehod"/>
-              <GWASTable
-                :selectedStratification1= "selectedStratification1"
-                :selectedStratification2= "selectedStratification2"
-                :phenocode= "phenocode"
-                :minFreq="minFreq"
-                :maxFreq="maxFreq"
-                :selectedType= "selectedType"
-                :miamiData="miamiData"
-                :chosenVariant="chosenVariant"
-                @updateHoverVariant="updateHoverVariantMethod"
-                :isLoadingData="isLoading"
-              />
             </div>
-          <div v-else-if="!miamiToggle && Object.keys(manhattanData).length > 0">
+          <div v-else-if="!miamiToggle && Object.keys(manhattanData).length > 0 && !isFailedPlotting">
               <ManhattanPlot :key="refreshKey" :data="manhattanData" :hoverVariant="hoverVariant"  @updateFilteringParams="updateFilteringParameters" @updateChosenVariant="updateChosenVariantMehod"/>
-              <GWASTable
-                :selectedStratification1= "selectedStratification1"
-                :selectedStratification2= "selectedStratification2"
-                :phenocode= "phenocode"
-                :minFreq="minFreq"
-                :maxFreq="maxFreq"
-                :selectedType= "selectedType"
-                :miamiData="manhattanData"
-                :chosenVariant="chosenVariant"
-                @updateHoverVariant="updateHoverVariantMethod"
-                :isLoadingData="isLoading"
-              />
             </div>
           
           <br>
+          <div v-if="!isInteractionChecked">
+            <GWASTable
+              :isInteractionChecked="isInteractionChecked"
+              :selectedStratification1= "selectedStratification1"
+              :selectedStratification2= "selectedStratification2"
+              :phenocode= "phenocode"
+              :minFreq="minFreq"
+              :maxFreq="maxFreq"
+              :selectedType= "selectedType"
+              :chosenVariant="chosenVariant"
+              @updateHoverVariant="updateHoverVariantMethod"
+            />
+          </div>
+          
           <IsLoading v-if="isLoading" :loadingText="loadingTextQQ" />
           <IsFailing v-if="isFailedPlotting" :isLoading="isLoading" :isFailed="isFailedPlotting" />
           <div v-if="qqData && dimension" class="mt-10 mb-5"> 
