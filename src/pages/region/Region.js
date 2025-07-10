@@ -10,7 +10,7 @@ export const tooltip_lztemplate = `
 {{#if consequence}}consequence: <strong>{{consequence}}</strong><br>{{/if}}
 {{#if pvalue|is_numeric}}P-value: <strong>{{pvalue|scinotation}}</strong><br>{{/if}}
 {{#if pval|is_numeric}}P-value: <strong>{{pval|scinotation}}</strong><br>{{/if}}
-{{#if beta}}Beta: <strong>{{beta}}</strong>{{#if sebeta|is_numeric}} (se:<strong>{{sebeta}}</strong>){{/if}}<br>{{/if}}
+{{#if beta}}Beta (SE): <strong>{{beta}}</strong>{{#if sebeta|is_numeric}} (<strong>{{sebeta}}</strong>){{/if}}<br>{{/if}}
 {{#if or}}Odds Ratio: <strong>{{or}}</strong><br>{{/if}}
 {{#if maf}}MAF: <strong>{{maf|percent}}</strong><br>{{/if}}
 {{#if af}}AF: <strong>{{af|percent}}</strong><br>{{/if}}

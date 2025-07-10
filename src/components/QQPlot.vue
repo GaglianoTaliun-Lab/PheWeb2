@@ -13,6 +13,10 @@ const props = defineProps({
         dimensions : {
             type: Array,
             required : false
+        },
+        title : {
+            type: String,
+            required : true
         }
     },
 });
@@ -41,7 +45,7 @@ function calculateGCLambda(data){
     _.sortBy(_.pairs(data.overall.gc_lambda), function(d) {return -d[0];}).forEach(function(d, j) {
         var text = 'GC lambda at quantile ' + d[0] + ': ' + d[1].toFixed(3);
         if (j === 0) { text = '<b>' + text + '</b>'; }
-        gc += '<br>' + text;
+        gc +=  text + '<br>';
     });
 
     gcLambdaText.value = gc
@@ -86,7 +90,7 @@ function createQQPlot(data, height = null, width = null) {
         'left': 30,
         'right': 30,
         'top': 10,
-        'bottom': 140,
+        'bottom': 170,
     };
 
     var svg_width = qqPlotContainer.value.clientWidth;
@@ -160,21 +164,32 @@ function createQQPlot(data, height = null, width = null) {
         return x.toExponential(0);
     };
 
-    // Legend
-    qq_svg.append('g')
+    const legendText = [
+    'Minor allele frequency (MAF)',
+    'ranges per quartile'
+    ];
+
+    const text = qq_svg.append('g')
         .attr('transform', fmt('translate({0},{1})',
-                            0,
-                            plot_margin.top + plot_height + 80))
+                                0,
+                                plot_margin.top + plot_height + 80))
         .append('text')
         .attr('text-anchor', 'start')
         .attr('y', '-1em')
-        .text('MAF ranges per quartile')
         .style('font-weight', 'bold');
+
+    text.selectAll('tspan')
+        .data(legendText)
+        .enter()
+        .append('tspan')
+        .attr('x', 0)
+        .attr('dy', (d, i) => i === 0 ? 0 : '1.2em')
+        .text(d => d);
 
     qq_svg.append('g')
         .attr('transform', fmt('translate({0},{1})',
                             0,
-                            plot_margin.top + plot_height + 82))
+                            plot_margin.top + plot_height + 105))
         .selectAll('text.legend-items')
         .data(maf_ranges)
         .enter()
@@ -183,6 +198,7 @@ function createQQPlot(data, height = null, width = null) {
         .attr('y', function(d,i) {
             return i + 'em';
         })
+        .attr('x', 0)
         .text(function(d) {
             return fmt('{0} ≤ MAF < {1} ({2})',
                     attempt_two_decimals(d.maf_range[0]),
@@ -237,7 +253,8 @@ function createQQPlot(data, height = null, width = null) {
 
 
 <template>
-    <div>
+    <div class="shadow-sm border rounded mx-2 p-3" >
+        <p class="qq-title">{{ info.title }}</p>
         <div class="qq-chart" ref="qqPlotContainer"></div>
         <div class="gc-lambda" v-html="gcLambdaText"></div>
     </div>
@@ -247,9 +264,6 @@ function createQQPlot(data, height = null, width = null) {
 <style lang="scss">
 .qq-chart {
     width: 300px;
-    // max-width: 400px; 
-    // min-width: 250px; 
-    // height:300px;
 }
 .qq-chart .axis path.domain {
     stroke: black;
@@ -258,5 +272,20 @@ function createQQPlot(data, height = null, width = null) {
 .qq-chart g.tick line {
     stroke: #666;
     opacity: 0.3;
+}
+
+.gc-lambda {
+    text-align: left;
+    font-size: 16px;
+    padding: 0em;
+    margin: 0;
+}
+
+.qq-title {
+    font-size: 18px;
+    font-weight: 500;
+    text-align: center;
+    margin-bottom: 10px;
+    color: #333;
 }
 </style>

@@ -5,7 +5,7 @@ export var lz_template = `{{#if rsid}}<strong>{{rsid}}</strong><br>{{/if}}\n
 {{#if consequence}}consequence: <strong>{{consequence}}</strong><br>{{/if}}\n
 {{#if pvalue|is_numeric}}P-value: <strong>{{pvalue|scinotation}}</strong><br>{{/if}}\n
 {{#if pval|is_numeric}}P-value: <strong>{{pval|scinotation}}</strong><br>{{/if}}\n
-{{#if beta}}Beta: <strong>{{beta}}</strong>{{#if sebeta|is_numeric}} (se:<strong>{{sebeta}}</strong>){{/if}}<br>{{/if}}\n
+{{#if beta}}Beta (SE): <strong>{{beta}}</strong>{{#if sebeta|is_numeric}} (<strong>{{sebeta}}</strong>){{/if}}<br>{{/if}}\n
 {{#if or}}Odds Ratio: <strong>{{or}}</strong><br>{{/if}}\n
 {{#if maf}}MAF: <strong>{{maf|percent}}</strong><br>{{/if}}\n
 {{#if af}}AF: <strong>{{af|percent}}</strong><br>{{/if}}\n

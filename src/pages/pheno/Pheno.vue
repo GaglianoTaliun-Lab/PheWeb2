@@ -13,21 +13,18 @@
               height="5"
             ></v-progress-linear> -->
             <div class="links m-1 d-flex justify-space-between align-center text-center">
-              
-              <div class="d-none d-md-flex">
-                  <div v-if="Object.keys(allInteractionPlottingData).length > 0">
-                    <v-chip
-                      size="x-large"
-                      label
-                      :color="isInteractionChecked ? 'primary' : 'default'"
-                      filter
-                      :filter-icon="isInteractionChecked ? 'mdi-check' : ''"
-                      @click="isInteractionChecked = !isInteractionChecked; onInteractionCheckboxChange()"
-                    >
-                      Show Genotypes x Sex Interaction Results
-                    </v-chip>
-                  </div>
-              </div>
+                <div class="d-none d-md-flex" :class="{ 'chip-disabled': Object.keys(allInteractionPlottingData).length < 1 || isLoading }" >
+                  <v-chip
+                  size="x-large"
+                  label
+                  :color="isInteractionChecked ? 'primary' : 'default'"
+                  filter
+                  :filter-icon="isInteractionChecked ? 'mdi-check' : ''"
+                  @click="isInteractionChecked = !isInteractionChecked; onInteractionCheckboxChange()"
+                >
+                  Show Genotypes x Sex Interaction Results
+                </v-chip>
+            </div>
               <div class="data-portal d-flex d-md-none justify-center align-center text-center">
                 <div v-if="Object.keys(allInteractionPlottingData).length > 0">
                     <v-chip
@@ -151,8 +148,9 @@
                   <p class="qq-title">{{ qq.split(".").slice(1).join(", ").replace(/\b\w/g, l => l.toUpperCase()) }}</p>
                   <QQPlot :data="{
                       qq : qqSubset[qq],
-                      dimensions : dimension
-                  }" /> 
+                      dimensions : dimension,
+                      title: formatQQTitle(qq)
+                    }" /> 
                 </div>
               </v-col>
             </v-row>
@@ -245,11 +243,11 @@
                     class="qq-col d-flex justify-left"
                   >
                     <div class="qq-plot-wrapper">
-                      <p class="qq-title">{{ qq.split(".").slice(1).join(", ").replace(/\b\w/g, l => l.toUpperCase()) }}</p>
                       <QQPlot :data="{
                           qq : qqInteractionSubset[qq],
-                          dimensions : dimensionInteraction
-                      }" /> 
+                          dimensions : dimensionInteraction,
+                          title: formatQQTitle(qq)
+                        }" /> 
                     </div>
                   </v-col>
                 </v-row>
@@ -604,6 +602,11 @@ function returnExtraInfoLabel(pheno) {
   return extraInfoLabel.replace(/\b\w/g, l => l.toUpperCase());
 }
 
+const formatQQTitle = (qq) => {
+  if (!qq || typeof qq !== 'string') return '';
+  return qq.split('.').slice(1).join(', ').replace(/\b\w/g, l => l.toUpperCase());
+};
+
 
 const downloadAll = () => {
   var downloads = []
@@ -794,15 +797,12 @@ const updateChosenVariantMehod = (variant) => {
 
 function onInteractionCheckboxChange() {
   if (isInteractionChecked.value) {
-    // console.log(infoInteraction.value)
     var strats = chooseDefaultPhenos(infoInteraction.value)
-    // console.log(strats)
     selectedInteractionStratification1.value = strats[0].phenocode +returnExtraInfoString(strats[0])
     selectedInteractionStratification2.value = strats[1] ? strats[1].phenocode + returnExtraInfoString(strats[1]): "No stratification"
     handleInteractionRadioChange(); 
 
   } else {
-    // console.log(info.value)
     var strats = chooseDefaultPhenos(info.value)
     selectedStratification1.value = strats[0].phenocode +returnExtraInfoString(strats[0])
     selectedStratification2.value = strats[1] ? strats[1].phenocode + returnExtraInfoString(strats[1]): "No stratification"
@@ -828,40 +828,12 @@ onUnmounted(() => {
 
 
 <style lang="scss" scoped>
-  // .qq-container {
-  //   position: relative;
-  //   display: flex;
-  //   // justify-content: space-around; 
-  //   justify-content: center;
-  //   align-items: flex-start;
-  //   // flex-wrap: nowrap; 
-  //   gap: 10px;
-  // }
-  
-  // .qq-container div {
-  //   // margin: 10px 10px; 
-  //   object-fit: contain; 
-  //   max-width: 45%;
-  // }
+
   .qq-plot-wrapper {
     width: 100%;
     max-width: 600px;
     text-align: center;
   }
-  .qq-title {
-    font-size: 18px;
-    font-weight: 500;
-    text-align: center;
-    margin-bottom: 10px;
-    color: #333;
-  }
-
-  // .qq p{
-  //   font-size:20px;
-  //   text-align:center;
-  //   color: black;
-  //   text-indent: 1%;
-  // }
 
   .arrow-container {
     float: left;
@@ -903,6 +875,12 @@ onUnmounted(() => {
     width: 20px;
     height: 20px; 
     cursor: pointer; 
+  }
+
+  .chip-disabled {
+    pointer-events: none;
+    opacity: 0.6;
+    cursor: not-allowed;
   }
   
   .dropdown-menu {
