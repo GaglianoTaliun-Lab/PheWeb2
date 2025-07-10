@@ -49,24 +49,26 @@
                 </div>
                     
                 <div v-if="selectedContent === 'Pre-LiftOver'" id="Pre-LiftOver">
-                    <h3>Pre-LiftOver Filtering</h3>
+                    <h3>Sample-level and variant-level filters</h3>
                     <hr>
                     <p>CLSA flagged variants that may have low quality due to:</p>
                     <ol>
-                        <li>Batch Discordance</li>
-                        <li>Hardy-Weinberg Discordance (p < 3.15e-10)</li>
-                        <li>Control Genotype Discordance </li>
-                        <li>Sex Discordance</li>
+                        <li>Batch Discordance (14,753 variants)</li>
+                        <li>Hardy-Weinberg Discordance (7,790 variants, with p < 3.15e-10)</li>
+                        <li>Control Genotype Discordance (27,937 variants)</li>
+                        <li>Sex Discordance (248 variants)</li>
                     </ol>
-                    <p>Before liftOver, we removed these flagged variants. This filter removed 131,892 variants, resulting in 662,517 kept.</p>
+                    <p>Before liftOver, we removed these flagged variants. This filter removed 37,706 variants, resulting in 756,703 kept.</p>
                     <p>With regard to sample quality control, we removed samples:</p>
                     <ol>
-                        <li>Identified as an outlier in relation to heterozygosity or genotype missingness</li>
-                        <li>Differing reported sex versus chromosomal sex</li>
-                        <li>Missing self-reported sex </li>
-                        <li>Missing chromosomal sex</li>
+                        <li>Identified as an outlier in relation to heterozygosity or genotype missingness (15 samples)</li>
+                        <li>Differing reported sex versus chromosomal sex (48 samples)</li>
+                        <li>Missing self-reported sex (0 samples)</li>
+                        <li>Missing chromosomal sex (15 samples)</li>
                     </ol>
-                    <p>These filters removed 63 samples, keeping 26,559</p>
+                    <p>These filters removed 63 samples, keeping 26,563.</p>
+                    <p>Finally, we excluded monomorphic variants which resulted from sample exclusions. This removed an additional 14,682 variants, such that 742,021 remained.</p>
+
                 </div>
 
                 <div v-if="selectedContent === 'LiftOverGRCh38'" id="LiftOverGRCh38" >
@@ -80,7 +82,7 @@
                         <li>We excluded palindromic variants (A/T and G/C), variants for which A1/A2 alleles didn't match REF/ALT, and for which A1/A2 alleles were not A, C, G, or T.</li>
                         <li>We renamed all variants to follow the CHR:POS:REF:ALT notation.</li>
                     </ol>
-                    <p>We started with 662,517 variants (GRCh37) and following these steps, ended up with 620,446 variants (GRCh38) successfully lifted over.</p>
+                    <p>We started with 742,021 variants (GRCh37) and following these steps, ended up with 682,192 variants (GRCh38) successfully lifted over.</p>
                     <br>
                     <p> Table 1. Distribution of SNPs per chromosome after liftOver steps.</p>
                     <v-data-table-virtual
@@ -97,7 +99,7 @@
                 </div>
 
                 <div v-if="selectedContent === 'HweRuth'" id='HweRuth'>
-                    <h3>Ancestry-Aware Hardy-Weinberg Check with RUTH</h3>
+                    <h3>Ancestry-adjusted HWE filters</h3>
                     <hr>
                     <p>Using Robust Unified Hardy-Weinberg Equilibrium Test (<a href="https://github.com/statgen/ruth" target = "_blank" >RUTH</a>), we confirmed the CLSA's hardy-weinberg equilibrium exclusion criteria.</p>
                     <p>We ran RUTH on the results from step 2.2 using the 20 first PCs using the likelihood-ratio test with max lambda parameter of 0, using the GT field. We used seed 101.</p>
@@ -377,29 +379,29 @@
     ]
 
     const SNPdistribution = [
-        { chr: 1, snp: 47826 },
-        { chr: 2, snp: 48686 },
-        { chr: 3, snp: 40648},
-        { chr: 4, snp: 38662},
-        { chr: 5, snp: 36654},
-        { chr: 6, snp: 42563},
-        { chr: 7, snp: 33200},
-        { chr: 8, snp: 31200},
-        { chr: 9, snp: 26652},
-        { chr: 10, snp: 30518},
-        { chr: 11, snp: 29892},
-        { chr: 12, snp: 28890},
-        { chr: 13, snp: 20865},
-        { chr: 14, snp: 19620},
-        { chr: 15, snp: 18916},
-        { chr: 16, snp: 21012},
-        { chr: 17, snp: 19726},
-        { chr: 18, snp: 18143},
-        { chr: 19, snp: 16562},
-        { chr: 20, snp: 15848},
-        { chr: 21, snp: 9102},
-        { chr: 22, snp: 9661},
-        { chr: 'X', snp: 15503},
+        { chr: 1, snp: 53930 },
+        { chr: 2, snp: 52913 },
+        { chr: 3, snp: 44421 },
+        { chr: 4, snp: 41180 },
+        { chr: 5, snp: 39271 },
+        { chr: 6, snp: 46142 },
+        { chr: 7, snp: 36114 },
+        { chr: 8, snp: 33217 },
+        { chr: 9, snp: 29276 },
+        { chr: 10, snp: 33078 },
+        { chr: 11, snp: 34050 },
+        { chr: 12, snp: 31926 },
+        { chr: 13, snp: 22317 },
+        { chr: 14, snp: 21693 },
+        { chr: 15, snp: 20925 },
+        { chr: 16, snp: 23932 },
+        { chr: 17, snp: 23306 },
+        { chr: 18, snp: 19146 },
+        { chr: 19, snp: 20563 },
+        { chr: 20, snp: 17244 },
+        { chr: 21, snp: 9807 },
+        { chr: 22, snp: 10890 },
+        { chr: 'X', snp: 15549 }
     ]
 
     const SNPdistribution_regenie = [
