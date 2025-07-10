@@ -55,8 +55,8 @@
 
           <div v-if="!isInteractionChecked" class="non-interaction">
             <div class="pheno-info col-12 d-flex justify-left align-center text-center mt-0">
-              <div class="dropdown p-1" id="dropdown-data1">
-                  <button class="btn btn-primary btn-drop" id="button-data1">{{keyToLabel(selectedStratification1)+ " (" + sampleSizeLabel[selectedStratification1] + ")"}}<span class="arrow-container"><span class="arrow-down"></span></span></button>
+              <div class="dropdown p-1" id="dropdown-data1" :class="{ 'dropdown-disabled': isDisabled || isLoading }" >
+                  <button  class="btn btn-primary btn-drop" id="button-data1">{{keyToLabel(selectedStratification1)+ " (" + sampleSizeLabel[selectedStratification1] + ")"}}<span class="arrow-container"><span class="arrow-down"></span></span></button>
                   <div class="dropdown-menu" id="dropdown-content-data1">
                       <label v-for="(pheno, index) in info">
                           <input 
@@ -69,9 +69,9 @@
                       </label> 
                   </div>
                 </div>
-                <div class="dropdown p-1" id="dropdown-data2">
+                <div class="dropdown p-1" id="dropdown-data2" :class="{ 'dropdown-disabled': isDisabled || isLoading }">
                   <button v-if="selectedStratification2 == 'No stratification'" class="btn btn-primary btn-drop" id="button-data2"> No stratification <span class="arrow-container"><span class="arrow-down"></span></span></button>
-                  <button v-else class="btn btn-primary btn-drop" id="button-data2"> {{keyToLabel(selectedStratification2) + " (" + sampleSizeLabel[selectedStratification2] + ")"}} <span class="arrow-container"><span class="arrow-down"></span></span></button>
+                  <button v-else  class="btn btn-primary btn-drop" id="button-data2"> {{keyToLabel(selectedStratification2) + " (" + sampleSizeLabel[selectedStratification2] + ")"}} <span class="arrow-container"><span class="arrow-down"></span></span></button>
                   <div class="dropdown-menu" id="dropdown-content-data2">
                       <label v-for="(pheno, index) in info" >
                           <input 
@@ -160,7 +160,7 @@
           </div>
           <div v-else class="interaction">
             <div class="pheno-info col-12 mt-0">
-                <div class="dropdown p-1" id="dropdown-data1">
+                <div class="dropdown p-1" id="dropdown-data1" :class="{ 'dropdown-disabled': isDisabled || isLoading }">
                   <button class="btn btn-primary btn-drop" id="button-data1">{{keyToLabel(selectedInteractionStratification1).replace(/\b\w/g, l => l.toUpperCase()) + " (" + sampleSizeInteractionLabel[selectedInteractionStratification1] + ")"}}<span class="arrow-container"><span class="arrow-down"></span></span></button>
                   <div class="dropdown-menu" id="dropdown-content-data1">
                       <label v-for="(pheno, index) in infoInteraction">
@@ -175,9 +175,9 @@
                       </label> 
                   </div>
                 </div>
-                <div class="dropdown p-1" id="dropdown-data2">
+                <div class="dropdown p-1" id="dropdown-data2" :class="{ 'dropdown-disabled': isDisabled || isLoading }">
                   <button v-if="selectedInteractionStratification2 == 'No stratification'" class="btn btn-primary btn-drop" id="button-data2"> No stratification <span class="arrow-container"><span class="arrow-down"></span></span></button>
-                  <button v-else class="btn btn-primary btn-drop" id="button-data2"> {{keyToLabel(selectedInteractionStratification2).replace(/\b\w/g, l => l.toUpperCase()) + " (" + sampleSizeInteractionLabel[selectedInteractionStratification2] + ")"}} <span class="arrow-container"><span class="arrow-down"></span></span></button>
+                  <button v-else  class="btn btn-primary btn-drop" id="button-data2"> {{keyToLabel(selectedInteractionStratification2).replace(/\b\w/g, l => l.toUpperCase()) + " (" + sampleSizeInteractionLabel[selectedInteractionStratification2] + ")"}} <span class="arrow-container"><span class="arrow-down"></span></span></button>
                   <div class="dropdown-menu" id="dropdown-content-data2">
                       <label v-for="(pheno, index) in infoInteraction" >
                           <input 
@@ -195,7 +195,7 @@
                   </div>
                 </div>
 
-                <div class="dropdown p-1 float-right" id="dropdown-sumstats">
+                <div class="dropdown p-1 float-right" id="dropdown-sumstats" :class="{ 'dropdown-disabled': isDisabled || isLoading }">
                   <button class="btn btn-primary btn-drop">  Download Summary Statistics  <span class="arrow-container"><span class="arrow-down"></span></span></button>
                   <div class="dropdown-menu dropdown-menu-right p-1" id="dropdown-content-sumstats">
                     <button class="sec-button w-100 mt-1 mb-1"  id="download-all-button" @click="downloadAll">Download All</button>
@@ -206,12 +206,12 @@
           <div v-if="miamiInteractionToggle && Object.keys(miamiInteractionData).length > 0">
               <InteractionMiamiPlot :key="refreshKey" :data="miamiInteractionData" :hoverVariant="hoverVariant" @updateChosenVariant="updateChosenVariantMehod"/>
               <InteractionTable 
-                :selectedStratification1= "selectedInteractionStratification1"
-                :selectedStratification2= "selectedInteractionStratification2"
-                :phenocode= "phenocode"
+                :selectedStratification1="selectedInteractionStratification1"
+                :selectedStratification2="selectedInteractionStratification2"
+                :phenocode="phenocode"
                 :minFreq="minFreq"
                 :maxFreq="maxFreq"
-                :selectedType= "selectedType"
+                :selectedType="selectedType"
                 :miamiData="miamiInteractionData"
                 :chosenVariant="chosenVariant"
                 @updateHoverVariant="updateHoverVariantMethod"
@@ -220,12 +220,12 @@
           <div v-else-if="!miamiInteractionToggle && Object.keys(manhattanInteractionData).length > 0">
               <InteractionManhattanPlot :key="refreshKey" :data="manhattanInteractionData" :hoverVariant="hoverVariant" @updateChosenVariant="updateChosenVariantMehod"/>
               <InteractionTable 
-                :selectedStratification1= "selectedInteractionStratification1"
-                :selectedStratification2= "selectedInteractionStratification2"
-                :phenocode= "phenocode"
+                :selectedStratification1="selectedInteractionStratification1"
+                :selectedStratification2="selectedInteractionStratification2"
+                :phenocode="phenocode"
                 :minFreq="minFreq"
                 :maxFreq="maxFreq"
-                :selectedType= "selectedType"
+                :selectedType="selectedType"
                 :miamiData="manhattanInteractionData"
                 :chosenVariant="chosenVariant"
                 @updateHoverVariant="updateHoverVariantMethod"
@@ -343,6 +343,8 @@ const isFailedPlotting = ref(false);
 const isFailedInteractionPlotting = ref(false);
 const loadingText = ref('Loading Miami / Manhattan plot... please wait');
 const loadingTextQQ = ref('Loading QQ plot... please wait');
+
+const isDisabled = ref(false);
 
 onMounted(async () => {
     try {
@@ -912,6 +914,19 @@ onUnmounted(() => {
     padding: 12px 16px;
     z-index: 5;
   }
+
+  .dropdown.dropdown-disabled:hover .dropdown-menu {
+    display: none !important;
+    pointer-events: none;
+    visibility: hidden;
+  }
+
+  .dropdown.dropdown-disabled .btn-drop {
+    background-color: #e0e0e0; 
+    color: #888;               
+    cursor: not-allowed;
+    opacity: 0.7;
+  }
   
   .dropdown-menu-right {
     display: none;
@@ -974,6 +989,8 @@ onUnmounted(() => {
   .responsive-main {
   padding-top: 4cap;
 }
+
+
 
 @media (max-width: 600px) {
   .responsive-main {

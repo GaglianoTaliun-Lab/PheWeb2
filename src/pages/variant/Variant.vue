@@ -349,7 +349,9 @@ const downloadTable = () => {
           <div class="d-flex justify-content-md-between">
             <div>
               <div v-if="category_list && category_list.length > 0" class="dropdown mr-2" id="dropdown-data1">
-                <button class="btn btn-primary btn-drop" id="button-data1"> Choose Categories <span class="arrow-container"><span class="arrow-down"></span></span></button>
+                <button :disabled="isLoading" class="btn btn-primary btn-drop" id="button-data1">
+                  Choose Categories <span class="arrow-container"><span class="arrow-down"></span></span>
+                </button>
                 <div class="dropdown-menu" id="dropdown-content-data1">
                     <label v-for="(category, index) in category_list">
                         <input  
@@ -363,7 +365,10 @@ const downloadTable = () => {
                 </div>
               </div>
               <div class="dropdown pt-1 pr-2" id="dropdown-data1">
-                <button :disabled="isDisabled"  class="btn btn-primary btn-drop" id="button-data1">{{keyToLabel(selectedStratification1)}}<span class="arrow-container"><span class="arrow-down"></span></span></button>
+                <button :disabled="isDisabled || isLoading" class="btn btn-primary btn-drop" id="button-data1">
+                  {{ keyToLabel(selectedStratification1) }}
+                  <span class="arrow-container"><span class="arrow-down"></span></span>
+                </button>
                 <div class="dropdown-menu" id="dropdown-content-data1">
                   <label v-for="(stratification, index) in stratification_list">
                       <input 
@@ -377,8 +382,12 @@ const downloadTable = () => {
                 </div>
               </div>
               <div class="dropdown pt-1 pr-2" id="dropdown-data2">
-                <button :disabled="isDisabled"  v-if="selectedStratification2 == 'No stratification'" class="btn btn-primary btn-drop" id="button-data2"> No stratification <span class="arrow-container"><span class="arrow-down"></span></span></button>
-                <button :disabled="isDisabled"  v-else class="btn btn-primary btn-drop" id="button-data2"> {{keyToLabel(selectedStratification2)}} <span class="arrow-container"><span class="arrow-down"></span></span></button>
+                <button :disabled="isDisabled || isLoading" v-if="selectedStratification2 == 'No stratification'" class="btn btn-primary btn-drop" id="button-data2">
+                  No stratification <span class="arrow-container"><span class="arrow-down"></span></span>
+                </button>
+                <button :disabled="isDisabled || isLoading" v-else class="btn btn-primary btn-drop" id="button-data2">
+                  {{ keyToLabel(selectedStratification2) }} <span class="arrow-container"><span class="arrow-down"></span></span>
+                </button>
                 <div class="dropdown-menu" id="dropdown-content-data2">
                   <label v-for="(stratification, index) in stratification_list">
                       <input 
@@ -495,6 +504,19 @@ const downloadTable = () => {
   box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
   padding: 12px 16px;
   z-index: 5;
+}
+
+.dropdown.dropdown-disabled:hover .dropdown-menu {
+  display: none !important;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.dropdown.dropdown-disabled .btn-drop {
+  background-color: #e0e0e0;
+  color: #888;              
+  cursor: not-allowed;
+  opacity: 0.7;
 }
 
 .dropdown-menu-right {
