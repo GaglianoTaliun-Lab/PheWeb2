@@ -163,7 +163,6 @@ const formattedVariantList = computed(() => {
 
 
 const downloadTable = () => {
-  // Dynamic headers
   const headers = [
     'Category',
     'Phenotype',
@@ -173,16 +172,23 @@ const downloadTable = () => {
     'Number of Samples'
   ];
 
+  const escapeForCSV = (value) => {
+    const str = String(value ?? '');
+    return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
+  };
+
   const csvContent = [
-    headers.join(','),
-    ...formattedVariantList.value.map(item => [
-      item.category,
-      item.phenostring,
-      ...STRATIFICATION_CATEGORIES.map(key => item[key]),
-      item.pval,
-      item.beta_se,
-      item.num_samples
-    ].join(','))
+    headers.map(escapeForCSV).join(','),
+    ...formattedVariantList.value.map(item =>
+      [
+        item.category,
+        item.phenostring,
+        ...STRATIFICATION_CATEGORIES.map(key => item[key]),
+        item.pval,
+        item.beta_se,
+        item.num_samples
+      ].map(escapeForCSV).join(',')
+    )
   ].join('\n');
 
   const blob = new Blob([csvContent], { type: 'text/csv' });
@@ -321,6 +327,7 @@ const downloadTable = () => {
             <div class="mb-1 d-none d-md-flex">
                 <div >
                   <v-chip
+                    :disabled="isLoading"
                     size="x-large"
                     label
                     :color="isDisplayAllChecked ? 'default' : 'primary'"

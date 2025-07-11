@@ -254,7 +254,7 @@ function createQQPlot(data, height = null, width = null) {
 
 <template>
     <div class="shadow-sm border rounded mx-2 p-3" >
-        <p class="qq-title">{{ info.title }}</p>
+        <p v-if="info?.title" class="qq-title">{{ info?.title }}</p>
         <div class="qq-chart" ref="qqPlotContainer"></div>
         <div class="gc-lambda" v-html="gcLambdaText"></div>
     </div>

@@ -58,11 +58,11 @@
                       <label v-for="(pheno, index) in info">
                           <input 
                           type="radio" 
-                          :value="pheno.phenocode + returnExtraInfoString(pheno)" 
+                          :value="pheno.phenocode + returnInteractionSuffix(pheno) + returnStratificationSuffix(pheno)" 
                           :name="pheno.phenocode + '1'" 
                           v-model="selectedStratification1"
                           @change="handleRadioChange">
-                          {{ returnExtraInfoLabel(pheno).replace(/\b\w/g, l => l.toUpperCase()) + " (" + sampleSizeLabel[pheno.phenocode + returnExtraInfoString(pheno)] + ")"}} 
+                          {{ (returnInteractionLabel(pheno) + returnStratificationLabel(pheno)).replace(/\b\w/g, l => l.toUpperCase()) + " (" + sampleSizeLabel[pheno.phenocode + returnInteractionSuffix(pheno) + returnStratificationSuffix(pheno)] + ")"}} 
                       </label> 
                   </div>
                 </div>
@@ -73,11 +73,11 @@
                       <label v-for="(pheno, index) in info" >
                           <input 
                           type="radio" 
-                          :value="pheno.phenocode + returnExtraInfoString(pheno)" 
+                          :value="pheno.phenocode + returnInteractionSuffix(pheno) + returnStratificationSuffix(pheno)" 
                           :name="pheno.phenocode + '2'"
                           v-model="selectedStratification2"
                           @change="handleRadioChange"> 
-                          {{ returnExtraInfoLabel(pheno).replace(/\b\w/g, l => l.toUpperCase()) + " (" + sampleSizeLabel[pheno.phenocode + returnExtraInfoString(pheno)] + ")" }} 
+                          {{ (returnInteractionLabel(pheno) + returnStratificationLabel(pheno)).replace(/\b\w/g, l => l.toUpperCase()) + " (" + sampleSizeLabel[pheno.phenocode + returnInteractionSuffix(pheno) + returnStratificationSuffix(pheno)] + ")" }} 
                       </label>
                       <label v-if="info">
                           <input type="radio" value="No stratification" :name="info[0].phenocode + '2'" v-model="selectedStratification2" @change="handleRadioChange"> No stratification
@@ -145,7 +145,6 @@
                 class="qq-col d-flex justify-left"
               >
                 <div class="qq-plot-wrapper">
-                  <p class="qq-title">{{ qq.split(".").slice(1).join(", ").replace(/\b\w/g, l => l.toUpperCase()) }}</p>
                   <QQPlot :data="{
                       qq : qqSubset[qq],
                       dimensions : dimension,
@@ -165,11 +164,11 @@
                           <input 
                           :checked="index === 1" 
                           type="radio" 
-                          :value="pheno.phenocode + returnExtraInfoString(pheno)" 
+                          :value="pheno.phenocode + returnInteractionSuffix(pheno) + returnStratificationSuffix(pheno)" 
                           :name="pheno.phenocode + '1'" 
                           v-model="selectedInteractionStratification1"
                           @change="handleInteractionRadioChange">
-                          {{ returnExtraInfoLabel(pheno).replace(/\b\w/g, l => l.toUpperCase()) + " (" + sampleSizeInteractionLabel[pheno.phenocode + returnExtraInfoString(pheno)] + ")"}} 
+                          {{ (returnInteractionLabel(pheno) + returnStratificationLabel(pheno)).replace(/\b\w/g, l => l.toUpperCase()) + " (" + sampleSizeInteractionLabel[pheno.phenocode + returnInteractionSuffix(pheno) + returnStratificationSuffix(pheno)] + ")"}} 
                       </label> 
                   </div>
                 </div>
@@ -181,11 +180,11 @@
                           <input 
                           :checked="index === 2" 
                           type="radio" 
-                          :value="pheno.phenocode + returnExtraInfoString(pheno)" 
+                          :value="pheno.phenocode + returnInteractionSuffix(pheno) + returnStratificationSuffix(pheno)" 
                           :name="pheno.phenocode + '2'"
                           v-model="selectedInteractionStratification2"
                           @change="handleInteractionRadioChange"> 
-                          {{ returnExtraInfoLabel(pheno).replace(/\b\w/g, l => l.toUpperCase()) + " (" + sampleSizeInteractionLabel[pheno.phenocode + returnExtraInfoString(pheno)] + ")" }} 
+                          {{ (returnInteractionLabel(pheno) + returnStratificationLabel(pheno)).replace(/\b\w/g, l => l.toUpperCase()) + " (" + sampleSizeInteractionLabel[pheno.phenocode + returnInteractionSuffix(pheno) + returnStratificationSuffix(pheno)] + ")" }} 
                       </label>
                       <label v-if="infoInteraction">
                           <input type="radio" value="No stratification" :name="infoInteraction[0].phenocode + '2'" v-model="selectedInteractionStratification2" @change="handleInteractionRadioChange"> No stratification
@@ -372,8 +371,8 @@ onMounted(async () => {
       // TODO: could likely improve speed here
       var strats = chooseDefaultPhenos(info.value, url_query)
 
-      selectedStratification1.value = strats[0].phenocode +returnExtraInfoString(strats[0])
-      selectedStratification2.value = strats[1] ? strats[1].phenocode + returnExtraInfoString(strats[1]): "No stratification"
+      selectedStratification1.value = strats[0].phenocode +returnInteractionSuffix(strats[0]) + returnStratificationSuffix(strats[0])
+      selectedStratification2.value = strats[1] ? strats[1].phenocode + returnInteractionSuffix(strats[1]) + returnStratificationSuffix(strats[1]): "No stratification"
 
 
       // just take the first instance...they will all be the same
@@ -381,14 +380,14 @@ onMounted(async () => {
 
       for (let i = 0; i < info.value.length; i++) {
         const phenocode = info.value[i].phenocode;
-        const extraInfo = returnExtraInfoString(info.value[i]);
+        const extraInfo = returnInteractionSuffix(info.value[i]) + returnStratificationSuffix(info.value[i]);
         
         await generateQQs(phenocode, extraInfo);
         await fetchPlottingData(phenocode, extraInfo);
 
         // set sample size labels (case controls, etc.) for future use
         info.value.forEach(pheno => {
-          const key = pheno.phenocode + returnExtraInfoString(pheno);
+          const key = pheno.phenocode + returnInteractionSuffix(pheno) + returnStratificationSuffix(pheno);
           if (pheno.num_cases !== "" && pheno.num_controls !== "") {
             sampleSizeLabel.value[key] = `${new Intl.NumberFormat('en-US').format( pheno.num_cases )} cases, ${new Intl.NumberFormat('en-US').format( pheno.num_controls )} controls`;
           } else {
@@ -407,7 +406,7 @@ onMounted(async () => {
       if (infoInteraction.value.length > 0) {
         for (let i = 0; i < infoInteraction.value.length; i++) {
           const phenocode = infoInteraction.value[i].phenocode;
-          const extraInfo = returnExtraInfoString(infoInteraction.value[i]);
+          const extraInfo = returnInteractionSuffix(infoInteraction.value[i]) + returnStratificationSuffix(infoInteraction.value[i]);
           
           await generateInteractionQQs(phenocode, extraInfo);
           await fetchInteractionPlottingData(phenocode, extraInfo);
@@ -415,7 +414,7 @@ onMounted(async () => {
         dimensionInteraction.value = calculate_qq_dimension(qqInteractionData.value);
 
         infoInteraction.value.forEach(pheno => {
-          const key = pheno.phenocode + returnExtraInfoString(pheno);
+          const key = pheno.phenocode + returnInteractionSuffix(pheno) + returnStratificationSuffix(pheno);
           if (pheno.num_cases !== "" && pheno.num_controls !== "") {
             sampleSizeInteractionLabel.value[key] = `${new Intl.NumberFormat('en-US').format( pheno.num_cases )} cases, ${new Intl.NumberFormat('en-US').format( pheno.num_controls )} controls`;
           } else {
@@ -574,32 +573,45 @@ const handleInteractionRadioChange = () => {
   qqRefreshKey.value += 1;
 };
 
-function returnExtraInfoString(pheno) {
-  let extraInfoString = "";
-
-  if (pheno.interaction !== null && pheno.interaction !== undefined) {
-    extraInfoString += ".interaction-" + pheno.interaction;
-  }
+function returnStratificationSuffix(pheno) {
+  let stratificationSuffix = "";
 
   if (pheno.stratification !== null && pheno.stratification !== undefined && typeof pheno.stratification === "object") {
-    extraInfoString += "." + Object.values(pheno.stratification).join(".");
+    stratificationSuffix += "." + Object.values(pheno.stratification).join(".");
   }
 
-  return extraInfoString;
+  return stratificationSuffix;
 }
 
-function returnExtraInfoLabel(pheno) {
-  let extraInfoLabel = "";
+function returnInteractionSuffix(pheno){
+  let interactionSuffix = "";
 
-  if (pheno.interaction) {
-    extraInfoLabel += "Interaction: " + pheno.interaction + ", ";
+  if (pheno.interaction !== null && pheno.interaction !== undefined) {
+    interactionSuffix += ".interaction-" + pheno.interaction;
   }
+
+  return interactionSuffix;
+}
+
+function returnStratificationLabel(pheno){
+
+  let stratificationLabel = "";
 
   if (pheno.stratification && typeof pheno.stratification === "object") {
-    extraInfoLabel += Object.values(pheno.stratification).join(", ");
+    stratificationLabel += Object.values(pheno.stratification).join(", ");
   }
 
-  return extraInfoLabel.replace(/\b\w/g, l => l.toUpperCase());
+  return stratificationLabel.replace(/\b\w/g, l => l.toUpperCase());
+}
+
+function returnInteractionLabel(pheno){
+  let interactionLabel = "";
+
+  if (pheno.interaction) {
+    interactionLabel += "Interaction: " + pheno.interaction + ", ";
+  }
+
+  return interactionLabel.replace(/\b\w/g, l => l.toUpperCase());
 }
 
 const formatQQTitle = (qq) => {
@@ -612,14 +624,14 @@ const downloadAll = () => {
   var downloads = []
 
   for (const pheno of info.value) {
-    var phenocode = pheno.phenocode + returnExtraInfoString(pheno);
-    var api_link = `${api}/phenotypes/${pheno.phenocode}/${returnExtraInfoString(pheno)}/download`;
+    var phenocode = pheno.phenocode + returnInteractionSuffix(pheno) + returnStratificationSuffix(pheno);
+    var api_link = `${api}/phenotypes/${pheno.phenocode}/${returnInteractionSuffix(pheno) + returnStratificationSuffix(pheno)}/download`;
     downloads.push({ url: api_link, filename: phenocode });
   }
 
   for (const pheno of infoInteraction.value) {
-    var phenocode = pheno.phenocode + returnExtraInfoString(pheno);
-    var api_link = `${api}/phenotypes/${pheno.phenocode}/${returnExtraInfoString(pheno)}/download`;
+    var phenocode = pheno.phenocode + returnInteractionSuffix(pheno) + returnStratificationSuffix(pheno);
+    var api_link = `${api}/phenotypes/${pheno.phenocode}/${returnInteractionSuffix(pheno) + returnStratificationSuffix(pheno)}/download`;
     downloads.push({ url: api_link, filename: phenocode });
   }
 
@@ -636,7 +648,7 @@ const downloadAll = () => {
       a.click();
       document.body.removeChild(a);
       index++;
-      setTimeout(openNextDownload, 500); // Delay before opening the next one
+      setTimeout(openNextDownload, 100); // Delay before opening the next one
     } else {
       console.log('All downloads have been triggered.');
     }
@@ -798,14 +810,14 @@ const updateChosenVariantMehod = (variant) => {
 function onInteractionCheckboxChange() {
   if (isInteractionChecked.value) {
     var strats = chooseDefaultPhenos(infoInteraction.value)
-    selectedInteractionStratification1.value = strats[0].phenocode +returnExtraInfoString(strats[0])
-    selectedInteractionStratification2.value = strats[1] ? strats[1].phenocode + returnExtraInfoString(strats[1]): "No stratification"
+    selectedInteractionStratification1.value = strats[0].phenocode +returnInteractionSuffix(strats[0]) + returnStratificationSuffix(strats[0])
+    selectedInteractionStratification2.value = strats[1] ? strats[1].phenocode + returnInteractionSuffix(strats[1]) + returnStratificationSuffix(strats[1]): "No stratification"
     handleInteractionRadioChange(); 
 
   } else {
     var strats = chooseDefaultPhenos(info.value)
-    selectedStratification1.value = strats[0].phenocode +returnExtraInfoString(strats[0])
-    selectedStratification2.value = strats[1] ? strats[1].phenocode + returnExtraInfoString(strats[1]): "No stratification"
+    selectedStratification1.value = strats[0].phenocode +returnInteractionSuffix(strats[0]) + returnStratificationSuffix(strats[0])
+    selectedStratification2.value = strats[1] ? strats[1].phenocode + returnInteractionSuffix(strats[1]) + returnStratificationSuffix(strats[1]): "No stratification"
     handleRadioChange(); 
   }
 }
