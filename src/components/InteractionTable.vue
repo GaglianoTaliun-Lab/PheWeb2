@@ -176,10 +176,13 @@
         <template v-slot:header.nearest_genes="{ column, isSorted, getSortIcon }">
           <div style="display: flex; align-items: center;">
             <span style="white-space: nowrap;">{{ column.title }}</span>
-            <v-tooltip text="Head to internal page" location="top">
+            <v-tooltip location="top">
               <template v-slot:activator="{ props }">
                 <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
               </template>
+              <span style="white-space: normal;">
+                Gene(s) nearest to the top variant
+              </span>
             </v-tooltip>
             <v-menu
               open-on-hover
@@ -272,9 +275,9 @@
                 <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
               </template>
               <span style="white-space: normal;">
-                P-value significant threshold: 5e-8 <br>
-                green: significant <br>
-                grey: unsignificant <br>
+                P-value significant threshold: 5×10<sup>-8</sup> <br>
+                <span>Green</span>: significant <br>
+                <span>Grey</span>: unsignificant <br>
               </span>
             </v-tooltip>
           </div>
@@ -306,7 +309,7 @@
                 <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
               </template>
               <span style="white-space: normal; max-width: 200px; display: block; word-wrap: break-word;">
-                Effect size displayed with the standard error (shown in the bracket)
+                Effect size (standard error)
               </span>
             </v-tooltip>
           </div>
@@ -416,7 +419,7 @@
           sortable: false
         },
         { 
-          title: 'Effect Size', 
+          title: 'Effect Size (SE)', 
           children: [
             { title: pheno1.value.split('.').slice(-3).join(', ').replace(/\b\w/g, l => l.toUpperCase()), key: 'effect_size_pheno1' }, 
             ...(props.selectedStratification2 !== props.selectedStratification1 && props.selectedStratification2 !== "No stratification"

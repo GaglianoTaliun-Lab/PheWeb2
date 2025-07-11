@@ -105,7 +105,7 @@ const handleInput = async () => {
     } else if (item.feature === 'pheno') {
       processedItems.push({
         ...item,
-        title: `${item.phenostring} (${item.phenocode})`,
+        title: `${item.phenostring.replace(/\uFFFD/g, "'")} (${item.phenocode})`,
         subtitle: '',
         prependIcon: 'mdi-heart-pulse',
         feature: 'pheno',

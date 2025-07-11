@@ -135,28 +135,30 @@
           
           <IsLoading v-if="isLoading" :loadingText="loadingTextQQ" />
           <IsFailing v-if="isFailedPlotting" :isLoading="isLoading" :isFailed="isFailedPlotting" />
-          <div v-if="qqData && dimension" class="mt-10 mb-5"> 
+          <v-card elevation="5" class="mt-10 mb-5 pa-2" >
+            <div v-if="qqData && dimension" class="mt-10 mb-5"> 
 
-            <!-- <h2> QQ Plot(s): </h2> -->
-            <v-row align="start" justify="start" no-gutters>
-              <v-col 
-                v-for="qq in Object.keys(qqSubset)" 
-                :key="qq + qqRefreshKey"
-                cols="12" 
-                sm="6" 
-                lg="3"
-                class="qq-col d-flex justify-left"
-              >
-                <div class="qq-plot-wrapper">
-                  <p class="qq-title">{{ qq.split(".").slice(1).join(", ").replace(/\b\w/g, l => l.toUpperCase()) }}</p>
-                  <QQPlot :data="{
-                      qq : qqSubset[qq],
-                      dimensions : dimension
-                  }" /> 
-                </div>
-              </v-col>
-            </v-row>
-          </div>
+              <!-- <h2> QQ Plot(s): </h2> -->
+              <v-row align="start" justify="start" no-gutters>
+                <v-col 
+                  v-for="qq in Object.keys(qqSubset)" 
+                  :key="qq + qqRefreshKey"
+                  cols="12" 
+                  sm="6" 
+                  lg="3"
+                  class="qq-col d-flex justify-left"
+                >
+                  <div class="qq-plot-wrapper">
+                    <p class="qq-title">{{ qq.split(".").slice(1).join(", ").replace(/\b\w/g, l => l.toUpperCase()) }}</p>
+                    <QQPlot :data="{
+                        qq : qqSubset[qq],
+                        dimensions : dimension
+                    }" /> 
+                  </div>
+                </v-col>
+              </v-row>
+            </div>
+          </v-card>
           </div>
           <div v-else class="interaction">
             <div class="pheno-info col-12 mt-0">
@@ -231,29 +233,30 @@
                 @updateHoverVariant="updateHoverVariantMethod"
               />
           </div>
+            <v-card elevation="5" class="mt-10 mb-5 pa-2" >
+              <div v-if="qqInteractionData && dimensionInteraction" class="mt-10 mb-5"> 
 
-            <div v-if="qqInteractionData && dimensionInteraction" class="mt-10 mb-5"> 
-
-                <!-- <h2> QQ Plot(s): </h2> -->
-                <v-row align="start" justify="start" no-gutters>
-                  <v-col 
-                    v-for="qq in Object.keys(qqInteractionSubset)" 
-                    :key="qq + qqRefreshKey"
-                    cols="12" 
-                    sm="6" 
-                    lg="3"
-                    class="qq-col d-flex justify-left"
-                  >
-                    <div class="qq-plot-wrapper">
-                      <p class="qq-title">{{ qq.split(".").slice(1).join(", ").replace(/\b\w/g, l => l.toUpperCase()) }}</p>
-                      <QQPlot :data="{
-                          qq : qqInteractionSubset[qq],
-                          dimensions : dimensionInteraction
-                      }" /> 
-                    </div>
-                  </v-col>
-                </v-row>
-            </div>
+                  <!-- <h2> QQ Plot(s): </h2> -->
+                  <v-row align="start" justify="start" no-gutters>
+                    <v-col 
+                      v-for="qq in Object.keys(qqInteractionSubset)" 
+                      :key="qq + qqRefreshKey"
+                      cols="12" 
+                      sm="6" 
+                      lg="3"
+                      class="qq-col d-flex justify-left"
+                    >
+                      <div class="qq-plot-wrapper">
+                        <p class="qq-title">{{ qq.split(".").slice(1).join(", ").replace(/\b\w/g, l => l.toUpperCase()) }}</p>
+                        <QQPlot :data="{
+                            qq : qqInteractionSubset[qq],
+                            dimensions : dimensionInteraction
+                        }" /> 
+                      </div>
+                    </v-col>
+                  </v-row>
+              </div>
+            </v-card>
           </div>
       </v-main>
   </v-app>
@@ -377,7 +380,7 @@ onMounted(async () => {
 
 
       // just take the first instance...they will all be the same
-      phenostring.value = info.value[0].phenostring
+      phenostring.value = info.value[0].phenostring.replace(/\uFFFD/g, "'")
 
       for (let i = 0; i < info.value.length; i++) {
         const phenocode = info.value[i].phenocode;
