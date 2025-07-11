@@ -133,9 +133,9 @@
             />
           </div>
           
-          <IsLoading v-if="isLoading" :loadingText="loadingTextQQ" />
-          <IsFailing v-if="isFailedPlotting" :isLoading="isLoading" :isFailed="isFailedPlotting" />
-          <v-card elevation="5" class="mt-10 mb-5 pa-2" >
+          <IsLoading v-if="isLoading" :loadingText="loadingTextQQ" class="mt-10 mb-5 pa-2"/>
+          <IsFailing v-if="isFailedPlotting" :isLoading="isLoading" :isFailed="isFailedPlotting" class="mt-10 mb-5 pa-2"/>
+          <v-card elevation="5" class="mt-10 mb-5 pa-2" v-if="!isLoading && !isFailedPlotting">
             <div v-if="qqData && dimension" class="mt-10 mb-5"> 
 
               <!-- <h2> QQ Plot(s): </h2> -->
