@@ -316,8 +316,8 @@
             </template>
             <span style="white-space: normal;">
               Most significant association P-value <br>
-              <span style="color: green;">Green</span>: genome-wide significant (5x10<sup>-8</sup>) <br>
-              <span style="color: grey;">Grey</span>: not significant <br>
+              <span>Green</span>: genome-wide significant (5×10<sup>-8</sup>) <br>
+              <span>Grey</span>: not significant <br>
             </span>
           </v-tooltip>
           <template v-if="isSorted(column)">

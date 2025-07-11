@@ -37,10 +37,14 @@ function fmt(format) {
 
 function calculateGCLambda(data){
 
-    var gc = ''
+    var gc = '<strong>Genomic Control (GC) lambda (λ<sub>GC</sub>) at</strong>'
     _.sortBy(_.pairs(data.overall.gc_lambda), function(d) {return -d[0];}).forEach(function(d, j) {
-        var text = 'GC lambda at quantile ' + d[0] + ': ' + d[1].toFixed(3);
-        if (j === 0) { text = '<b>' + text + '</b>'; }
+        // var text = 'GC lambda at quantile ' + d[0] + ': ' + d[1].toFixed(3);
+        var text = ': ' + d[1].toFixed(3);
+        if (j === 0) { text = 'median' + text; }
+        if (j === 1) { text = '10<sup>th</sup> percentile' + text; }
+        if (j === 2) { text = '1<sup>st</sup> percentile' + text; }
+        if (j === 3) { text = '0.1<sup>th</sup> percentile' + text; }
         gc += '<br>' + text;
     });
 
@@ -168,7 +172,7 @@ function createQQPlot(data, height = null, width = null) {
         .append('text')
         .attr('text-anchor', 'start')
         .attr('y', '-1em')
-        .text('MAF ranges per quartile')
+        .text('Minor allele frequency (MAF) ranges per quartile')
         .style('font-weight', 'bold');
 
     qq_svg.append('g')

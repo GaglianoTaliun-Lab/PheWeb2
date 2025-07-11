@@ -33,8 +33,9 @@
         <template v-slot:body="{ items }" >
           <!-- <tr v-for="item in items" :key="item.variantid" :class="{ 'selected-row': item.variantid === props.chosenVariant }"> -->
           <tr v-if="isTableLoading">
-            <td :colspan=9 class="text-center pa-4">
-              <v-progress-circular indeterminate color="primary"></v-progress-circular>
+            <td :colspan=9 class="text-center justify-center">
+              <v-progress-circular indeterminate color="primary" class="mt-2"></v-progress-circular>
+              <br>
               <span class="mt-2">Loading Data... please wait </span>
               <v-skeleton-loader type="table-row@7"></v-skeleton-loader>
             </td>
@@ -295,8 +296,8 @@
               </template>
               <span style="white-space: normal;">
                 Most significant association P-value <br>
-                <span style="color: green;">Green</span>: genome-wide significant (5x10<sup>-8</sup>) <br>
-                <span style="color: grey;">Grey</span>: not significant <br>
+                <span>Green</span>: genome-wide significant (5×10<sup>-8</sup>) <br>
+                <span>Grey</span>: not significant <br>
               </span>
             </v-tooltip>
           </div>
@@ -328,7 +329,7 @@
                 <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
               </template>
               <span style="white-space: normal; max-width: 200px; display: block; word-wrap: break-word;">
-                Effect size displayed with the standard error (shown in the bracket)
+                Effect size (Standard Error)
               </span>
             </v-tooltip>
           </div>
