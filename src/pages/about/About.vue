@@ -8,9 +8,9 @@
                 <v-divider></v-divider>
                 <v-list-item link variant="plain" @click="selectContent('GenotypeData')" title="1. Genotype Data"></v-list-item>
                 <v-list-item link variant="plain" @click="selectContent('LiftOver')" title="2. LiftOver"></v-list-item>
-                <v-list-item link variant="plain" @click="selectContent('Pre-LiftOver')" subtitle="2.1 Pre-LiftOver Filtering"></v-list-item>
+                <v-list-item link variant="plain" @click="selectContent('Pre-LiftOver')" subtitle="2.1 Sample-level and variant-level filters"></v-list-item>
                 <v-list-item link variant="plain" @click="selectContent('LiftOverGRCh38')" subtitle="2.2 LiftOver to GRCh38"></v-list-item>
-                <v-list-item link variant="plain" @click="selectContent('HweRuth')" subtitle="2.3. Ancestry-Aware Hardy-Weinberg Check with RUTH"></v-list-item>
+                <v-list-item link variant="plain" @click="selectContent('HweRuth')" subtitle="2.3. Ancestry-adjusted HWE filters"></v-list-item>
                 <v-list-item link variant="plain" @click="selectContent('TOPMedImputation')" title="3. TOPMed Imputation"></v-list-item>
                 <v-list-item link variant="plain" @click="selectContent('PhenotypeAssociation')" title="4. Phenotype Association"></v-list-item>
                 <v-list-item link variant="plain" @click="selectContent('AncestryEuro')" subtitle="4.1 Ancestry Check and European Subset"></v-list-item>
@@ -427,7 +427,7 @@
         { chr: 20, snp: 8675},
         { chr: 21, snp: 5338},
         { chr: 22, snp: 5667},
-        { chr: 'X', snp: 7860},
+        { chr: 'X', snp: 7860}
     ]
 
 
