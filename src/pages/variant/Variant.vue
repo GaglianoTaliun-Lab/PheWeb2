@@ -173,7 +173,7 @@
               </div>
               <div class="dropdown pt-1 pr-2" id="dropdown-data1">
                 <button :disabled="isDisabled || isLoading" class="btn btn-primary btn-drop" id="button-data1">
-                  {{ keyToLabel(selectedStratification1) }}
+                  {{ keyToLabel(selectedStratification1).replace(/\b\w/g, l => l.toUpperCase()) }}
                   <span class="arrow-container"><span class="arrow-down"></span></span>
                 </button>
                 <div class="dropdown-menu" id="dropdown-content-data1">
@@ -184,7 +184,7 @@
                       :name="stratification" 
                       v-model="selectedStratification1"
                       @change="onDisplayChoiceChange">
-                      {{ keyToLabel(stratification) }} 
+                      {{ keyToLabel(stratification).replace(/\b\w/g, l => l.toUpperCase()) }} 
                   </label> 
                 </div>
               </div>
@@ -193,7 +193,7 @@
                   No stratification <span class="arrow-container"><span class="arrow-down"></span></span>
                 </button>
                 <button :disabled="isDisabled || isLoading" v-else class="btn btn-primary btn-drop" id="button-data2">
-                  {{ keyToLabel(selectedStratification2) }} <span class="arrow-container"><span class="arrow-down"></span></span>
+                  {{ keyToLabel(selectedStratification2).replace(/\b\w/g, l => l.toUpperCase()) }} <span class="arrow-container"><span class="arrow-down"></span></span>
                 </button>
                 <div class="dropdown-menu" id="dropdown-content-data2">
                   <label v-for="(stratification, index) in stratification_list">
@@ -203,7 +203,7 @@
                       :name="stratification" 
                       v-model="selectedStratification2"
                       @change="onDisplayChoiceChange">
-                      {{ keyToLabel(stratification) }} 
+                      {{ keyToLabel(stratification).replace(/\b\w/g, l => l.toUpperCase()) }} 
                   </label> 
                 </div>
               </div>

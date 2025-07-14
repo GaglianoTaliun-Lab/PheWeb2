@@ -130,11 +130,20 @@
           <router-link :to="`/phenotypes/${item.phenocode_variant1 ?? item.phenocode_variant2}`">{{ item.phenostring }}</router-link>
         </template>
 
-        <template v-slot:item.pval="{ item }">
+        <template v-slot:item.pval_variant1="{ item }">
           <!-- <span style="white-space: nowrap;">{{ item.pval }}</span> -->
-          <v-chip v-if="item.pval !== 'NA'" :color="getColour(item.pval)">
-            {{ formatScientific(item.pval) }}
+          <v-chip v-if="item.pval_variant1 !== 'NA'" :color="getColour(item.pval_variant1)">
+            {{ formatScientific(item.pval_variant1) }}
           </v-chip>
+          <span v-else>NA</span>
+        </template>
+
+        <template v-slot:item.pval_variant2="{ item }">
+          <!-- <span style="white-space: nowrap;">{{ item.pval }}</span> -->
+          <v-chip v-if="item.pval_variant2 !== 'NA'" :color="getColour(item.pval_variant2)">
+            {{ formatScientific(item.pval_variant2) }}
+          </v-chip>
+          <span v-else>NA</span>
         </template>
 
       </v-data-table>
@@ -305,7 +314,7 @@ import { STRATIFICATION_CATEGORIES } from "@/config.js";
               const stratFields = Object.fromEntries(
                   STRATIFICATION_CATEGORIES.map(key => [
                       key,
-                      isPvalNegative ? "" : pheno.stratification[key]
+                      isPvalNegative ? "NA" : pheno.stratification[key]
                   ])
               );
 
@@ -317,7 +326,9 @@ import { STRATIFICATION_CATEGORIES } from "@/config.js";
                   ...stratFields,
                   pval: isPvalNegative ? "NA" : pheno.pval,
                   eaf: isPvalNegative ? "NA" : pheno.af,
-                  beta_se: isPvalNegative ? "NA" : `${pheno.beta} (${pheno.sebeta})`,
+                  beta_se: isPvalNegative ? "NA" : pheno.beta > 0
+                  ? `${pheno.beta} (${pheno.sebeta}) △`
+                  : `${pheno.beta} (${pheno.sebeta}) ▽`,
                   num_samples: isPvalNegative ? "NA" : pheno.num_samples,
                   cases: isPvalNegative ? "NA" : pheno.num_cases,
                   controls: isPvalNegative ? "NA" : pheno.num_controls
@@ -422,7 +433,7 @@ import { STRATIFICATION_CATEGORIES } from "@/config.js";
   };
 
   const formatScientific = (num) => {
-    if (!num || isNaN(num)) return 'N/A';  
+    if (!num || isNaN(num)) return 'NA';  
     return Number(num).toExponential(2);  
   };
   </script>

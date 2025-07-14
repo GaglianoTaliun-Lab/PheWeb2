@@ -258,7 +258,7 @@ function generatePlot(variant_list){
             
             custom_LocusZoom_Layouts_get('panel', 'phewas', {
                 title: { 
-                    text: variant_list[i].stratification.split('.').slice(1).join(', '),
+                    text: variant_list[i].stratification.split('.').slice(1).join(', ').replace(/\b\w/g, l => l.toUpperCase()),
                     x: 50
                 },
                 toolbar: {
