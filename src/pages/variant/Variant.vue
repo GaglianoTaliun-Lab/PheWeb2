@@ -155,8 +155,8 @@
 
           <div class="d-flex justify-content-md-between">
             <div>
-              <div v-if="category_list && category_list.length > 0" class="dropdown mr-2" id="dropdown-data1">
-                <button :disabled="isLoading" class="btn btn-primary btn-drop" id="button-data1">
+              <div class="dropdown mr-2" :class="{ 'dropdown-disabled': isLoading }" id="dropdown-data1">
+                <button  class="btn btn-primary btn-drop" id="button-data1">
                   Choose Categories <span class="arrow-container"><span class="arrow-down"></span></span>
                 </button>
                 <div class="dropdown-menu" id="dropdown-content-data1">
@@ -171,15 +171,24 @@
                     </label> 
                 </div>
               </div>
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
               <div class="dropdown pt-1 pr-2" id="dropdown-data1">
                 <button :disabled="isDisabled || isLoading" class="btn btn-primary btn-drop" id="button-data1">
                   {{ keyToLabel(selectedStratification1).replace(/\b\w/g, l => l.toUpperCase()) }}
+=======
+=======
+>>>>>>> Stashed changes
+              <div class="dropdown pt-1 pr-2" :class="{ 'dropdown-disabled': isLoading }" id="dropdown-data1">
+                <button class="btn btn-primary btn-drop" id="button-data1">
+                  {{ keyToLabel(selectedStratification1) }}
+>>>>>>> Stashed changes
                   <span class="arrow-container"><span class="arrow-down"></span></span>
                 </button>
                 <div class="dropdown-menu" id="dropdown-content-data1">
                   <label v-for="(stratification, index) in stratification_list">
                       <input 
-                      type="radio" 
+                      type="radio"
                       :value="stratification" 
                       :name="stratification" 
                       v-model="selectedStratification1"
@@ -188,12 +197,20 @@
                   </label> 
                 </div>
               </div>
-              <div class="dropdown pt-1 pr-2" id="dropdown-data2">
-                <button :disabled="isDisabled || isLoading" v-if="selectedStratification2 == 'No stratification'" class="btn btn-primary btn-drop" id="button-data2">
+              <div class="dropdown pt-1 pr-2" :class="{ 'dropdown-disabled': isLoading }" id="dropdown-data2">
+                <button v-if="selectedStratification2 == 'No stratification'" class="btn btn-primary btn-drop" id="button-data2">
                   No stratification <span class="arrow-container"><span class="arrow-down"></span></span>
                 </button>
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 <button :disabled="isDisabled || isLoading" v-else class="btn btn-primary btn-drop" id="button-data2">
                   {{ keyToLabel(selectedStratification2).replace(/\b\w/g, l => l.toUpperCase()) }} <span class="arrow-container"><span class="arrow-down"></span></span>
+=======
+=======
+>>>>>>> Stashed changes
+                <button v-else class="btn btn-primary btn-drop" id="button-data2">
+                  {{ keyToLabel(selectedStratification2) }} <span class="arrow-container"><span class="arrow-down"></span></span>
+>>>>>>> Stashed changes
                 </button>
                 <div class="dropdown-menu" id="dropdown-content-data2">
                   <label v-for="(stratification, index) in stratification_list">
@@ -208,11 +225,11 @@
                 </div>
               </div>
               <v-chip
-                :disabled="isLoading"
                 size="large"
                 label
                 :color="isDisplayAllChecked ? 'default' : 'primary'"
                 filter
+                :disabled="isLoading"
                 :filter-icon="isDisplayAllChecked ? '' : 'mdi-check'"
                 @click="isDisplayAllChecked = !isDisplayAllChecked; onDisplayChoiceChange() "
               >
@@ -304,7 +321,7 @@ const rsids = ref(null);
 const variant_list = ref([]);
 const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URL;
 
-const isLoading = ref(false);
+const isLoading = ref(true);
 const refreshKey = ref(0)
 
 const isDisplayAllChecked = ref(true);
@@ -605,7 +622,7 @@ const downloadTable = () => {
   background-color: #e0e0e0;
   color: #888;              
   cursor: not-allowed;
-  opacity: 0.7;
+  opacity: 0.4;
 }
 
 .dropdown-menu-right {
