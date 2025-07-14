@@ -269,7 +269,7 @@ const updateChosenPhenoMethod = (pheno) => {
   chosenPheno.value = [...pheno.value];
   newAddedPheno.value = chosenPheno.value.filter(pheno => !currentChosenPheno.value.includes(pheno));
   currentChosenPheno.value = chosenPheno.value;
-  console.log(newAddedPheno.value)
+  // console.log(newAddedPheno.value)
   // console.log('Clicked pheno:', chosenPheno.value);
   // console.log(chosenPheno.value.length)
 };

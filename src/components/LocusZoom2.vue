@@ -25,6 +25,8 @@ const phenocode = route.params.phenocode;
 const currentPhenoList = ref(null);
 const link_to_pheno = ref(null);
 
+const phenocodeToStringPair = ref(null)
+
 var region = route.params.region;
 
 var max_y_value = 10;
@@ -131,7 +133,7 @@ const fetchData = async () => {
         // console.log("phenocode", phenocode)
         var phenocode_list = phenocode.split("0")
         var stratification = '.' + phenocode_list.slice(-2).join('.')
-        console.log("stratification", stratification)
+        // console.log("stratification", stratification)
         if (!data_sources_new.value.has(phenocode)){
             data_sources_new.value.add(phenocode, ["AssociationPheWeb", {url: api + "/phenotypes/"+ phenocode_list[0] +"/"+ stratification + "/region/", source: i+1}])
         }
@@ -143,6 +145,8 @@ const getPhenoData = () => {
     }
     info.value = props.data
 
+    // console.log("info", info.value)
+
     if (info.value[0].stratification){
         phenocode_list.value = info.value.map((pheno) => {return pheno.phenocode + "." + Object.values(pheno.stratification).join('.')})
     } else {
@@ -151,7 +155,17 @@ const getPhenoData = () => {
             return pheno.phenocode.replace(/\./g, "0");
         })
     }
-    console.log(data_sources_new.value)
+
+    phenocodeToStringPair.value = info.value.map((pheno) => {
+        var stratification = pheno.phenocode.replace(/\./g, "0").split("0").slice(-2).join(", ").replace(/\b\w/g, l => l.toUpperCase())
+        return {
+            phenocode: pheno.phenocode,
+            phenostring: pheno.phenostring + " (" + stratification + ")"
+        }
+    })
+    // console.log("phenocodeToStringPair", phenocodeToStringPair.value)
+    // console.log("phenocode_list", phenocode_list.value)
+    // console.log(data_sources_new.value)
 }
 
 const all_panels = ref([])
@@ -163,7 +177,8 @@ function createAssociationPanel(phenocode, template) {
         min_height: 200,
         margin: { top: 20 },
         title: { 
-            text: phenocode.split('0').join(', '),
+            // text: phenocode.split('0').join(', '),
+            text: phenocodeToStringPair.value.find(p => p.phenocode === phenocode.split('0').join('.')).phenostring,
             style: {'font-size': '14px'},
             y: 15,
             x: 50,
@@ -347,7 +362,7 @@ const getPanels = () => {
             createAssociationPanel(phenocode, template)
         )
     });
-    console.log("all_panels", all_panels.value)
+    // console.log("all_panels", all_panels.value)
 }
 
 const layout_new = ref(null)
@@ -413,7 +428,7 @@ const getLayout = () => {
             return -Math.log(x) / Math.LN10;
         });
     }
-    console.log(layout_new.value)
+    // console.log(layout_new.value)
     function add_toolbar_button(name, click_handler) {
         if (!LocusZoom.Widgets._items.has(name)){
 
@@ -452,11 +467,11 @@ const getLayout = () => {
 const addNewPanel = () => {
     getPhenoData();
     phenocode_list.value.forEach(function (phenocode, i){
-        console.log("phenocode", phenocode)
+        // console.log("phenocode", phenocode)
         var phenocode_list = phenocode.split("0")
         var stratification = '.' + phenocode_list.slice(-2).join('.')
         if (!data_sources_new.value.has(phenocode)){
-            console.log("adding new panel", phenocode)
+            // console.log("adding new panel", phenocode)
             let dynamicPart = phenocode
 
             var template = utils.tooltip_lztemplate.replace(/{{/g, `{{${dynamicPart}:`)
@@ -472,11 +487,11 @@ const addNewPanel = () => {
     const builtIns = ['catalog', 'ld', 'gene', 'recomb'];
     const customKeys = [...data_sources_new.value._items.keys()].filter(k => !builtIns.includes(k));
     // console.log(customKeys);
-    console.log(typeof(phenocode_list.value))
-    console.log(phenocode_list.value)
+    // console.log(typeof(phenocode_list.value))
+    // console.log(phenocode_list.value)
     customKeys.forEach(key => {
         if (!phenocode_list.value.includes(key)){
-            console.log("removing panel", key)
+            // console.log("removing panel", key)
             plot.value.removePanel(key);
             if (data_sources_new.value._items.has(key)) {
                 data_sources_new.value._items.delete(key);
@@ -493,7 +508,7 @@ onMounted(() => {
     getPanels();
     getLayout();
 
-    console.log(props.data)
+    // console.log(props.data)
     plot.value = LocusZoom.populate("#lz", data_sources_new.value, layout_new.value);
 })
 

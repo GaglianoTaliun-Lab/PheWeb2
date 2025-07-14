@@ -13,7 +13,12 @@
       <div class="ml-4 mt-2">
         <h1 class="mb-0">{{ variantCodeToLabel(variantCode) }}</h1>
         <div class="pt-0" v-if="variant">
-          <p class="mb-0"> Nearest gene(s): <i>{{ variant.nearest_genes.split(',').join(', ') }}</i></p>
+          <p class="mb-0"> Nearest gene(s): 
+            <span v-for="(gene, index) in variant.nearest_genes.split(',')">
+              <a :href="`/gene/${gene.trim()}`" class="variant-link"><i>{{ gene.trim() }}</i></a>
+              <span v-if="index < variant.nearest_genes.split(',').length - 1">, </span>
+            </span>
+          </p>
           <p class="mb-0"> Effect allele: {{ effectAlleleToLabel(variantCode) }}</p>
           <p class="mb-0">
             View on
@@ -168,7 +173,7 @@
               </div>
               <div class="dropdown pt-1 pr-2" id="dropdown-data1">
                 <button :disabled="isDisabled || isLoading" class="btn btn-primary btn-drop" id="button-data1">
-                  {{ keyToLabel(selectedStratification1) }}
+                  {{ keyToLabel(selectedStratification1).replace(/\b\w/g, l => l.toUpperCase()) }}
                   <span class="arrow-container"><span class="arrow-down"></span></span>
                 </button>
                 <div class="dropdown-menu" id="dropdown-content-data1">
@@ -179,7 +184,7 @@
                       :name="stratification" 
                       v-model="selectedStratification1"
                       @change="onDisplayChoiceChange">
-                      {{ keyToLabel(stratification) }} 
+                      {{ keyToLabel(stratification).replace(/\b\w/g, l => l.toUpperCase()) }} 
                   </label> 
                 </div>
               </div>
@@ -188,7 +193,7 @@
                   No stratification <span class="arrow-container"><span class="arrow-down"></span></span>
                 </button>
                 <button :disabled="isDisabled || isLoading" v-else class="btn btn-primary btn-drop" id="button-data2">
-                  {{ keyToLabel(selectedStratification2) }} <span class="arrow-container"><span class="arrow-down"></span></span>
+                  {{ keyToLabel(selectedStratification2).replace(/\b\w/g, l => l.toUpperCase()) }} <span class="arrow-container"><span class="arrow-down"></span></span>
                 </button>
                 <div class="dropdown-menu" id="dropdown-content-data2">
                   <label v-for="(stratification, index) in stratification_list">
@@ -198,7 +203,7 @@
                       :name="stratification" 
                       v-model="selectedStratification2"
                       @change="onDisplayChoiceChange">
-                      {{ keyToLabel(stratification) }} 
+                      {{ keyToLabel(stratification).replace(/\b\w/g, l => l.toUpperCase()) }} 
                   </label> 
                 </div>
               </div>

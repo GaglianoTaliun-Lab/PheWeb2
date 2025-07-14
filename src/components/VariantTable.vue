@@ -176,7 +176,10 @@
         </template>
 
         <template v-slot:item.pval="{ item }">
-          <span style="white-space: nowrap;">{{ item.pval }}</span>
+          <v-chip v-if="item.pval !== 'NA'" :color="getColour(item.pval)">
+            {{ formatScientific(item.pval) }}
+          </v-chip>
+          <span v-else>NA</span> 
         </template>
       </v-data-table>
     </v-card>
@@ -307,7 +310,7 @@
           const stratifications = Object.fromEntries(
             STRATIFICATION_CATEGORIES.map((cat) => [
               cat.toLowerCase(),
-              pheno.stratification?.[cat.toLowerCase()] || '',
+              pheno.stratification?.[cat.toLowerCase()]?.replace(/\b\w/g, l => l.toUpperCase()) || '',
             ])
           );
 
@@ -318,7 +321,9 @@
             ...stratifications,
             pval: pheno.pval,
             eaf: pheno.af,
-            beta_se: `${pheno.beta} (${pheno.sebeta})`,
+            beta_se: pheno.beta > 0
+                  ? `${pheno.beta} (${pheno.sebeta}) △`
+                  : `${pheno.beta} (${pheno.sebeta}) ▽`,
             num_samples: pheno.num_samples,
             cases: pheno.num_cases,
             controls: pheno.num_controls,
@@ -372,6 +377,18 @@
       return categoryMatch && phenoMatch;
     });
   });
+
+   // p value colours
+   const getColour = (pval) => {
+    if (pval < 5e-8 && pval !== null) return 'green';
+    else if (pval === "NA") return null;
+    return '#grey';
+  };
+
+  const formatScientific = (num) => {
+    if (!num || isNaN(num)) return 'NA';  
+    return Number(num).toExponential(2);  
+  };
 
   </script>
   
