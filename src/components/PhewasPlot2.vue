@@ -261,6 +261,20 @@ function generatePlot(variant_list){
                     text: variant_list[i].stratification.split('.').slice(1).join(', '),
                     x: 50
                 },
+                toolbar: {
+                    widgets: [
+                        {
+                                type: 'remove_panel',          
+                                title: 'Remove Panel',   
+                                label: 'Remove Panel', 
+                                position: "right",
+                                color: 'red',
+                                suppress_confirm : 'false'
+                        },
+                        {type: "download", position: "right"},
+                        {type: "download_png", position: "right"},
+                    ]
+                },
                 id: i.toString(),
                 min_width: 640, // feels reasonable to me
                 min_height : 200,
@@ -342,21 +356,6 @@ function generatePlot(variant_list){
     var layout = {
         state: {
             variant: ['chrom', 'pos', 'ref', 'alt'].map(function(d) { return variant_list[0][d];}).join("-"),
-        },
-        dashboard: {
-            components: [
-                {
-                        type: 'remove_panel',          
-                        id: 'remove_panel',  
-                        title: 'Remove Panel',   
-                        label: 'Remove Panel', 
-                        position: "right",
-                        color: 'red',
-                        suppress_confirm : 'true'
-                },
-                {type: "download", position: "right"},
-                {type: "download_png", position: "right"},
-            ],
         },
         responsive_resize: true,
         mouse_guide: false,

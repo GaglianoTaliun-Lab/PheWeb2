@@ -359,15 +359,9 @@ onMounted(async () => {
     selectedCategories.value = category_list.value;
 
     // we need to map here to get rid of the proxy
-    await fetchPhewasPlottingData(
+    fetchPhewasPlottingData(
       stratification_list.value.map((stratification) => stratification)
     );
-
-    variant.value = variant_list.value[0];
-
-    rsids.value = variant.value.rsids ?  variant.value.rsids.split(',') : [];
-
-
 
     handleCheckboxChange();
     onDisplayChoiceChange();
@@ -395,6 +389,8 @@ function onDisplayChoiceChange(){
 async function fetchPhewasPlottingData(stratification_list) {
   isLoading.value = true; // Start loading
   var temp_variant_list = [];
+  let isFirst = true;
+
   for (var stratification of stratification_list) {
     var result;
     try {
@@ -403,6 +399,15 @@ async function fetchPhewasPlottingData(stratification_list) {
       );
       result = response.data;
       result.stratification = '.' + stratification;
+
+      if (isFirst) {
+        // First iteration logic here
+        console.log("This is the first iteration.");
+        variant.value = result;
+        rsids.value = result.rsids ?  result.rsids.split(',') : [];
+        isFirst = false;
+      }
+
       temp_variant_list.push(result);
     } catch (error) {
       console.log(
@@ -412,6 +417,8 @@ async function fetchPhewasPlottingData(stratification_list) {
     }
   }
   variant_list.value = temp_variant_list;
+
+
 
   isLoading.value = false; // Stop loading
   return variant_list.value;
