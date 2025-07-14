@@ -13,7 +13,12 @@
       <div class="ml-4 mt-2">
         <h1 class="mb-0">{{ variantCodeToLabel(variantCode) }}</h1>
         <div class="pt-0" v-if="variant">
-          <p class="mb-0"> Nearest gene(s): <i>{{ variant.nearest_genes.split(',').join(', ') }}</i></p>
+          <p class="mb-0"> Nearest gene(s): 
+            <span v-for="(gene, index) in variant.nearest_genes.split(',')">
+              <a :href="`/gene/${gene.trim()}`" class="variant-link"><i>{{ gene.trim() }}</i></a>
+              <span v-if="index < variant.nearest_genes.split(',').length - 1">, </span>
+            </span>
+          </p>
           <p class="mb-0"> Effect allele: {{ effectAlleleToLabel(variantCode) }}</p>
           <p class="mb-0">
             View on

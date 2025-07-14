@@ -1,6 +1,6 @@
 <template class="d-flex">
   <v-row style="margin-top: 2px;" dense  align="center" class="align-end d-flex">
-    <v-col cols="12" md="3">
+    <v-col cols="12" md="4">
       <v-card
         max-width="600px"
         hover
@@ -32,7 +32,7 @@
         </v-row>
       </v-card>
     </v-col>
-    <v-col cols="12" md="3">
+    <v-col cols="12" md="4">
       <v-card
         max-width="600"
         hover
@@ -97,6 +97,14 @@
           @update:model-value="selectAll(!allSelected)"
           > </v-checkbox-btn>
           <span style="white-space: nowrap;">LZ plot(s)</span>
+          <v-tooltip location="top">
+            <template v-slot:activator="{ props }">
+              <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
+            </template>
+            <span style="white-space: normal;">
+              Select to display/hide LocusZoom (LZ) plot(s)
+            </span>
+          </v-tooltip>
         </div>
       </template>
 
@@ -189,7 +197,7 @@
       <template v-slot:header.num_samples="{ column, isSorted, getSortIcon, }">
         <div style="display: flex; align-items: center;">
           <span style="white-space: nowrap;">{{ column.title }}</span>
-          <v-tooltip text="Sample size" location="top">
+          <v-tooltip text="Number of samples with non-missing data" location="top">
             <template v-slot:activator="{ props }">
               <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
             </template>
@@ -208,6 +216,57 @@
               : item.num_samples
           }}
         </span>
+      </template>
+
+      <template v-slot:header.ancestry="{ column, isSorted, getSortIcon }">
+        <div style="display: flex; align-items: left; justify-content: left; text-align: left;">
+          <span style="white-space: nowrap;">{{ column.title }}</span>
+          <v-tooltip location="top">
+            <template v-slot:activator="{ props }">
+              <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
+            </template>
+            <span style="white-space: normal;">
+              Genetic ancestries included in analysis
+            </span>
+          </v-tooltip>
+          <template v-if="isSorted(column)">
+            <v-icon :icon="getSortIcon(column)"></v-icon>
+          </template>
+        </div>
+      </template>
+
+      <template v-slot:header.sex="{ column, isSorted, getSortIcon }">
+        <div style="display: flex; align-items: left; justify-content: left; text-align: left;">
+          <span style="white-space: nowrap;">{{ column.title }}</span>
+          <v-tooltip location="top">
+            <template v-slot:activator="{ props }">
+              <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
+            </template>
+            <span style="white-space: normal;">
+              Sexes included in analysis
+            </span>
+          </v-tooltip>
+          <template v-if="isSorted(column)">
+            <v-icon :icon="getSortIcon(column)"></v-icon>
+          </template>
+        </div>
+      </template>
+
+      <template v-slot:header.abs_distance_to_true_start="{ column, isSorted, getSortIcon }">
+        <div style="display: flex; align-items: left; justify-content: left; text-align: left;">
+          <span style="white-space: nowrap;">{{ column.title }}</span>
+          <v-tooltip location="top">
+            <template v-slot:activator="{ props }">
+              <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
+            </template>
+            <span style="white-space: normal;">
+              Distance in base pairs (bp) from the top variant to the start of the gene
+            </span>
+          </v-tooltip>
+          <template v-if="isSorted(column)">
+            <v-icon :icon="getSortIcon(column)"></v-icon>
+          </template>
+        </div>
       </template>
 
       <template v-slot:loading>
@@ -398,6 +457,7 @@
     selectedItems,
     (newPhenocode) => {
       fetchData();
+      // console.log(selectedItems.value)
       emit('updateChosenPheno', selectedItems)
     }
   );
