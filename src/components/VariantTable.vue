@@ -11,6 +11,7 @@
         hover 
         :sort-by="[{ key: 'pval', order: 'asc' }]"
         :search="search"
+        :loading="isTableLoading"
       >
         <!-- Top slot remains the same -->
 
@@ -115,7 +116,8 @@
               </template>
               <span style="white-space: normal;">
                 Most significant association P-value <br>
-                genome-wide significant threshold: 5x10<sup>-8</sup> <br>
+                <span>Green</span>: genome-wide significant (5×10<sup>-8</sup>) <br>
+                <span>Grey</span>: not significant <br>
               </span>
             </v-tooltip>
             <template v-if="isSorted(column)">
@@ -163,7 +165,7 @@
                 <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
               </template>
               <span style="white-space: normal; max-width: 200px; display: block; word-wrap: break-word;">
-                Effect size displayed with the standard error (shown in the bracket)
+                Effect size (Standard Error)
               </span>
             </v-tooltip>
           </div>
@@ -227,6 +229,7 @@
     selectedStratifications: Object,
     variantList: Object,
     categoryList: Object,
+    isTableLoading: Boolean,
   });
   
   // ... Previous header definitions and other refs remain the same ...
@@ -294,35 +297,35 @@
   
   // Format variant list (same as before)
   const formattedVariantList = computed(() => {
-  return props.variantList?.flatMap((v) => {
-    if (!props.selectedStratifications.includes(v.stratification.slice(1))) return [];
+    return props.variantList?.flatMap((v) => {
+      if (!props.selectedStratifications.includes(v.stratification.slice(1))) return [];
 
-    return v.phenos
-      .filter((pheno) => props.categoryList.includes(pheno.category))
-      .filter((pheno) => pheno.pval > 0)
-      .map((pheno) => {
-        const stratifications = Object.fromEntries(
-          STRATIFICATION_CATEGORIES.map((cat) => [
-            cat.toLowerCase(),
-            pheno.stratification?.[cat.toLowerCase()] || '',
-          ])
-        );
+      return v.phenos
+        .filter((pheno) => props.categoryList.includes(pheno.category))
+        .filter((pheno) => pheno.pval > 0)
+        .map((pheno) => {
+          const stratifications = Object.fromEntries(
+            STRATIFICATION_CATEGORIES.map((cat) => [
+              cat.toLowerCase(),
+              pheno.stratification?.[cat.toLowerCase()] || '',
+            ])
+          );
 
-        return {
-          category: pheno.category,
-          phenostring: pheno.phenostring,
-          phenocode: pheno.phenocode,
-          ...stratifications,
-          pval: pheno.pval,
-          eaf: pheno.af,
-          beta_se: `${pheno.beta} (${pheno.sebeta})`,
-          num_samples: pheno.num_samples,
-          cases: pheno.num_cases,
-          controls: pheno.num_controls,
-        };
-      });
+          return {
+            category: pheno.category,
+            phenostring: pheno.phenostring,
+            phenocode: pheno.phenocode,
+            ...stratifications,
+            pval: pheno.pval,
+            eaf: pheno.af,
+            beta_se: `${pheno.beta} (${pheno.sebeta})`,
+            num_samples: pheno.num_samples,
+            cases: pheno.num_cases,
+            controls: pheno.num_controls,
+          };
+        });
+    });
   });
-});
 
   
   // New computed properties for dynamic hints
@@ -369,6 +372,7 @@
       return categoryMatch && phenoMatch;
     });
   });
+
   </script>
   
   <style scoped>
