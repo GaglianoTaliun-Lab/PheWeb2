@@ -154,6 +154,7 @@
               </v-col>
             </v-row>
           </div>
+
           </div>
           <div v-else class="interaction">
             <div class="pheno-info col-12 mt-0">
@@ -251,6 +252,7 @@
                   </v-col>
                 </v-row>
             </div>
+
           </div>
       </v-main>
   </v-app>
@@ -376,7 +378,7 @@ onMounted(async () => {
 
 
       // just take the first instance...they will all be the same
-      phenostring.value = info.value[0].phenostring
+      phenostring.value = info.value[0].phenostring.replace(/\uFFFD/g, "'")
 
       for (let i = 0; i < info.value.length; i++) {
         const phenocode = info.value[i].phenocode;

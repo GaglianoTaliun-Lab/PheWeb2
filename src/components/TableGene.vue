@@ -264,6 +264,7 @@
       geneData.value = gene_response.data.data;
       phenotypes.value = geneData.value.map(item => ({
           ...item,
+          phenostring: item.phenostring.replace(/\uFFFD/g, "'"),
           phenocode_router: item.phenocode.split('.').slice(0, 1).join('.') ,
           ancestry: `${item.stratification.ancestry.replace(/\b\w/g, l => l.toUpperCase())}`, // TODO: don't hardcode these
           sex: `${item.stratification.sex.replace(/\b\w/g, l => l.toUpperCase())}`,
