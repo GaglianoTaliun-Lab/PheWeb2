@@ -1,11 +1,16 @@
 <template>
   <v-app-bar app fixed elevation="0" style="width: 100% " >
     <v-row align="center" justify="space-between">
-      <v-col cols="auto" style="margin-left:2%">
-        <router-link :to="{ name: 'Home' }" tag="v-btn" icon="$vuetify">
-                <img src="../assets/favicon.svg" alt="Icon" class="custom-icon">
-        </router-link>
-      </v-col>
+      <!-- <v-row align="center" justify="start" style="margin-left: 1%" class="d-flex, width: 100%;"> -->
+        <v-col cols="auto" style="margin-left:2%" class="align-center d-flex">
+          <router-link :to="{ name: 'Home' }" tag="v-btn" icon="$vuetify">
+                  <img src="../assets/favicon.svg" alt="Icon" class="custom-icon">
+          </router-link>
+        </v-col>
+        <!-- <v-col cols="auto" style="margin-left:2%" class="width: 150px;">
+          <SearchBoxMenu />
+        </v-col> -->
+      <!-- </v-row> -->
       <v-row align="center" justify="end" style="margin-right:1%">
         <v-col cols="auto" class="d-none d-md-flex">
           <v-btn text variant="plain" class="custom-btn" :to="{ name: 'Phenotypes' }">Phenotypes</v-btn>
@@ -83,6 +88,8 @@
 <script setup>
 import axios from 'axios';
 import {ref, onMounted} from 'vue';
+import SearchBoxMenu from './SearchBoxMenu.vue';
+
 const sheet = ref(false);
 
 const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URL

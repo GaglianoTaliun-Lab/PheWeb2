@@ -1,209 +1,3 @@
-<script setup name="Variant">
-import axios from 'axios';
-import { ref, onMounted, computed } from 'vue';
-import { useRoute } from 'vue-router';
-
-import { maf_range, keyToLabel } from './Variant.js';
-
-import Navbar from '@/components/Navbar.vue';
-import PhewasPlot from '@/components/PhewasPlot.vue';
-import PhewasPlot2 from '@/components/PhewasPlot2.vue';
-import VariantTable from '@/components/VariantTable.vue';
-import VariantCompareTable from '@/components/VariantCompareTable.vue';
-
-import { HG_BUILD_NUMBER, PRIORITY_STRATIFICATIONS, STRATIFICATION_CATEGORIES } from "@/config.js";
-
-const route = useRoute();
-
-const variantCode = route.params.variant_id;
-const stratification_list = ref(null);
-const selectedStratifications = ref([])
-const selectedStratification1 = ref(PRIORITY_STRATIFICATIONS[0])
-const selectedStratification2 = ref(PRIORITY_STRATIFICATIONS[1])
-
-const category_list = ref(null);
-const selectedCategories = ref([]);
-
-const pheno_list = ref(null);
-
-const chosen_variants = ref([]);
-const variant = ref(null);
-const rsids = ref(null);
-const variant_list = ref([]);
-const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URL;
-
-const isLoading = ref(false);
-const refreshKey = ref(0)
-
-const isDisplayAllChecked = ref(true);
-const isDisabled = ref(false);
-
-onMounted(async () => {
-  try {
-    const response_stratification = await axios.get(`${api}/variant/stratification_list`);
-    const response_category = await axios.get(`${api}/variant/category_list`);
-    const response_phenolist = await axios.get(`${api}/phenotypes/`)
-
-    stratification_list.value = JSON.parse(JSON.stringify(response_stratification.data));
-    category_list.value = JSON.parse(JSON.stringify(response_category.data))
-    pheno_list.value = JSON.parse(JSON.stringify(response_phenolist.data))
-
-    // set chosen variants to be male and female automatically
-    selectedStratifications.value = [selectedStratification1.value, selectedStratification2.value];
-    selectedCategories.value = category_list.value;
-
-    // we need to map here to get rid of the proxy
-    await fetchPhewasPlottingData(
-      stratification_list.value.map((stratification) => stratification)
-    );
-
-    variant.value = variant_list.value[0];
-
-    rsids.value = variant.value.rsids ?  variant.value.rsids.split(',') : [];
-
-
-
-    handleCheckboxChange();
-    onDisplayChoiceChange();
-    
-  } catch (error) {
-    console.log(error);
-  } finally {
-    isLoading.value = false; // Stop loading
-  }
-});
-
-function onDisplayChoiceChange(){
-  if (!isDisplayAllChecked.value){
-    isDisabled.value = true;
-    selectedStratifications.value = stratification_list.value;
-
-  } else {
-    isDisabled.value = false;
-    selectedStratifications.value = [selectedStratification1.value, selectedStratification2.value];
-  }
-  handleCheckboxChange();
-}
-
-async function fetchPhewasPlottingData(stratification_list) {
-  isLoading.value = true; // Start loading
-  var temp_variant_list = [];
-  for (var stratification of stratification_list) {
-    var result;
-    try {
-      const response = await axios.get(
-        `${api}/variant/${variantCode}/${stratification}`
-      );
-      result = response.data;
-      result.stratification = '.' + stratification;
-      temp_variant_list.push(result);
-    } catch (error) {
-      console.log(
-        `Error fetching plotting data with stratification ${stratification}:`,
-        error
-      );
-    }
-  }
-  variant_list.value = temp_variant_list;
-
-  isLoading.value = false; // Stop loading
-  return variant_list.value;
-}
-
-const variantCodeToLabel = (variantCode) => {
-  var label_list = variantCode.split("-")
-  var returned_label = label_list[0] + ": " + new Intl.NumberFormat('en-US', { maximumSignificantDigits: 3 }).format(label_list[1]) + " " + label_list[2] + "/" + label_list[3]
-
-  if (rsids.value && rsids.value.length === 1){
-    returned_label = returned_label + " (" + rsids.value + ")"
-  }
-  return returned_label 
-}
-
-const handleCheckboxChange = () => {
-
-  chosen_variants.value = JSON.parse(JSON.stringify(
-  variant_list.value
-    .filter((variant) => 
-      selectedStratifications.value.includes(variant.stratification.slice(1))
-    )
-    .map((variant) => ({
-      ...variant,
-      phenos: variant.phenos.filter((pheno) => selectedCategories.value.includes(pheno.category))
-    }))
-  ));
-
-  refreshKey.value += 1;
-}
-
-const formattedVariantList = computed(() => {
-    return variant_list.value.flatMap((v) => {
-        return v.phenos
-            .filter((pheno) => pheno.pval > 0)
-            .map((pheno) => {
-                // Extract stratification fields dynamically
-                const stratFields = Object.fromEntries(
-                    STRATIFICATION_CATEGORIES.map((key) => [key, pheno.stratification[key]])
-                );
-
-                return {
-                    category: pheno.category,
-                    phenostring: pheno.phenostring,
-                    ...stratFields, // dynamic stratification values
-                    pval: pheno.pval,
-                    eaf: pheno.af,
-                    beta_se: `${pheno.beta} (${pheno.sebeta})`,
-                    num_samples: pheno.num_samples,
-                    cases: pheno.num_cases,
-                    controls: pheno.num_controls,
-                };
-            });
-    });
-});
-
-
-const downloadTable = () => {
-  const headers = [
-    'Category',
-    'Phenotype',
-    ...STRATIFICATION_CATEGORIES.map(key => key.charAt(0).toUpperCase() + key.slice(1)),
-    'P-value',
-    'Effect Size (se)',
-    'Number of Samples'
-  ];
-
-  const escapeForCSV = (value) => {
-    const str = String(value ?? '');
-    return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
-  };
-
-  const csvContent = [
-    headers.map(escapeForCSV).join(','),
-    ...formattedVariantList.value.map(item =>
-      [
-        item.category,
-        item.phenostring,
-        ...STRATIFICATION_CATEGORIES.map(key => item[key]),
-        item.pval,
-        item.beta_se,
-        item.num_samples
-      ].map(escapeForCSV).join(',')
-    )
-  ].join('\n');
-
-  const blob = new Blob([csvContent], { type: 'text/csv' });
-  const url = window.URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.setAttribute('download', 'variant_data.csv');
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  window.URL.revokeObjectURL(url);
-};
-
-</script>
-
 <template>
   <v-app>
     <Navbar />
@@ -219,7 +13,8 @@ const downloadTable = () => {
       <div class="ml-4 mt-2">
         <h1 class="mb-0">{{ variantCodeToLabel(variantCode) }}</h1>
         <div class="pt-0" v-if="variant">
-          <p class="mb-0"> Nearest gene(s): <i>{{ variant.nearest_genes }}</i></p>
+          <p class="mb-0"> Nearest gene(s): <i>{{ variant.nearest_genes.split(',').join(', ') }}</i></p>
+          <p class="mb-0"> Effect allele: {{ effectAlleleToLabel(variantCode) }}</p>
           <p class="mb-0">
             View on
             <a
@@ -324,7 +119,7 @@ const downloadTable = () => {
 
         <div class="d-flex align-items-center col-12 mt-1">
 
-            <div class="mb-1 d-none d-md-flex">
+            <!-- <div class="mb-1 d-none d-md-flex">
                 <div >
                   <v-chip
                     :disabled="isLoading"
@@ -338,7 +133,7 @@ const downloadTable = () => {
                     Show All PheWAS
                   </v-chip>
                 </div>
-            </div>
+            </div> -->
 
             <!-- <div class="display-choice">
               <h3><label class="mr-2 mt-4" >Compare Two Stratifications</label>
@@ -407,6 +202,18 @@ const downloadTable = () => {
                   </label> 
                 </div>
               </div>
+              <v-chip
+                :disabled="isLoading"
+                size="large"
+                label
+                :color="isDisplayAllChecked ? 'default' : 'primary'"
+                filter
+                :filter-icon="isDisplayAllChecked ? '' : 'mdi-check'"
+                @click="isDisplayAllChecked = !isDisplayAllChecked; onDisplayChoiceChange() "
+              >
+                <span v-if="isDisplayAllChecked" style="display: flex; align-items: center;">Show All Stratifications <v-icon>mdi-checkbox-blank-outline</v-icon></span>
+                <span v-else style="display: flex; align-items: center;">Compare Two Stratifications <v-icon>mdi-checkbox-marked-outline</v-icon></span>
+              </v-chip>
             </div>
 
             <div class="text-left; d-flex; pa-2"> 
@@ -419,12 +226,6 @@ const downloadTable = () => {
               </v-row>
             </div>  
           </div>
-        <v-progress-linear
-          v-if="isLoading"
-          indeterminate
-          color="primary"
-          height="5"
-        ></v-progress-linear>
         <!-- <div v-if="chosen_variants.length > 0">
           <PhewasPlot :key="refreshKey" :variantList="chosen_variants" :uniqueCategoriesList="category_list"/>
         </div> -->
@@ -433,6 +234,8 @@ const downloadTable = () => {
             <PhewasPlot2 :stratification="stratification" :categoryList="selectedCategories" />
           </div>
         </div>
+        <IsLoading v-if="selectedStratifications.length <= 0" :loadingText="loadingTextPhewas" class="mt-10 mb-5"/>
+        <IsFailing v-if="isFailedPlotting" :isLoading="isLoading" :isFailed="isFailedPlotting" class="mt-10 mb-5"/>
         
         <div v-if="variant_list.length > 0 && selectedStratifications.length > 0">
           <div v-if="!isDisplayAllChecked">
@@ -442,11 +245,278 @@ const downloadTable = () => {
             <VariantCompareTable class="mb-10" :key="refreshKey" :selectedStratification1="selectedStratifications[0]" :selectedStratification2="selectedStratifications[1]" :variantList="variant_list" :categoryList="selectedCategories"></VariantCompareTable>
           </div>
         </div>
+        <div v-else>
+          <v-card elevation="5">
+            <v-data-table :items="[]" :headers="headers" fixed-header hover :loading="true">
+              <template v-slot:loading>
+                <v-progress-circular indeterminate color="primary" class="mt-2"></v-progress-circular>
+                <br>
+                <span class="mt-2">Loading Data... please wait </span>
+                <v-skeleton-loader type="table-row@10"></v-skeleton-loader>
+              </template>
+            </v-data-table>
+          </v-card>
+        </div>
 
       </div>
     </v-main> 
   </v-app>
 </template>
+
+<script setup name="Variant">
+import axios from 'axios';
+import { ref, onMounted, computed } from 'vue';
+import { useRoute } from 'vue-router';
+
+import { maf_range, keyToLabel } from './Variant.js';
+
+import Navbar from '@/components/Navbar.vue';
+import PhewasPlot from '@/components/PhewasPlot.vue';
+import PhewasPlot2 from '@/components/PhewasPlot2.vue';
+import VariantTable from '@/components/VariantTable.vue';
+import VariantCompareTable from '@/components/VariantCompareTable.vue';
+import IsLoading from '@/components/IsLoading.vue';
+import IsFailing from '@/components/IsFailing.vue';
+
+import { HG_BUILD_NUMBER, PRIORITY_STRATIFICATIONS, STRATIFICATION_CATEGORIES } from "@/config.js";
+
+const route = useRoute();
+
+const variantCode = route.params.variant_id;
+const stratification_list = ref(null);
+const selectedStratifications = ref([])
+const selectedStratification1 = ref(PRIORITY_STRATIFICATIONS[0])
+const selectedStratification2 = ref(PRIORITY_STRATIFICATIONS[1])
+
+const category_list = ref(null);
+const selectedCategories = ref([]);
+
+const pheno_list = ref(null);
+
+const chosen_variants = ref([]);
+const variant = ref(null);
+const rsids = ref(null);
+const variant_list = ref([]);
+const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URL;
+
+const isLoading = ref(false);
+const refreshKey = ref(0)
+
+const isDisplayAllChecked = ref(true);
+const isDisabled = ref(false);
+
+const loadingTextPhewas = ref("Loading PheWAS data...");
+const isFailedPlotting = ref(false);
+
+const isTableLoading = computed(() => {
+  return variant_list.length > 0 && selectedStratifications.length > 0;
+});
+
+const headers = ref([
+    { 
+      title: 'Category', 
+      key: 'category',
+      sortable: false 
+    },
+    { 
+      title: 'Phenotype', 
+      key: 'phenostring',
+      sortable: false 
+    },
+    { 
+      title: 'P-value', 
+      key: 'pval',
+      sortable: true
+    },
+    { title: 'EAF',
+      key: 'eaf',
+      sortable: false
+    },
+    { 
+      title: 'Effect Size (SE)', 
+      key: 'beta_se',
+      sortable: false 
+    },
+    { 
+      title: '#Samples', 
+      key: 'num_samples',
+      sortable: false 
+    },
+  ]);
+
+onMounted(async () => {
+  try {
+    const response_stratification = await axios.get(`${api}/variant/stratification_list`);
+    const response_category = await axios.get(`${api}/variant/category_list`);
+    const response_phenolist = await axios.get(`${api}/phenotypes/`)
+
+    stratification_list.value = JSON.parse(JSON.stringify(response_stratification.data));
+    category_list.value = JSON.parse(JSON.stringify(response_category.data))
+    pheno_list.value = JSON.parse(JSON.stringify(response_phenolist.data))
+
+    // set chosen variants to be male and female automatically
+    selectedStratifications.value = [selectedStratification1.value, selectedStratification2.value];
+    selectedCategories.value = category_list.value;
+
+    // we need to map here to get rid of the proxy
+    await fetchPhewasPlottingData(
+      stratification_list.value.map((stratification) => stratification)
+    );
+
+    variant.value = variant_list.value[0];
+
+    rsids.value = variant.value.rsids ?  variant.value.rsids.split(',') : [];
+
+
+
+    handleCheckboxChange();
+    onDisplayChoiceChange();
+    
+  } catch (error) {
+    console.log(error);
+    isFailedPlotting.value = true;
+  } finally {
+    isLoading.value = false; // Stop loading
+  }
+});
+
+function onDisplayChoiceChange(){
+  if (!isDisplayAllChecked.value){
+    isDisabled.value = true;
+    selectedStratifications.value = stratification_list.value;
+
+  } else {
+    isDisabled.value = false;
+    selectedStratifications.value = [selectedStratification1.value, selectedStratification2.value];
+  }
+  handleCheckboxChange();
+}
+
+async function fetchPhewasPlottingData(stratification_list) {
+  isLoading.value = true; // Start loading
+  var temp_variant_list = [];
+  for (var stratification of stratification_list) {
+    var result;
+    try {
+      const response = await axios.get(
+        `${api}/variant/${variantCode}/${stratification}`
+      );
+      result = response.data;
+      result.stratification = '.' + stratification;
+      temp_variant_list.push(result);
+    } catch (error) {
+      console.log(
+        `Error fetching plotting data with stratification ${stratification}:`,
+        error
+      );
+    }
+  }
+  variant_list.value = temp_variant_list;
+
+  isLoading.value = false; // Stop loading
+  return variant_list.value;
+}
+
+const variantCodeToLabel = (variantCode) => {
+  var label_list = variantCode.split("-")
+  var returned_label = label_list[0] + ": " + new Intl.NumberFormat('en-US', { maximumSignificantDigits: 3 }).format(label_list[1]) + " " + label_list[2] + "/" + label_list[3]
+
+  if (rsids.value && rsids.value.length === 1){
+    returned_label = returned_label + " (" + rsids.value + ")"
+  }
+  return returned_label 
+}
+
+const effectAlleleToLabel = (variantCode) => {
+  var label_list = variantCode.split("-")
+  return label_list[3]
+}
+
+const handleCheckboxChange = () => {
+
+  chosen_variants.value = JSON.parse(JSON.stringify(
+  variant_list.value
+    .filter((variant) => 
+      selectedStratifications.value.includes(variant.stratification.slice(1))
+    )
+    .map((variant) => ({
+      ...variant,
+      phenos: variant.phenos.filter((pheno) => selectedCategories.value.includes(pheno.category))
+    }))
+  ));
+
+  refreshKey.value += 1;
+}
+
+const formattedVariantList = computed(() => {
+    return variant_list.value.flatMap((v) => {
+        return v.phenos
+            .filter((pheno) => pheno.pval > 0)
+            .map((pheno) => {
+                // Extract stratification fields dynamically
+                const stratFields = Object.fromEntries(
+                    STRATIFICATION_CATEGORIES.map((key) => [key, pheno.stratification[key]])
+                );
+
+                return {
+                    category: pheno.category,
+                    phenostring: pheno.phenostring,
+                    ...stratFields, // dynamic stratification values
+                    pval: pheno.pval,
+                    eaf: pheno.af,
+                    beta_se: `${pheno.beta} (${pheno.sebeta})`,
+                    num_samples: pheno.num_samples,
+                    cases: pheno.num_cases,
+                    controls: pheno.num_controls,
+                };
+            });
+    });
+});
+
+
+const downloadTable = () => {
+  const headers = [
+    'Category',
+    'Phenotype',
+    ...STRATIFICATION_CATEGORIES.map(key => key.charAt(0).toUpperCase() + key.slice(1)),
+    'P-value',
+    'Effect Size (se)',
+    'Number of Samples'
+  ];
+
+  const escapeForCSV = (value) => {
+    const str = String(value ?? '');
+    return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
+  };
+
+  const csvContent = [
+    headers.map(escapeForCSV).join(','),
+    ...formattedVariantList.value.map(item =>
+      [
+        item.category,
+        item.phenostring,
+        ...STRATIFICATION_CATEGORIES.map(key => item[key]),
+        item.pval,
+        item.beta_se,
+        item.num_samples
+      ].map(escapeForCSV).join(',')
+    )
+  ].join('\n');
+
+  const blob = new Blob([csvContent], { type: 'text/csv' });
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.setAttribute('download', 'variant_data.csv');
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  window.URL.revokeObjectURL(url);
+};
+
+</script>
+
+
 
 <style lang="scss" scoped>
 .responsive-main {

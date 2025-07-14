@@ -103,7 +103,7 @@
                 <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
               </template>
               <span style="white-space: normal; max-width: 200px; display: block; word-wrap: break-word;">
-                Effect size displayed with the standard error (shown in the bracket)
+                Effect size (Standard Error)
               </span>
             </v-tooltip>
           </div>
@@ -118,7 +118,8 @@
               </template>
               <span style="white-space: normal;">
                 Most significant association P-value <br>
-                genome-wide significant threshold: 5x10<sup>-8</sup> <br>
+                <span>Green</span>: genome-wide significant (5×10<sup>-8</sup>) <br>
+                <span>Grey</span>: not significant <br>
               </span>
             </v-tooltip>
           </div>
@@ -219,10 +220,10 @@ import { STRATIFICATION_CATEGORIES } from "@/config.js";
       title: 'P-value', 
       key: 'pval',
       children: [
-        { title: props.selectedStratification1.split('.').slice(-2).join(', '), key: 'pval_variant1' }, 
+        { title: props.selectedStratification1.split('.').slice(-2).join(', ').replace(/\b\w/g, l => l.toUpperCase()), key: 'pval_variant1' }, 
         ...(props.selectedStratification2 !== props.selectedStratification1 && props.selectedStratification2 !== "No stratification"
         ? [
-            { title: props.selectedStratification2.split('.').slice(-2).join(', '), key: 'pval_variant2' }, 
+            { title: props.selectedStratification2.split('.').slice(-2).join(', ').replace(/\b\w/g, l => l.toUpperCase()), key: 'pval_variant2' }, 
           ]
         : [])
       ],
@@ -231,10 +232,10 @@ import { STRATIFICATION_CATEGORIES } from "@/config.js";
     { title: 'Effect Allele Frequency',
       key: 'eaf',
       children: [
-        { title: props.selectedStratification1.split('.').slice(-2).join(', '), key: 'eaf_variant1' }, 
+        { title: props.selectedStratification1.split('.').slice(-2).join(', ').replace(/\b\w/g, l => l.toUpperCase()), key: 'eaf_variant1' }, 
         ...(props.selectedStratification2 !== props.selectedStratification1 && props.selectedStratification2 !== "No stratification"
         ? [
-            { title: props.selectedStratification2.split('.').slice(-2).join(', '), key: 'eaf_variant2' }, 
+            { title: props.selectedStratification2.split('.').slice(-2).join(', ').replace(/\b\w/g, l => l.toUpperCase()), key: 'eaf_variant2' }, 
           ]
         : [])
       ],
@@ -244,23 +245,23 @@ import { STRATIFICATION_CATEGORIES } from "@/config.js";
       title: 'Effect Size (SE)', 
       key: 'beta_se',
       children: [
-        { title: props.selectedStratification1.split('.').slice(-2).join(', '), key: 'beta_se_variant1' }, 
+        { title: props.selectedStratification1.split('.').slice(-2).join(', ').replace(/\b\w/g, l => l.toUpperCase()), key: 'beta_se_variant1' }, 
         ...(props.selectedStratification2 !== props.selectedStratification1 && props.selectedStratification2 !== "No stratification"
         ? [
-            { title: props.selectedStratification2.split('.').slice(-2).join(', '), key: 'beta_se_variant2' }, 
+            { title: props.selectedStratification2.split('.').slice(-2).join(', ').replace(/\b\w/g, l => l.toUpperCase()), key: 'beta_se_variant2' }, 
           ]
         : [])
       ],
       sortable: false 
     },
     { 
-      title: 'Number of Samples', 
+      title: '#Samples', 
       key: 'num_samples',
       children: [
-        { title: props.selectedStratification1.split('.').slice(-2).join(', '), key: 'num_samples_variant1' }, 
+        { title: props.selectedStratification1.split('.').slice(-2).join(', ').replace(/\b\w/g, l => l.toUpperCase()), key: 'num_samples_variant1' }, 
         ...(props.selectedStratification2 !== props.selectedStratification1 && props.selectedStratification2 !== "No stratification"
         ? [
-            { title: props.selectedStratification2.split('.').slice(-2).join(', '), key: 'num_samples_variant2' }, 
+            { title: props.selectedStratification2.split('.').slice(-2).join(', ').replace(/\b\w/g, l => l.toUpperCase()), key: 'num_samples_variant2' }, 
           ]
         : [])
       ],
@@ -314,13 +315,18 @@ import { STRATIFICATION_CATEGORIES } from "@/config.js";
                   phenocode: pheno.phenocode,
                   stratification: strat,
                   ...stratFields,
-                  pval: isPvalNegative ? "" : pheno.pval,
-                  eaf: isPvalNegative ? "" : pheno.af,
-                  beta_se: isPvalNegative ? "" : `${pheno.beta} (${pheno.sebeta})`,
-                  num_samples: isPvalNegative ? "" : pheno.num_samples,
-                  cases: isPvalNegative ? "" : pheno.num_cases,
-                  controls: isPvalNegative ? "" : pheno.num_controls
+                  pval: isPvalNegative ? "NA" : pheno.pval,
+                  eaf: isPvalNegative ? "NA" : pheno.af,
+                  beta_se: isPvalNegative ? "NA" : `${pheno.beta} (${pheno.sebeta})`,
+                  num_samples: isPvalNegative ? "NA" : pheno.num_samples,
+                  cases: isPvalNegative ? "NA" : pheno.num_cases,
+                  controls: isPvalNegative ? "NA" : pheno.num_controls
               };
+          })
+          .filter(item => {
+            const keysToIgnore = new Set(["category", "phenostring", "phenocode"]);
+            return Object.entries(item)
+              .some(([key, value]) => !keysToIgnore.has(key) && value !== "NA");
           });
     });
 

@@ -403,7 +403,7 @@
 
       // scientific notation
       const formatScientific = (num) => {
-        if (!num || isNaN(num)) return 'N/A';  
+        if (!num || isNaN(num)) return 'NA';  
         return Number(num).toExponential(2);  
       };
 
