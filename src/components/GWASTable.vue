@@ -1,5 +1,5 @@
 <template>
-  <v-card elevation="5" class="">
+  <v-card class="shadow-sm border rounded" >
     <!-- <v-progress-linear
       v-if="props.isLoadingData"
       indeterminate
@@ -31,7 +31,6 @@
         </template>
 
         <template v-slot:body="{ items }" >
-          <!-- <tr v-for="item in items" :key="item.variantid" :class="{ 'selected-row': item.variantid === props.chosenVariant }"> -->
           <tr v-if="isTableLoading">
             <td :colspan=9 class="text-center justify-center">
               <v-progress-circular indeterminate color="primary" class="mt-2"></v-progress-circular>
@@ -471,33 +470,12 @@
           const phenotype = await props.selectedStratification1.split('.')[0]
           const stratification1 = '.' + props.selectedStratification1.split('.').slice(-2).join('.')
           const stratification2 = '.' + props.selectedStratification2.split('.').slice(-2).join('.')
-          console.log(props.selectedStratification1)
-          console.log(props.selectedStratification2)
 
           const response1 = await axios.get(`${api}/phenotypes/${phenotype}/${stratification1}/manhattan`)
-          // const response2 = await axios.get(`${api}/phenotypes/${phenotype}/${stratification2}`)
 
-
-          // tableInfo.value = await props.miamiData;
-
-          // var keys = Object.keys(tableInfo.value)
-          // pheno1.value = keys[0];
-          // pheno2.value = keys[1] || keys[0];
           pheno1.value = props.selectedStratification1;
           pheno2.value = props.selectedStratification2;
-          // TODO: make this more efficient when stratification2 is None 
 
-          // variants1.value = tableInfo.value[pheno1.value]?.unbinned_variants.map(item => ({
-          //   ...item,
-          //   variantid: `${item.chrom}-${item.pos}-${item.ref}-${item.alt}`,
-          //   variantName: item.rsids 
-          //     ? `${item.chrom}: ${item.pos} ${item.ref} / ${item.alt} (${item.rsids})`
-          //     : `${item.chrom}: ${item.pos} ${item.ref} / ${item.alt}`,
-          //   nearest_genes: item.nearest_genes ? item.nearest_genes.split(',') : [], 
-          //   effect_size: item.beta > 0
-          //         ? `${item.beta} (${item.sebeta}) △`
-          //         : `${item.beta} (${item.sebeta}) ▽`
-          // }));
           variants1.value = response1.data.unbinned_variants.map(item => ({
             ...item,
             variantid: `${item.chrom}-${item.pos}-${item.ref}-${item.alt}`,
@@ -533,10 +511,6 @@
           const variants1Map = new Map(variants1.value.map(variant => [variant.variantid, variant]));
           const variants2Map = new Map(variants2.value.map(variant => [variant.variantid, variant]));
 
-          // console.log("variants1Map")
-          // console.log(variants1Map)
-          // console.log(variants2.value)
-
           if (props.selectedStratification2 !== "No stratification" && props.selectedStratification2 !== props.selectedStratification1 ){
             const unmatchedVariants = {
               [props.selectedStratification2]: variants1.value
@@ -549,7 +523,6 @@
                 .sort((a, b) => a.localeCompare(b))
             };
 
-            // console.log(unmatchedVariants)
 
             const apiUrl_post = `${api}/phenotypes/variants`;
             const response = await axios.post(apiUrl_post, unmatchedVariants, {
@@ -558,9 +531,7 @@
               }
             })
             .then(response => {
-              // console.log("response data data")
-              // console.log(response.data.data)
-              // console.log(props.selectedStratification1)
+
               const missingData1 = response.data.data[props.selectedStratification1].map(item => ({ 
                 ...item,
                 variantid: `${item.chrom}-${item.pos}-${item.ref}-${item.alt}`,
@@ -586,9 +557,7 @@
 
               // console.log("POST triggered")
               if (missingData1 && Array.isArray(missingData1) && missingData2 && Array.isArray(missingData2)) {
-                // console.log("missingData")
-                // console.log(missingData1)
-                // console.log(missingData2)
+
                 variants1.value.push(...missingData1);
                 variants2.value.push(...missingData2);
               }
@@ -679,8 +648,6 @@
       };
       const filteredMergedVariants = computed(() => {
         return mergedVariants.value.filter(item => {
-          // const variantMatches = !filteredVariant.value || filteredVariant.value === 'All' ||  item.rsids === filteredVariant.value || item.variantid === filteredVariant.value;
-          // const geneMatches = !filteredGene.value || filteredGene.value === 'All' ||   item.nearest_genes.includes(filteredGene.value.toUpperCase());
           const variantMatches = !filteredVariant.value || filteredVariant.value === '' || 
             (item.rsids && item.rsids.includes(filteredVariant.value)) ||
             (item.variantid && item.variantid.includes(filteredVariant.value));
@@ -738,34 +705,25 @@
       };
   
       onMounted(async () => {
-        // if (pheno1.value) {
-        //   fetchSampleData();
-        // }
         if (props.selectedStratification1 && props.selectedStratification2) {
           fetchSampleData();
         }
       });
 
       watch(() => [props.selectedStratification1, props.selectedStratification2], (newSelectedStratification1, newSelectedStratification2) => {
-        // console.log(`Selected value changed to: ${newSelectedStratification1}, ${newSelectedStratification2}`);
-        // console.log(`here ${newChosenVariant}`)
+
         fetchSampleData();
-        
-        // const unbinnedVariants = props.miamiData[props.selectedStratification1]["unbinned_variants"];
-        // console.log("Unbinned Variants:", unbinnedVariants);
+
 
       });
       watch(
         () => props.chosenVariant,
         (newValue) => {
-          //console.log(`Chosen Variant updated: ${newValue}`);
           page.value = chosenPage.value;
-          // console.log(`Chosen Page updated: ${page.value}`);
           menu.value = true;
           selectedVariant.value = props.chosenVariant;
           filteredVariant.value = props.chosenVariant;
-          // console.log(filteredMergedVariants)
-          // fetchSampleData();
+
         },
         { deep: true }
       );
@@ -773,11 +731,8 @@
       watch(
         () => hoveredVariantId.value,
         (newValue) => {
-          // console.log(`Hovered Variant updated`, hoveredVariantId.value.split('-').slice(0, 2));
           if (newValue != ''){
-            // emit('updateHoverVariant', hoveredVariantId.value.split('-').slice(0, 2))
-            // console.log(typeof hoveredVariantId); 
-            // console.log(Array.isArray(hoveredVariantId));
+
             emit('updateHoverVariant', hoveredVariantId)
           }
         }
@@ -790,12 +745,6 @@
   background-color: #fab9d4; 
 };
 
-/* :deep() .v-table .v-table__wrapper > table > thead > tr > th:not(:nth-child(2), :nth-child(1), :nth-child(4), :nth-child(6)) {
-  border-right: thin solid rgba(var(--v-border-color), var(--v-border-opacity));
-}
-:deep() .v-table .v-table__wrapper > table > tbody > tr > td:not(:nth-child(2), :nth-child(1), :nth-child(4), :nth-child(6)), .v-table .v-table__wrapper > table > tbody > tr > th:not(:last-child) { 
-  border-right: thin solid rgba(var(--v-border-color), var(--v-border-opacity));
-} */
 </style>
   
   

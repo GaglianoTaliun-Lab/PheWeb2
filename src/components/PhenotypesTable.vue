@@ -634,12 +634,21 @@
       if (!data || data.length === 0) return '';
 
       const keys = Object.keys(data[0]);
-      const rows = [];
+      // if value is an object (dict) convert to string wrapped in double quotes so it doesn't mess up formatting
+      const escapeCSVValue = (val) => {
+        if (val === null || val === undefined) return '';
+        if (typeof val === 'object') val = JSON.stringify(val);
+        val = String(val);
+        const needsQuotes = /[",\n]/.test(val);
+        const escaped = val.replace(/"/g, '""');
+        return needsQuotes ? `"${escaped}"` : escaped;
+      };
 
-      rows.push(keys.join(','));
+      const rows = [];
+      rows.push(keys.map(escapeCSVValue).join(','));
 
       data.forEach((item) => {
-        const values = keys.map((key) => item[key]);
+        const values = keys.map((key) => escapeCSVValue(item[key]));
         rows.push(values.join(','));
       });
 

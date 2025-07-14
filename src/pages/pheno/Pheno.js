@@ -6,7 +6,7 @@ export const tooltip_underscoretemplate = `
 <% if(_.has(d, 'nearest_genes')) { %>nearest gene<%= _.contains(d.nearest_genes, ",")? "s":"" %>: <b><%= d.nearest_genes %></b><br><% } %>
 <% if(_.has(d, 'consequence')) { %>consequence: <b><%= d['consequence'] %></b><br><% } %>
 <% if(_.has(d, 'pval')) { %>P-value: <b><%= d['pval'] %></b><br><% } %>
-<% if(_.has(d, 'beta')) { %>Beta: <b><%= d.beta %></b><% if(_.has(d, "sebeta")){ %> (se:<b><%= d.sebeta %></b>)<% } %><br><% } %>
+<% if(_.has(d, 'beta')) { %>Beta (SE): <b><%= d.beta %></b><% if(_.has(d, "sebeta")){ %> (<b><%= d.sebeta %></b>)<% } %><br><% } %>
 <% if(_.has(d, 'or')) { %>Odds Ratio: <b><%= d['or'] %></b><br><% } %>
 <% if(_.has(d, 'maf')) { %>MAF: <b><%= d['maf'] %></b><br><% } %>
 <% if(_.has(d, 'af')) { %>AF: <b><%= d['af'] %></b><br><% } %>

@@ -331,20 +331,29 @@
   
   // downloading
   const coverToCSV = (data) => {
-      if (!data || data.length === 0) return '';
+    if (!data || data.length === 0) return '';
 
-      const keys = Object.keys(data[0]);
-      const rows = [];
+    const keys = Object.keys(data[0]);
 
-      rows.push(keys.join(','));
-
-      data.forEach((item) => {
-        const values = keys.map((key) => item[key]);
-        rows.push(values.join(','));
-      });
-
-      return rows.join('\n');
+    const escapeForCSV = (value) => {
+      if (value && typeof value === 'object') {
+        value = JSON.stringify(value);
+      }
+      const str = String(value ?? '');
+      return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
     };
+
+    const rows = [];
+
+    rows.push(keys.map(escapeForCSV).join(','));
+
+    data.forEach((item) => {
+      const values = keys.map((key) => escapeForCSV(item[key]));
+      rows.push(values.join(','));
+    });
+
+    return rows.join('\n');
+  };
   const downloadCSV = () => {
     const csvContent = coverToCSV(phenotypes.value);
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -355,6 +364,7 @@
     link.click();
     URL.revokeObjectURL(url);
   };
+
   // p value colour
   const getColour = (pval) => {
     if (pval < 5e-8 && pval !== null) return 'green';
