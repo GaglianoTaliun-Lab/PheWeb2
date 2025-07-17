@@ -130,8 +130,21 @@
             />
           </div>
           
-          <IsLoading v-if="isLoading" :loadingText="loadingTextQQ" class="mt-10 mb-5"/>
-          <IsFailing v-if="isFailedPlotting" :isLoading="isLoading" :isFailed="isFailedPlotting" class="mt-10 mb-5"/>
+          <!-- <IsLoading v-if="isLoading" :loadingText="loadingTextQQ" class="mt-10 mb-5"/>
+          <IsFailing v-if="isFailedPlotting" :isLoading="isLoading" :isFailed="isFailedPlotting" class="mt-10 mb-5"/> -->
+          <div v-if="isLoading" class="mt-10 mb-5">
+            <v-row align="start" justify="start" no-gutters>
+              <v-col cols="12" sm="6" lg="3" class="qq-col d-flex justify-left">
+                <IsLoading :loadingText="loadingTextQQ" style="min-width: 400px;"/>
+                <IsFailing :isLoading="isLoading" :isFailed="isFailedPlotting"/>
+              </v-col>
+              <v-col cols="12" sm="6" lg="3" class="qq-col d-flex justify-left">
+                <IsLoading :loadingText="loadingTextQQ" style="min-width: 400px;"/>
+                <IsFailing :isLoading="isLoading" :isFailed="isFailedPlotting"/>
+              </v-col>
+            </v-row>
+          </div>
+          
           <div v-if="qqData && dimension" class="mt-10 mb-5"> 
 
             <!-- <h2> QQ Plot(s): </h2> -->

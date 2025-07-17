@@ -11,19 +11,18 @@
     ></v-progress-linear> -->
 
       <div class="ml-4 mt-2">
-        <h1 class="mb-0">{{ variantCodeToLabel(variantCode) }}</h1>
-        <div class="pt-0" v-if="variant">
-          <p class="mb-0"> Nearest gene(s): 
-            <span v-for="(gene, index) in variant.nearest_genes.split(',')">
-              <a :href="`/gene/${gene.trim()}`" class="variant-link"><i>{{ gene.trim() }}</i></a>
-              <span v-if="index < variant.nearest_genes.split(',').length - 1">, </span>
-            </span>
-          </p>
-          <p class="mb-0"> Effect allele: {{ effectAlleleToLabel(variantCode) }}</p>
+        <h1 class="mb-0">chr{{ variantCodeToLabel(variantCode) }}</h1>
+        <p class="mb-0"> Nearest gene(s): 
+          <span v-for="(gene, index) in nearest_genes">
+            <a :href="`/gene/${gene.trim()}`" class="variant-link"><i>{{ gene.trim() }}</i></a>
+            <span v-if="index < nearest_genes.length - 1">, </span>
+          </span>
+        </p>
+        <div class="pt-0">
           <p class="mb-0">
             View on
             <a
-              :href="`http://genome.ucsc.edu/cgi-bin/hgTracks?db=hg${HG_BUILD_NUMBER}&highlight=hg${HG_BUILD_NUMBER}.chr${variant.chrom}%3A${variant.pos}-${variant.pos}&position=chr${variant.chrom}%3A${variant.pos - 200000}-${variant.pos + 200000}`"
+              :href="`http://genome.ucsc.edu/cgi-bin/hgTracks?db=hg${HG_BUILD_NUMBER}&highlight=hg${HG_BUILD_NUMBER}.chr${variant_basic_info.chrom}%3A${variant_basic_info.pos}-${variant_basic_info.pos}&position=chr${variant_basic_info.chrom}%3A${variant_basic_info.pos - 200000}-${variant_basic_info.pos + 200000}`"
               target="_blank"
               rel="noopener noreferrer"
               class="variant-link"
@@ -34,7 +33,7 @@
               </span>
             </a>,
             <a
-              :href="`https://www.ncbi.nlm.nih.gov/snp/?term=${variant.chrom}%5BChromosome%5D+AND+${variant.pos}%5BCHRPOS%5D`"
+              :href="`https://www.ncbi.nlm.nih.gov/snp/?term=${variant_basic_info.chrom}%5BChromosome%5D+AND+${variant_basic_info.pos}%5BCHRPOS%5D`"
               target="_blank"
               rel="noopener noreferrer"
               class="variant-link"
@@ -45,7 +44,7 @@
               </span>
             </a>,
             <a
-              :href="`https://useast.ensembl.org/Homo_sapiens/Location/Variant/Table?r=${variant.chrom}:${variant.pos}-${variant.pos}`"
+              :href="`https://useast.ensembl.org/Homo_sapiens/Location/Variant/Table?r=${variant_basic_info.chrom}:${variant_basic_info.pos}-${variant_basic_info.pos}`"
               target="_blank"
               rel="noopener noreferrer"
               class="variant-link"
@@ -56,7 +55,7 @@
               </span>
             </a>,
             <a
-              :href="`https://genetics.opentargets.org/Variant/${variant.chrom}_${variant.pos}_${variant.ref}_${variant.alt}/associations`"
+              :href="`https://genetics.opentargets.org/Variant/${variant_basic_info.chrom}_${variant_basic_info.pos}_${variant_basic_info.ref}_${variant_basic_info.alt}/associations`"
               target="_blank"
               rel="noopener noreferrer"
               class="variant-link"
@@ -67,7 +66,7 @@
               </span>
             </a>,
             <a
-              :href="`https://gnomad.broadinstitute.org/variant/${variant.chrom}-${variant.pos}-${variant.ref}-${variant.alt}?dataset=gnomad_r4`"
+              :href="`https://gnomad.broadinstitute.org/variant/${variant_basic_info.chrom}-${variant_basic_info.pos}-${variant_basic_info.ref}-${variant_basic_info.alt}?dataset=gnomad_r4`"
               target="_blank"
               rel="noopener noreferrer"
               class="variant-link"
@@ -78,7 +77,7 @@
               </span>
             </a>
 
-            <template v-if="rsids.length === 1">,
+            <template v-if="rsids && rsids.length === 1">,
               <a               
               target="_blank"
               rel="noopener noreferrer"
@@ -99,7 +98,7 @@
               > -->
             </template>
 
-            <template v-else>
+            <template v-else-if="rsids && rsids.length > 1">
               <span v-for="rsid in rsids" :key="rsid">, 
                 <a 
                 target="_blank"
@@ -172,7 +171,7 @@
                 </div>
               </div>
 
-              <div class="dropdown pt-1 pr-2" :class="{ 'dropdown-disabled': isLoading }" id="dropdown-data1">
+              <div class="dropdown pt-1 pr-2" :class="{ 'dropdown-disabled': isLoading || !isDisplayAllChecked }" id="dropdown-data1">
                 <button class="btn btn-primary btn-drop" id="button-data1">
                   {{ keyToLabel(selectedStratification1).replace(/\b\w/g, l => l.toUpperCase()) }}
                   <span class="arrow-container"><span class="arrow-down"></span></span>
@@ -189,7 +188,7 @@
                   </label> 
                 </div>
               </div>
-              <div class="dropdown pt-1 pr-2" :class="{ 'dropdown-disabled': isLoading }" id="dropdown-data2">
+              <div class="dropdown pt-1 pr-2" :class="{ 'dropdown-disabled': isLoading || !isDisplayAllChecked }" id="dropdown-data2">
                 <button v-if="selectedStratification2 == 'No stratification'" class="btn btn-primary btn-drop" id="button-data2">
                   No stratification <span class="arrow-container"><span class="arrow-down"></span></span>
                 </button>
@@ -219,7 +218,7 @@
                 @click="isDisplayAllChecked = !isDisplayAllChecked; onDisplayChoiceChange() "
               >
                 <span v-if="isDisplayAllChecked" style="display: flex; align-items: center;">Show All Stratifications <v-icon>mdi-checkbox-blank-outline</v-icon></span>
-                <span v-else style="display: flex; align-items: center;">Compare Two Stratifications <v-icon>mdi-checkbox-marked-outline</v-icon></span>
+                <span v-else style="display: flex; align-items: center;">Show All Stratifications <v-icon>mdi-checkbox-marked-outline</v-icon></span>
               </v-chip>
             </div>
 
@@ -236,20 +235,39 @@
         <!-- <div v-if="chosen_variants.length > 0">
           <PhewasPlot :key="refreshKey" :variantList="chosen_variants" :uniqueCategoriesList="category_list"/>
         </div> -->
-        <div v-if="selectedStratifications.length > 0">
-          <div v-for="stratification in selectedStratifications" :key="stratification + '-' + refreshKey">
-            <PhewasPlot2 :stratification="stratification" :categoryList="selectedCategories" />
-          </div>
+
+        <div v-for="stratification in selectedStratifications" :key="stratification + '-' + refreshKey">
+          <!-- <PhewasPlot2 :stratification="stratification" :categoryList="selectedCategories" :selectedStratifications="selectedStratifications" /> -->
+          <PhewasPlot3 :stratification="stratification" :categoryList="selectedCategories" :selectedStratifications="selectedStratifications" />
         </div>
+
+        <!-- <PhewasPlot3 :selectedStratifications="selectedStratifications" :categoryList="selectedCategories" /> -->
         <IsLoading v-if="selectedStratifications.length <= 0" :loadingText="loadingTextPhewas" class="mt-10 mb-5"/>
         <IsFailing v-if="isFailedPlotting" :isLoading="isLoading" :isFailed="isFailedPlotting" class="mt-10 mb-5"/>
         
         <div v-if="variant_list.length > 0 && selectedStratifications.length > 0">
           <div v-if="!isDisplayAllChecked">
-            <VariantTable class="mb-10" :key="refreshKey" :selectedStratifications="selectedStratifications" :variantList="variant_list" :categoryList="selectedCategories"></VariantTable>
+            <VariantTable 
+              class="mb-10" 
+              :key="refreshKey" 
+              :selectedStratifications="selectedStratifications" 
+              :variantList="variant_list" 
+              :categoryList="selectedCategories"
+              :isTableLoading="isTableLoading"
+              :effectAllele="variant_basic_info.alt"
+            ></VariantTable>
           </div>
           <div v-else>
-            <VariantCompareTable class="mb-10" :key="refreshKey" :selectedStratification1="selectedStratifications[0]" :selectedStratification2="selectedStratifications[1]" :variantList="variant_list" :categoryList="selectedCategories"></VariantCompareTable>
+            <VariantCompareTable 
+              class="mb-10" 
+              :key="refreshKey" 
+              :selectedStratification1="selectedStratifications[0]" 
+              :selectedStratification2="selectedStratifications[1]" 
+              :variantList="variant_list" 
+              :categoryList="selectedCategories"
+              :isTableLoading="isTableLoading"
+              :effectAllele="variant_basic_info.alt"
+            ></VariantCompareTable>
           </div>
         </div>
         <div v-else>
@@ -280,6 +298,7 @@ import { maf_range, keyToLabel } from './Variant.js';
 import Navbar from '@/components/Navbar.vue';
 import PhewasPlot from '@/components/PhewasPlot.vue';
 import PhewasPlot2 from '@/components/PhewasPlot2.vue';
+import PhewasPlot3 from '@/components/PhewasPlot3.vue';
 import VariantTable from '@/components/VariantTable.vue';
 import VariantCompareTable from '@/components/VariantCompareTable.vue';
 import IsLoading from '@/components/IsLoading.vue';
@@ -302,7 +321,17 @@ const pheno_list = ref(null);
 
 const chosen_variants = ref([]);
 const variant = ref(null);
+const variant_basic_info = computed(() => {
+  return {
+    chrom: variantCode.split("-")[0],
+    pos: variantCode.split("-")[1],
+    ref: variantCode.split("-")[2],
+    alt: variantCode.split("-")[3],
+  }
+});
+
 const rsids = ref(null);
+const nearest_genes = ref(null);
 const variant_list = ref([]);
 const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URL;
 
@@ -353,9 +382,22 @@ const headers = ref([
 
 onMounted(async () => {
   try {
+    const response_rsid = await axios.get(`${api}/variant/rsid/${variantCode}`);
+    rsids.value = response_rsid.data.rsid;
+
+    const response_nearest_genes = await axios.get(`${api}/variant/nearest_genes/${variantCode}`);
+    nearest_genes.value = response_nearest_genes.data.nearest_genes;
+    console.log("nearest_genes", nearest_genes.value);
+
     const response_stratification = await axios.get(`${api}/variant/stratification_list`);
     const response_category = await axios.get(`${api}/variant/category_list`);
     const response_phenolist = await axios.get(`${api}/phenotypes/`)
+
+    console.log(
+      "stratification_list", response_stratification.data,
+      "category_list", response_category.data,
+      "pheno_list", response_phenolist.data
+    );
 
     stratification_list.value = JSON.parse(JSON.stringify(response_stratification.data));
     category_list.value = JSON.parse(JSON.stringify(response_category.data))
@@ -411,7 +453,7 @@ async function fetchPhewasPlottingData(stratification_list) {
         // First iteration logic here
         console.log("This is the first iteration.");
         variant.value = result;
-        rsids.value = result.rsids ?  result.rsids.split(',') : [];
+        // rsids.value = result.rsids ?  result.rsids.split(',') : [];
         isFirst = false;
       }
 

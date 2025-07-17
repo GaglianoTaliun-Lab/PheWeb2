@@ -3,6 +3,7 @@
 import { onMounted, ref } from 'vue';
 import * as d3 from 'd3'
 import _ from 'underscore'
+import IsLoading from './IsLoading.vue';
 
 const props = defineProps({
     data: {
@@ -24,12 +25,16 @@ const props = defineProps({
 const info = ref(null);
 const qqPlotContainer = ref(null);
 const gcLambdaText = ref(null)
+const isLoading = ref(false);
+const loadingTextPhewas = 'Loading QQ plot...';
 
 onMounted(() => {
+    isLoading.value = true;
     info.value = props.data
 
     createQQPlot(info.value.qq, info.value.dimensions[0], info.value.dimensions[1])
     calculateGCLambda(info.value.qq)
+    isLoading.value = false;
 });
 
 function fmt(format) {
@@ -180,7 +185,7 @@ function createQQPlot(data, height = null, width = null) {
         .append('text')
         .attr('text-anchor', 'start')
         .attr('y', '-1em')
-        .text('Minor allele frequency (MAF) ranges per quartile')
+        // .text('Minor allele frequency (MAF) ranges per quartile')
         .style('font-weight', 'bold');
 
     text.selectAll('tspan')
@@ -258,7 +263,7 @@ function createQQPlot(data, height = null, width = null) {
 
 
 <template>
-    <div class="shadow-sm border rounded mx-2 p-3" >
+    <div class="shadow-sm border rounded mr-5 p-3" >
         <p v-if="info?.title" class="qq-title">{{ info?.title }}</p>
         <div class="qq-chart" ref="qqPlotContainer"></div>
         <div class="gc-lambda" v-html="gcLambdaText"></div>
