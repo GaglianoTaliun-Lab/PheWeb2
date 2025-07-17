@@ -135,12 +135,12 @@
           <div v-if="isLoading" class="mt-10 mb-5">
             <v-row align="start" justify="start" no-gutters>
               <v-col cols="12" sm="6" lg="3" class="qq-col d-flex justify-left">
-                <IsLoading :loadingText="loadingTextQQ" style="min-width: 400px;"/>
-                <IsFailing :isLoading="isLoading" :isFailed="isFailedPlotting"/>
+                <IsLoading :loadingText="loadingTextQQ" style="width: 100%; padding: 10px; margin-right: 20px;"/>
+                <IsFailing :isLoading="isLoading" :isFailed="isFailedPlotting" style="width: 100%; padding: 10px; margin-right: 20px;"/>
               </v-col>
               <v-col cols="12" sm="6" lg="3" class="qq-col d-flex justify-left">
-                <IsLoading :loadingText="loadingTextQQ" style="min-width: 400px;"/>
-                <IsFailing :isLoading="isLoading" :isFailed="isFailedPlotting"/>
+                <IsLoading :loadingText="loadingTextQQ" style="width: 100%; padding: 10px; margin-right: 20px;"/>
+                <IsFailing :isLoading="isLoading" :isFailed="isFailedPlotting" style="width: 100%; padding: 10px; margin-right: 20px;"/>
               </v-col>
             </v-row>
           </div>
