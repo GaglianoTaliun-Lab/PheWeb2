@@ -387,17 +387,10 @@ onMounted(async () => {
 
     const response_nearest_genes = await axios.get(`${api}/variant/nearest_genes/${variantCode}`);
     nearest_genes.value = response_nearest_genes.data.nearest_genes;
-    console.log("nearest_genes", nearest_genes.value);
 
     const response_stratification = await axios.get(`${api}/variant/stratification_list`);
     const response_category = await axios.get(`${api}/variant/category_list`);
     const response_phenolist = await axios.get(`${api}/phenotypes/`)
-
-    console.log(
-      "stratification_list", response_stratification.data,
-      "category_list", response_category.data,
-      "pheno_list", response_phenolist.data
-    );
 
     stratification_list.value = JSON.parse(JSON.stringify(response_stratification.data));
     category_list.value = JSON.parse(JSON.stringify(response_category.data))
@@ -451,7 +444,6 @@ async function fetchPhewasPlottingData(stratification_list) {
 
       if (isFirst) {
         // First iteration logic here
-        console.log("This is the first iteration.");
         variant.value = result;
         // rsids.value = result.rsids ?  result.rsids.split(',') : [];
         isFirst = false;
