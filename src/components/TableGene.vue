@@ -167,9 +167,9 @@
               <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
             </template>
             <span style="white-space: normal;">
-              P-value significant threshold: 5e-8 <br>
-              green: significant <br>
-              grey: unsignificant <br>
+              Most significant association P-value <br>
+              <span>Green</span>: genome-wide significant (5×10<sup>-8</sup>) <br>
+              <span>Grey</span>: not significant <br>
             </span>
           </v-tooltip>
           <template v-if="isSorted(column)">
@@ -260,7 +260,8 @@
               <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
             </template>
             <span style="white-space: normal;">
-              Distance in base pairs (bp) from the top variant to the start of the gene
+              Distance in base pairs (bp) from the top variant to the start of the gene. <br>
+              Top variant is a variant with the most significant association P-value for the phenotype.
             </span>
           </v-tooltip>
           <template v-if="isSorted(column)">
@@ -270,7 +271,8 @@
       </template>
 
       <template v-slot:loading>
-        <v-progress-circular indeterminate color="primary"></v-progress-circular>
+        <v-progress-circular indeterminate color="primary" class="mt-2"></v-progress-circular>
+        <br>
         <span class="mt-2">Loading Data... please wait </span>
         <v-skeleton-loader type="table-row@3"></v-skeleton-loader>
       </template>
@@ -310,8 +312,8 @@
     { title: 'Ancestry', value: 'ancestry' },
     { title: 'Sex', value: 'sex' },
     { title: '#Samples', value: 'num_samples' },
-    { title: 'Top hit location', value: 'abs_distance_to_true_start', sortable: true },
-    { title: 'Top p-value of phenotype in the range', value: 'pval', sortable: true, align: 'center' },
+    { title: 'Top variant location', value: 'abs_distance_to_true_start', sortable: true },
+    { title: 'P-value', value: 'pval', sortable: true, align: 'center' },
   ]);
 
   // data fetch

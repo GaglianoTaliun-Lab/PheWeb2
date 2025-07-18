@@ -115,7 +115,7 @@
                 <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
               </template>
               <span style="white-space: normal;">
-                Most significant association P-value <br>
+                Association P-value <br>
                 <span>Green</span>: genome-wide significant (5×10<sup>-8</sup>) <br>
                 <span>Grey</span>: not significant <br>
               </span>
@@ -152,6 +152,20 @@
               </template>
               <span style="white-space: normal;">
                 Effect allele frequency
+              </span>
+            </v-tooltip>
+          </div>
+        </template>
+
+        <template v-slot:header.effect_allele="{ column }">
+          <div style="display: flex; align-items: start; justify-content: start; text-align: start;">
+            <span style="white-space: nowrap;">{{ "EA" }}</span>
+            <v-tooltip location="top">
+              <template v-slot:activator="{ props }">
+                <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
+              </template>
+              <span style="white-space: normal;">
+                Effect allele
               </span>
             </v-tooltip>
           </div>
@@ -233,6 +247,7 @@
     variantList: Object,
     categoryList: Object,
     isTableLoading: Boolean,
+    effectAllele: String,
   });
   
   // ... Previous header definitions and other refs remain the same ...
@@ -266,6 +281,11 @@
       title: 'P-value', 
       key: 'pval',
       sortable: true
+    },
+    {
+      title: 'Effect Allele',
+      key: 'effect_allele',
+      sortable: false
     },
     { title: 'EAF',
       key: 'eaf',
@@ -317,6 +337,7 @@
           return {
             category: pheno.category,
             phenostring: pheno.phenostring,
+            effect_allele: props.effectAllele,
             phenocode: pheno.phenocode,
             ...stratifications,
             pval: pheno.pval,

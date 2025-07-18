@@ -81,6 +81,20 @@
           </div>
         </template>
 
+        <template v-slot:header.effect_allele="{ column }">
+          <div style="display: flex; align-items: start; justify-content: start; text-align: start;">
+            <span style="white-space: nowrap;">{{ "EA" }}</span>
+            <v-tooltip location="top">
+              <template v-slot:activator="{ props }">
+                <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
+              </template>
+              <span style="white-space: normal;">
+                Effect allele
+              </span>
+            </v-tooltip>
+          </div>
+        </template>
+
         <template v-slot:header.eaf="{ column }">
           <div style="display: flex; align-items: center; justify-content: center; text-align: center;">
             <span style="white-space: nowrap;">{{ "EAF" }}</span>
@@ -117,7 +131,7 @@
                 <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
               </template>
               <span style="white-space: normal;">
-                Most significant association P-value <br>
+                Association P-value <br>
                 <span>Green</span>: genome-wide significant (5×10<sup>-8</sup>) <br>
                 <span>Grey</span>: not significant <br>
               </span>
@@ -153,7 +167,7 @@
   
 <script setup>
 import { onMounted } from 'vue';
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 
 import { STRATIFICATION_CATEGORIES } from "@/config.js";
 
@@ -210,12 +224,12 @@ import { STRATIFICATION_CATEGORIES } from "@/config.js";
     selectedStratification1 : Object,
     selectedStratification2 : Object,
     variantList: Object,
-    categoryList: Object
+    categoryList: Object,
+    effectAllele: String,
+    isTableLoading: Boolean,
   });
-
-  onMounted(() => {
-
-    headers.value = [{ 
+  const headers = computed(() => [
+    { 
       title: 'Category', 
       key: 'category_variant1',
       sortable: false 
@@ -224,6 +238,11 @@ import { STRATIFICATION_CATEGORIES } from "@/config.js";
       title: 'Phenotype', 
       key: 'phenostring',
       sortable: false 
+    },
+    {
+      title: 'Effect Allele',
+      key: 'effect_allele',
+      sortable: false
     },
     { 
       title: 'P-value', 
@@ -274,15 +293,14 @@ import { STRATIFICATION_CATEGORIES } from "@/config.js";
           ]
         : [])
       ],
-      sortable: false    }];
+      sortable: false    }
+  ])
 
-      formattedVariantList.value = computeFormattedVariantList();
 
-  })
 
   
   // ... Previous header definitions and other refs remain the same ...
-  const headers = ref([]); 
+
   const categoryMenu = ref(false);
   const phenoMenu = ref(false);
   const selectedCategory = ref('');
@@ -321,6 +339,7 @@ import { STRATIFICATION_CATEGORIES } from "@/config.js";
               return {
                   category: pheno.category,
                   phenostring: pheno.phenostring,
+                  effect_allele: props.effectAllele,
                   phenocode: pheno.phenocode,
                   stratification: strat,
                   ...stratFields,
@@ -334,11 +353,6 @@ import { STRATIFICATION_CATEGORIES } from "@/config.js";
                   controls: isPvalNegative ? "NA" : pheno.num_controls
               };
           })
-          .filter(item => {
-            const keysToIgnore = new Set(["category", "phenostring", "phenocode"]);
-            return Object.entries(item)
-              .some(([key, value]) => !keysToIgnore.has(key) && value !== "NA");
-          });
     });
 
     // Group by phenostring
@@ -357,6 +371,7 @@ import { STRATIFICATION_CATEGORIES } from "@/config.js";
         });
 
         const merged = { phenostring: group.phenostring };
+        merged.effect_allele = props.effectAllele;
 
         sortedVariants.forEach((pheno, index) => {
             const variantNum = `_variant${index + 1}`;
@@ -377,7 +392,15 @@ import { STRATIFICATION_CATEGORIES } from "@/config.js";
         return merged;
     });
 
-    return formattedList;
+    // return formattedList;
+    const cleanedList = formattedList.filter(item => {
+    const allowedKeys = new Set(["pval_variant1", "pval_variant2", "eaf_variant1", "eaf_variant2", "beta_se_variant1", "beta_se_variant2", "num_samples_variant1", "num_samples_variant2"]);
+    return Object.entries(item).some(([key, value]) => {
+      return allowedKeys.has(key) && value !== "NA" && value !== "";
+    });
+  });
+
+  return cleanedList;
   };
   
   // New computed properties for dynamic hints
@@ -436,6 +459,16 @@ import { STRATIFICATION_CATEGORIES } from "@/config.js";
     if (!num || isNaN(num)) return 'NA';  
     return Number(num).toExponential(2);  
   };
+
+  onMounted(() => {
+    console.log("effectAllele", props.effectAllele);
+    formattedVariantList.value = computeFormattedVariantList();
+    // console.log("formattedVariantList", formattedVariantList.value);
+  })
+
+  // watch(props.effectAllele, () => {
+  //   formattedVariantList.value = computeFormattedVariantList();
+  // })
   </script>
   
   <style scoped>
