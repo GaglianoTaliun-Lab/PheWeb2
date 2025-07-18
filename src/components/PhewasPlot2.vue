@@ -423,7 +423,7 @@ function sanitizeId(str) {
 </script>
 
 <template>
-    <IsLoading v-if="isLoading" :loadingText="'Loading ' + stratification.split('.').join(', ') + 'stratification...'" class="my-5" />
+    <IsLoading v-if="isLoading" :loadingText="'Loading ' + stratification.split('.').join(', ') + ' stratification...'" class="my-5" />
     <IsFailing v-if="isFailedPlotting" :isLoading="isLoading" :isFailed="isFailedPlotting" class="mt-10 mb-5"/>
     <div :id="sanitizeId(props.stratification)"></div>
 </template>

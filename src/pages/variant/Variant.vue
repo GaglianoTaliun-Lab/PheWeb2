@@ -12,12 +12,15 @@
 
       <div class="ml-4 mt-2">
         <h1 class="mb-0">chr{{ variantCodeToLabel(variantCode) }}</h1>
-        <p class="mb-0"> Nearest gene(s): 
-          <span v-for="(gene, index) in nearest_genes">
-            <a :href="`/gene/${gene.trim()}`" class="variant-link"><i>{{ gene.trim() }}</i></a>
-            <span v-if="index < nearest_genes.length - 1">, </span>
-          </span>
-        </p>
+        <div v-if="nearest_genes">
+          <p class="mb-0"> Nearest gene(s): 
+            <span v-for="(gene, index) in nearest_genes">
+              <a :href="`/gene/${gene.trim()}`" class="variant-link"><i>{{ gene.trim() }}</i></a>
+              <span v-if="index < nearest_genes.length - 1">, </span>
+            </span>
+          </p>
+        </div>
+
         <div class="pt-0">
           <p class="mb-0">
             View on
@@ -227,7 +230,7 @@
                 <v-col cols="auto">
                 </v-col>
                 <v-col cols="auto">
-                  <v-btn color="primary" @click="downloadTable"> Download CSV</v-btn>
+                  <v-btn :disabled="isLoading" color="primary" @click="downloadTable"> Download CSV</v-btn>
                 </v-col>
               </v-row>
             </div>  
@@ -237,8 +240,8 @@
         </div> -->
 
         <div v-for="stratification in selectedStratifications" :key="stratification + '-' + refreshKey">
-          <!-- <PhewasPlot2 :stratification="stratification" :categoryList="selectedCategories" :selectedStratifications="selectedStratifications" /> -->
-          <PhewasPlot3 :stratification="stratification" :categoryList="selectedCategories" :selectedStratifications="selectedStratifications" />
+          <PhewasPlot2 :stratification="stratification" :categoryList="selectedCategories" :selectedStratifications="selectedStratifications" />
+          <!-- <PhewasPlot3 :stratification="stratification" :categoryList="selectedCategories" :selectedStratifications="selectedStratifications" /> -->
         </div>
 
         <!-- <PhewasPlot3 :selectedStratifications="selectedStratifications" :categoryList="selectedCategories" /> -->
@@ -429,39 +432,42 @@ function onDisplayChoiceChange(){
 }
 
 async function fetchPhewasPlottingData(stratification_list) {
-  isLoading.value = true; // Start loading
-  var temp_variant_list = [];
-  let isFirst = true;
+  isLoading.value = true;
+  let temp_variant_list = [];
 
-  for (var stratification of stratification_list) {
-    var result;
-    try {
-      const response = await axios.get(
-        `${api}/variant/${variantCode}/${stratification}`
-      );
-      result = response.data;
-      result.stratification = '.' + stratification;
+  try {
+    const requests = stratification_list.map(stratification =>
+      axios
+        .get(`${api}/variant/${variantCode}/${stratification}`)
+        .then(response => {
+          const result = response.data;
+          result.stratification = '.' + stratification;
+          return result;
+        })
+        .catch(error => {
+          console.log(`Error fetching plotting data for ${stratification}:`, error);
+          return null; // or skip it entirely
+        })
+    );
 
-      if (isFirst) {
-        // First iteration logic here
-        variant.value = result;
-        // rsids.value = result.rsids ?  result.rsids.split(',') : [];
-        isFirst = false;
-      }
+    const results = await Promise.all(requests);
 
-      temp_variant_list.push(result);
-    } catch (error) {
-      console.log(
-        `Error fetching plotting data with stratification ${stratification}:`,
-        error
-      );
+    // Filter out any nulls (from failed fetches)
+    const filteredResults = results.filter(r => r !== null);
+
+    // Handle the first successful result for `variant`
+    const first = filteredResults[0];
+    if (first) {
+      variant.value = first;
+      // rsids.value = first.rsids ? first.rsids.split(',') : [];
     }
+
+    temp_variant_list = filteredResults;
+  } finally {
+    variant_list.value = temp_variant_list;
+    isLoading.value = false;
   }
-  variant_list.value = temp_variant_list;
 
-
-
-  isLoading.value = false; // Stop loading
   return variant_list.value;
 }
 
