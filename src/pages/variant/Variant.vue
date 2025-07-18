@@ -258,7 +258,7 @@
               <template v-slot:loading>
                 <v-progress-circular indeterminate color="primary" class="mt-2"></v-progress-circular>
                 <br>
-                <span class="mt-2">Loading Data... please wait </span>
+                <span class="mt-2">Loading table data... please wait </span>
                 <v-skeleton-loader type="table-row@10"></v-skeleton-loader>
               </template>
             </v-data-table>
@@ -312,7 +312,7 @@ const refreshKey = ref(0)
 const isDisplayAllChecked = ref(true);
 const isDisabled = ref(false);
 
-const loadingTextPhewas = ref("Loading PheWAS data...");
+const loadingTextPhewas = ref("Choosing PheWAS stratifications...");
 const isFailedPlotting = ref(false);
 
 const isTableLoading = computed(() => {
@@ -409,7 +409,6 @@ async function fetchPhewasPlottingData(stratification_list) {
 
       if (isFirst) {
         // First iteration logic here
-        console.log("This is the first iteration.");
         variant.value = result;
         rsids.value = result.rsids ?  result.rsids.split(',') : [];
         isFirst = false;

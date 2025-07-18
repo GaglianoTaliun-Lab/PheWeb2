@@ -7,6 +7,8 @@ import { onMounted, ref, watch} from 'vue';
 import { useRoute } from 'vue-router';
 import axios from 'axios';
 import * as utils from '@/pages/variant/Variant.js'
+import IsLoading from '@/components/IsLoading.vue';
+import IsFailing from '@/components/IsFailing.vue';
 
 const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URL;
 
@@ -22,6 +24,8 @@ const props = defineProps({
         required : false,
     }
 });
+
+const isLoading = ref(true);
 
 const plot = ref(null)
 const data = ref(null)
@@ -369,38 +373,43 @@ function generatePlot(variant_list){
 
 onMounted(async () => {
 
-    if (!LocusZoom.TransformationFunctions._items.has("percent")){
-        LocusZoom.TransformationFunctions.add("percent", function(x) {
-            if (x === 1) { return "100%"; }
-            x = (x * 100).toPrecision(2);
-            if (x.indexOf('.') !== -1) { x = x.replace(/0+$/, ''); }
-            if (x.endsWith('.')) { x = x.substr(0, x.length-1); }
-            return x + '%';
-        });
-    }
-
-    if (!LocusZoom.ScaleFunctions._items.has("effect_direction")){
-        LocusZoom.ScaleFunctions.add("effect_direction", function(parameters, input){
-        if (typeof input === "undefined"){
-            return null;
-        } else if (!isNaN(input.beta)) {
-            if (!isNaN(input.sebeta)) {
-                if      (input.beta - 2*input.sebeta > 0) { return parameters['+'] || null; }
-                else if (input.beta + 2*input.sebeta < 0) { return parameters['-'] || null; }
-            } else {
-                if      (input.beta > 0) { return parameters['+'] || null; }
-                else if (input.beta < 0) { return parameters['-'] || null; }
-            }
-        } else if (!isNaN(input.or)) {
-            if      (input.or > 0) { return parameters['+'] || null; }
-            else if (input.or < 0) { return parameters['-'] || null; }
+    try {
+        if (!LocusZoom.TransformationFunctions._items.has("percent")){
+            LocusZoom.TransformationFunctions.add("percent", function(x) {
+                if (x === 1) { return "100%"; }
+                x = (x * 100).toPrecision(2);
+                if (x.indexOf('.') !== -1) { x = x.replace(/0+$/, ''); }
+                if (x.endsWith('.')) { x = x.substr(0, x.length-1); }
+                return x + '%';
+            });
         }
-        return null;
-    });
-    }
 
-    await fetchData();
-    generatePlot(data.value)
+        if (!LocusZoom.ScaleFunctions._items.has("effect_direction")){
+            LocusZoom.ScaleFunctions.add("effect_direction", function(parameters, input){
+            if (typeof input === "undefined"){
+                return null;
+            } else if (!isNaN(input.beta)) {
+                if (!isNaN(input.sebeta)) {
+                    if      (input.beta - 2*input.sebeta > 0) { return parameters['+'] || null; }
+                    else if (input.beta + 2*input.sebeta < 0) { return parameters['-'] || null; }
+                } else {
+                    if      (input.beta > 0) { return parameters['+'] || null; }
+                    else if (input.beta < 0) { return parameters['-'] || null; }
+                }
+            } else if (!isNaN(input.or)) {
+                if      (input.or > 0) { return parameters['+'] || null; }
+                else if (input.or < 0) { return parameters['-'] || null; }
+            }
+            return null;
+        });
+        }
+
+        await fetchData();
+        generatePlot(data.value)
+    } finally {
+        isLoading.value = false;
+    }
+    
 });
 
 function sanitizeId(str) {
@@ -414,5 +423,7 @@ function sanitizeId(str) {
 </script>
 
 <template>
+    <IsLoading v-if="isLoading" :loadingText="'Loading ' + stratification.split('.').join(', ') + 'stratification...'" class="my-5" />
+    <IsFailing v-if="isFailedPlotting" :isLoading="isLoading" :isFailed="isFailedPlotting" class="mt-10 mb-5"/>
     <div :id="sanitizeId(props.stratification)"></div>
 </template>
