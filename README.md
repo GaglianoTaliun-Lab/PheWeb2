@@ -1,5 +1,6 @@
 # PheWeb 2.0
-![https://raw.githubusercontent.com/GaglianoTaliun-Lab/PheWeb2.0/main/public/Screenshot.png](https://github.com/GaglianoTaliun-Lab/PheWeb2.0/blob/main/public/Screenshot.png)
+
+<img width="1810" height="431" alt="Screenshot 2025-07-22 163831" src="https://github.com/user-attachments/assets/0539393b-3b2e-4af7-8b10-35dd8f90f01f" />
 
 
 PheWeb 2.0 is a new version of the original [PheWeb](https://github.com/statgen/pheweb) tool for interactive querying, visualizing, and sharing summary-level results from GWAS/PheWAS studies. In PheWeb 2.0, we moved all the UI functionality to the Vue 3 and Vite frameworks, dramatically simplifying code readability, maintenance of old features, and development of new features. We also de-coupled UI from the underlying data model by introducing a separate [PheWeb 2.0 API](https://github.com/GaglianoTaliun-Lab/PheWeb2.0-API) server to allow their independent scaling and improve re-usability.
