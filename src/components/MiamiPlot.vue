@@ -1600,11 +1600,11 @@ watch(
                     Both
                   </button>
                 </div>
-                <button class="btn btn-primary blue-button mr-2" @click="applyFilter">
-                  Filter
+                <button class="btn btn-primary btn-green mr-2" @click="applyFilter">
+                  Apply Filter
                 </button>
                 <button class="btn btn-secondary" @click="cancelFilter()">
-                  Cancel
+                Cancel Filter
                 </button>
               </div>
             </transition>
@@ -1784,6 +1784,15 @@ watch(
 .expanded-content {
   display: flex;
   align-items: center;
+}
+
+.btn-green {
+    background-color: #28a745 !important;
+    border-color: #28a745 !important;
+  }
+.btn-green:hover {
+    background-color: #218838 !important;
+    border-color: #1e7e34 !important;
 }
 
 .btn-light:hover {

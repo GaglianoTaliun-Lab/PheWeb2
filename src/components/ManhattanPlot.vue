@@ -967,11 +967,11 @@ watch(
                   Both
                 </button>
               </div>
-              <button class="btn btn-primary blue-button mr-2" @click="applyFilter">
-                Filter
+              <button class="btn btn-primary btn-green mr-2" @click="applyFilter">
+                Apply Filter
               </button>
               <button class="btn btn-secondary" @click="cancelFilter()">
-                Cancel
+                Cancel Filter
               </button>
             </div>
           </transition>
