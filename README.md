@@ -63,12 +63,12 @@ Current image locations are detailed below:
 
 5. Compile with either the development setup, production setup or production-as-a-service setup:
 
-A) Development Setup
+**A) Development Setup**
 
 A development server allows users more flexibility and with their website. This is the best option when testing changes to the code.
 `npm run dev`
 
-B) Production Setup
+**B) Production Setup**
 
 A production server allows Vite to optimize deployement for faster page reload times and better security. In exchange, development features such as hot-reloading (automatic changes) are not available. This is the recommend set-up when deploying the public version of your PheWeb instance.
 While this is not a completely production-ready build, this version utilises the 'serve' package to bypass the need for root control (useful for HPC environments, for example).
