@@ -31,6 +31,14 @@ Not to mention, the main configuration file for the frontend is located at `src/
 - VITE_APP_SUBTITLE1: The subtitle of your PheWeb that will be present on the title page. (Optional)
 - VITE_APP_DATE: The date of last update of your PheWeb. Will be present on the bottom of the page. (Optional)
 
+** You need to install dependencies **
+
+When in the repository directory (via `cd PheWeb2`), run 
+
+`npm install`
+
+to install all npm dependencies. They are all listed in `package.json`.
+
 ### Images
 In order to work with static images such as in the about page or acknowledgements in the home page, code modifications will be necessary. Images should be stored in `src/assets/`.
 
@@ -43,8 +51,6 @@ Current image locations are detailed below:
 ## Development Setup
 A development server allows users more flexibility and with their website. This is the best option when testing changes to the code.
 
-### Install dependencies (found package.json)
-`npm install`
 ### Compiles and hot-reloads for development
 `npm run dev`
 
@@ -59,3 +65,7 @@ While this is not a completely production-ready build, this version utilises the
 The convention is port 8080, but you may change this.
 
 `npx serve -s dist -l 8080`
+
+### Running the Pheweb2 frontend as a service
+
+For more information on running the PheWeb2 frontend as a service (a great option for self-hosted web servers), please consult `service/README.md`
