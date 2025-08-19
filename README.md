@@ -37,18 +37,18 @@ An .env file exists in the top level of the directory to store private options r
 We have a sample .env file called sample-env. Copy the file, rename to '.env' and adjust the options to your needs in order for the changes to take effect.
 
 The available options are:
- - VITE_APP_CLSA_PHEWEB_API_URL: The URL of your PheWeb2-API backend, in quotes (example: "http://127.0.0.1:9999")
- - VITE_PORT=8087: The port on which you wish to host your frontend. (example: 8087)
+ - `VITE_APP_CLSA_PHEWEB_API_URL`: The URL of your PheWeb2-API backend, in quotes (example: "http://127.0.0.1:9999")
+ - `VITE_PORT=8087`: The port on which you wish to host your frontend. (example: 8087)
 
 4. Adjust [configuration](src/config.js) settings:
 The main configuration file for the frontend is located at `src/config.js`. The current options are placeholders.
 
 Here are the currently available options:
-- PRIORITY_STRATIFICATIONS : The stratifications you want to prioritise in your PheWeb. These stratifications will be the first selected in order of priority that you've set in the configuration in the miami and PheWAS page. (Optional)
-- HG_BUILD_NUMBER : The number of the reference build. (Optional)
-- VITE_APP_TITLE: The title of your PheWeb that will be present on the title page. (Optional)
-- VITE_APP_SUBTITLE1: The subtitle of your PheWeb that will be present on the title page. (Optional)
-- VITE_APP_DATE: The date of last update of your PheWeb. Will be present on the bottom of the page. (Optional)
+- `PRIORITY_STRATIFICATIONS`: The stratifications you want to prioritise in your PheWeb. These stratifications will be the first selected in order of priority that you've set in the configuration in the miami and PheWAS page. (Optional)
+- `HG_BUILD_NUMBER`: The number of the reference build. (Optional)
+- `VITE_APP_TITLE`: The title of your PheWeb that will be present on the title page. (Optional)
+- `VITE_APP_SUBTITLE1`: The subtitle of your PheWeb that will be present on the title page. (Optional)
+- `VITE_APP_DATE`: The date of last update of your PheWeb. Will be present on the bottom of the page. (Optional)
 
 **********************************************
 ### Images (WORK IN PROGRESS)
@@ -80,6 +80,7 @@ While this is not a completely production-ready build, this version utilises the
 The convention is port 8080, but you may change this.
 
 `npx serve -s dist -l 8080`
+
 
 > [!NOTE]
 > For more information on running the PheWeb2 frontend as a service (a great option for self-hosted web servers), please consult the appropriate [README](service/README.md).
