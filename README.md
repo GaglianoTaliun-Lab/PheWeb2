@@ -31,7 +31,7 @@ Not to mention, the main configuration file for the frontend is located at `src/
 - VITE_APP_SUBTITLE1: The subtitle of your PheWeb that will be present on the title page. (Optional)
 - VITE_APP_DATE: The date of last update of your PheWeb. Will be present on the bottom of the page. (Optional)
 
-** You need to install dependencies **
+**You need to install dependencies**
 
 When in the repository directory (via `cd PheWeb2`), run 
 
