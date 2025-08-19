@@ -63,24 +63,28 @@ Current image locations are detailed below:
 
 5. Compile with either the development setup, production setup or production-as-a-service setup:
 
-## Development Setup
+A) Development Setup
 A development server allows users more flexibility and with their website. This is the best option when testing changes to the code.
-
-### Compiles and hot-reloads for development
 `npm run dev`
 
-## Production Setup
+B) Production Setup
 A production server allows Vite to optimize deployement for faster page reload times and better security. In exchange, development features such as hot-reloading (automatic changes) are not available. This is the recommend set-up when deploying the public version of your PheWeb instance.
 While this is not a completely production-ready build, this version utilises the 'serve' package to bypass the need for root control (useful for HPC environments, for example).
 
-### Build dependencies
-`npm run build`
+Build dependencies
+```
+npm run build
+```
 
-### Runs production-like server. 
-The convention is port 8080, but you may change this.
+Runs production-like server. 
 
-`npx serve -s dist -l 8080`
+```
+npx serve -s dist -l 8080
+```
+> [!NOTE]
+> The convention is port 8080, but you may change this.
 
+ 
 
 > [!NOTE]
 > For more information on running the PheWeb2 frontend as a service (a great option for self-hosted web servers), please consult the appropriate [README](service/README.md).
