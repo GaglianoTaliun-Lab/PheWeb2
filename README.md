@@ -13,8 +13,7 @@ As a result of this migration, PheWeb 2 allows the following:
 > [!NOTE]
 > The code was developed and tested with Node.js 20.16.0+ on Linux-based OS.
 
-
-You can install the PheWeb2 frontend and all required dependencies using the following steps:
+# You can install the PheWeb2 frontend and all required dependencies using the following steps:
 
 1. Clone this repository:
 ```
@@ -51,8 +50,8 @@ Here are the currently available options:
 - VITE_APP_SUBTITLE1: The subtitle of your PheWeb that will be present on the title page. (Optional)
 - VITE_APP_DATE: The date of last update of your PheWeb. Will be present on the bottom of the page. (Optional)
 
-
-### Images (WORK IN PROGRESS) ***************
+**********************************************
+### Images (WORK IN PROGRESS)
 In order to work with static images such as in the about page or acknowledgements in the home page, code modifications will be necessary. Images should be stored in `src/assets/`.
 
 Current image locations are detailed below:
