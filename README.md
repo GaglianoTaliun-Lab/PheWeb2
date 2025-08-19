@@ -5,10 +5,10 @@
 
 PheWeb 2 is a new version of the original [PheWeb](https://github.com/statgen/pheweb) tool for interactive querying, visualizing, and sharing summary-level results from GWAS/PheWAS studies. In PheWeb 2, we moved all the UI functionality to the Vue 3 and Vite frameworks, dramatically simplifying code readability, maintenance of old features, and development of new features. We also de-coupled UI from the underlying data model by introducing a separate [PheWeb 2 API](https://github.com/GaglianoTaliun-Lab/PheWeb2-API) server to allow their independent scaling and improve re-usability.
 
-As a result of this migration, PheWeb 2 allows the following:
-1) Import and visualizations of GWAS stratified by genetic ancestry groups (unlimited number).
-2) Import and visualizations of GWAS stratified by sex.
-3) Side-by-side comparisons of stratified GWAS/PheWAS through interactive Miami plots.
+As a result of this migration, PheWeb 2 allows the following
+- Import and visualizations of GWAS stratified by genetic ancestry groups (unlimited number).
+- Import and visualizations of GWAS stratified by sex.
+- Side-by-side comparisons of stratified GWAS/PheWAS through interactive Miami plots.
 
 > [!NOTE]
 > The code was developed and tested with Node.js 20.16.0+ on Linux-based OS.
@@ -20,14 +20,14 @@ As a result of this migration, PheWeb 2 allows the following:
 git clone https://github.com/GaglianoTaliun-Lab/PheWeb2.git
 cd PheWeb2
 ```
-
+ 
 2. Install dependencies:
 All dependencies are present in the [package.json](package.json)
 
 ```
 npm install
 ```
-
+ 
 3. Create your .env file:
 ```
 cp sample-env .env
@@ -39,7 +39,7 @@ We have a sample .env file called sample-env. Copy the file, rename to '.env' an
 The available options are:
  - `VITE_APP_CLSA_PHEWEB_API_URL`: The URL of your PheWeb2-API backend, in quotes (example: "http://127.0.0.1:9999")
  - `VITE_PORT=8087`: The port on which you wish to host your frontend. (example: 8087)
-
+ 
 4. Adjust [configuration](src/config.js) settings:
 The main configuration file for the frontend is located at `src/config.js`. The current options are placeholders.
 
@@ -60,7 +60,7 @@ Current image locations are detailed below:
 - Home page acknlowledgements : `src/componenets/AcknowledgeImage.vue`
 - About page : `src/pages/about/About.vue`
 **********************************************
-
+ 
 5. Compile with either the development setup, production setup or production-as-a-service setup:
 
 **A) Development Setup**
