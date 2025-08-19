@@ -21,8 +21,8 @@ An .env file exists in the top level of the directory to store private options r
 We have a sample .env file called sample-env. Copy the file, rename to '.env' and adjust the options to your needs in order for the changes to take effect.
 
 The available options are:
- - VITE_APP_CLSA_PHEWEB_API_URL: The URL of your PheWeb2-API backend, in quotes (ex : "http://127.0.0.1:9999")
- - VITE_PORT=8087: The port on which you wish to host your frontend. (ex : 8087)
+ - VITE_APP_CLSA_PHEWEB_API_URL: The URL of your PheWeb2-API backend, in quotes (example: "http://127.0.0.1:9999")
+ - VITE_PORT=8087: The port on which you wish to host your frontend. (example: 8087)
 
 Not to mention, the main configuration file for the frontend is located at `src/config.js`. The current options are placeholders. Here are the currently available options:
 - PRIORITY_STRATIFICATIONS : The stratifications you want to prioritise in your PheWeb. These stratifications will be the first selected in order of priority that you've set in the configuration in the miami and PheWAS page. (Optional)
