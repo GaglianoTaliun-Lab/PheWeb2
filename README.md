@@ -20,7 +20,11 @@ Node.js 20.*
 An .env file exists in the top level of the directory to store private options relating to your PheWeb website. Your .env file needs to include the port of your PheWeb backend in order to retrieve data.
 We have a sample .env file called sample-env. Copy the file, rename to '.env' and adjust the options to your needs in order for the changes to take effect.
 
-Please adjust the options within `src/config.js` to fit your needs. There are currently just placeholder options.
+The available options are:
+-VITE_APP_CLSA_PHEWEB_API_URL: The URL of your PheWeb2-API backend, in quotes (ex : "http://127.0.0.1:9999")
+-VITE_PORT=8087: The port on which you wish to host your frontend. (ex : 8087)
+
+Not to mention, the main configuration file for the frontend is located at `src/config.js`. The current options are placeholders. Here are the currently available options:
 - PRIORITY_STRATIFICATIONS : The stratifications you want to prioritise in your PheWeb. These stratifications will be the first selected in order of priority that you've set in the configuration in the miami and PheWAS page. (Optional)
 - HG_BUILD_NUMBER : The number of the reference build. (Optional)
 - VITE_APP_TITLE: The title of your PheWeb that will be present on the title page. (Optional)
@@ -30,6 +34,7 @@ Please adjust the options within `src/config.js` to fit your needs. There are cu
 ### Images
 In order to work with static images such as in the about page or acknowledgements in the home page, code modifications will be necessary. Images should be stored in `src/assets/`.
 
+Current image locations are detailed below:
 - Image at the top of web browser tab : `index.html`
 - Header : `src/components/Navbar2.vue`
 - Home page acknlowledgements : `src/componenets/AcknowledgeImage.vue`
@@ -37,6 +42,7 @@ In order to work with static images such as in the about page or acknowledgement
 
 ## Development Setup
 A development server allows users more flexibility and with their website. This is the best option when testing changes to the code.
+
 ### Install dependencies (found package.json)
 `npm install`
 ### Compiles and hot-reloads for development
