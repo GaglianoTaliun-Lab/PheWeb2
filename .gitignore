@@ -27,4 +27,3 @@ vite.config.js.timestamp*
 *.njsproj
 *.sln
 *.sw?
-.env

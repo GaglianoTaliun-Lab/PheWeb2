@@ -37,7 +37,7 @@
       errorMessage.value = '';
       try {
         isLoading.value = true;
-        const response = await axios.get(`${api}/phenotypes`)
+        const response = await axios.get(`${api}/phenotypes/`)
         data.value = response.data;
       } catch (error) {
         console.error("There was an error fetching the sample data:", error);

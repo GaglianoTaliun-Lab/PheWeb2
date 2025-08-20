@@ -17,7 +17,10 @@ As a result of this migration, PheWeb 2 allows the following
 > [!NOTE]
 > The code was developed and tested with Node.js 20.16.0+ on Linux-based OS.
 
+
 # You can install the PheWeb2 frontend and all required dependencies using the following steps:
+
+1. Install nodejs following the instructions at [https://nodejs.org/en/download/](https://nodejs.org/en/download/)
 
 1. Clone this repository:
 ```
@@ -31,10 +34,17 @@ All dependencies are present in the [package.json](package.json)
 ```
 npm install
 ```
+
+# Configuring PheWeb2 UI
+1. Make sure your PheWeb2 API endpoint is running. Follow insturctions at [...](...)
  
-3. Create your .env file:
+2. Modify your .env file:
 ```
-cp sample-env .env
+# Specify the url address of PheWeb2 API
+VITE_APP_CLSA_PHEWEB_API_URL="http://127.0.0.1:9543"
+
+# Specify the port of PheWeb UI
+VITE_PORT=8087
 ```
 
 An .env file exists in the top level of the directory to store private options relating to your PheWeb website. Your .env file needs to include the port of your PheWeb backend in order to retrieve data.
@@ -44,7 +54,7 @@ The available options are:
  - `VITE_APP_CLSA_PHEWEB_API_URL`: The URL of your PheWeb2-API backend, in quotes (example: "http://127.0.0.1:9999")
  - `VITE_PORT=8087`: The port on which you wish to host your frontend. (example: 8087)
  
-4. Adjust [configuration](src/config.js) settings:
+3. Adjust [configuration](src/config.js) settings:
 The main configuration file for the frontend is located at `src/config.js`. The current options are placeholders.
 
 Here are the currently available options:
@@ -53,6 +63,16 @@ Here are the currently available options:
 - `VITE_APP_TITLE`: The title of your PheWeb that will be present on the title page. (Optional)
 - `VITE_APP_SUBTITLE1`: The subtitle of your PheWeb that will be present on the title page. (Optional)
 - `VITE_APP_DATE`: The date of last update of your PheWeb. Will be present on the bottom of the page. (Optional)
+
+# Build the UI
+```
+npm run build
+```
+
+# Run the UI
+```
+npm run preview -- --port 8080
+```
 
 **********************************************
 ### Images (WORK IN PROGRESS)
