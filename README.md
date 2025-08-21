@@ -52,7 +52,7 @@ We have a sample .env file called sample-env. Copy the file, rename to '.env' an
 
 The available options are:
  - `VITE_APP_CLSA_PHEWEB_API_URL`: The URL of your PheWeb2-API backend, in quotes (example: "http://127.0.0.1:9999")
- - `VITE_PORT=8087`: The port on which you wish to host your frontend. (example: 8087)
+ - `VITE_PORT`: The port on which you wish to host your frontend. (example: 8087)
  
 3. Adjust [configuration](src/config.js) settings:
 The main configuration file for the frontend is located at `src/config.js`. The current options are placeholders.
