@@ -78,11 +78,11 @@ npm run preview -- --port 8080
 > As of the current release, images need to be manually edited to be removed or edited. 
 > All images are present in [the assets folder](src/assets).
 > Here is a list of current image referral locations:
-> - (Logo at the top of tab in browser - line 5)[src/index.html]
-> - (Logo in navbar - line 7)[src/components/Navbar.vue]
-> - (Large logo in home page - line 6)[src/pages/Home.vue]
-> - (Images in acknowledgements on home page - lines 3-8)[src/components/AcknowledgeImage.vue]
-> - (Images in about page - lines 154, 158 & 196)[src/pages/About.vue]
+> - [Logo at the top of tab in browser - line 5](src/index.html)
+> - [Logo in navbar - line 7](src/components/Navbar.vue)
+> - [Large logo in home page - line 6](src/pages/Home.vue)
+> - [Images in acknowledgements on home page - lines 3-8](src/components/AcknowledgeImage.vue)
+> - [Images in about page - lines 154, 158 & 196](src/pages/About.vue)
  
 5. Compile with either the development setup, production setup or production-as-a-service setup:
 
