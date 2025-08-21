@@ -115,3 +115,5 @@ npx serve -s dist -l 8080
 
 > [!NOTE]
 > For more information on running the PheWeb2 frontend as a service (a great option for self-hosted web servers), please consult the appropriate [README](service/README.md).
+
+>> in .env, modify your GA id if applicable

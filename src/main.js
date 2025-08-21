@@ -1,6 +1,7 @@
 import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router/index'
+import { createGtag } from 'vue-gtag'
 
 // Import our custom CSS
 import './scss/styles.scss'
@@ -29,4 +30,13 @@ const vuetify = createVuetify({
 app.component('font-awesome-icon', FontAwesomeIcon)
 app.use(router);
 app.use(vuetify);
+const gaId = import.meta.env.VITE_APP_GA_ID;
+
+if (gaId) {
+  const gtag = createGtag({
+    tagId: gaId,
+    vueRouter: router
+  })
+  app.use(gtag)
+}
 app.mount('#app');
