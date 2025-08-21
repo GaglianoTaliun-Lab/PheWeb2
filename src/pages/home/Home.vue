@@ -3,7 +3,7 @@
     <Navbar />
     <v-main class="centered-content">
         <v-card elevation="0">
-          <img src="@/assets/CLSA_logo.png" class="img-fluid mb-3 custom-img" alt="...">
+          <img src="@/assets/CLSA_logo.png" class="img-fluid mb-3 custom-img" alt="clsa_logo">
           <h1 class="fw-bold">{{ VITE_APP_TITLE }}</h1>
           <small class="text-body-secondary">{{ VITE_APP_SUBTITLE1 }}</small>
         </v-card>

@@ -14,7 +14,7 @@
                 <v-list-item link variant="plain" @click="selectContent('TOPMedImputation')" title="3. TOPMed Imputation"></v-list-item>
                 <v-list-item link variant="plain" @click="selectContent('PhenotypeAssociation')" title="4. Phenotype Association"></v-list-item>
                 <v-list-item link variant="plain" @click="selectContent('AncestryEuro')" subtitle="4.1 Ancestry Check and European Subset"></v-list-item>
-                <v-list-item link variant="plain" @click="selectContent('BinaryPhenotype')" subtitle="4.2 Selecting Binary Phenotypes"></v-list-item>
+                <!-- <v-list-item link variant="plain" @click="selectContent('BinaryPhenotype')" subtitle="4.2 Selecting Binary Phenotypes"></v-list-item> -->
                 <v-list-item link variant="plain" @click="selectContent('ContinuousPhenotype')" subtitle="4.3 Selecting Continuous Phenotype"></v-list-item>
                 <v-list-item link variant="plain" @click="selectContent('Regenie')" subtitle="4.4 Association Model (Regenie)"></v-list-item>
                 <v-list-item link variant="plain" @click="selectContent('PheWeb')" title="5. PheWeb"></v-list-item>
@@ -151,17 +151,17 @@
                         <br/>
                         <!-- Insert the image here -->
                         <v-card>
-                            <img src="../../assets/eur_vs_reference_square_pcs.png" alt="Figure 1 - PCA Projection" class="img-fluid mt-3" />
+                            <img src="@/assets/eur_vs_reference_square_pcs.png" alt="Figure 1 - PCA Projection" class="img-fluid mt-3" />
                             <b>Figure 1.</b>CLSA samples with inferred European ancestry projected onto the HGDP and 1KG's PCA space.
                         </v-card>
                         <v-card>
-                            <img src="../../assets/incrfont_top3pcs_eur_subset_square_title.png" alt="Figure 2 - Top 3 Principal Components" class="img-fluid mt-3" />
+                            <img src="@/assets/incrfont_top3pcs_eur_subset_square_title.png" alt="Figure 2 - Top 3 Principal Components" class="img-fluid mt-3" />
                             <b>Figure 2.</b>Top 3 principal components of CLSA samples with inferred European ancestry (N=24505).
                         </v-card>
                         
                     </div>
 
-                    <div v-if="selectedContent === 'BinaryPhenotype'" id = 'BinaryPhenotype'>
+                    <!-- <div v-if="selectedContent === 'BinaryPhenotype'" id = 'BinaryPhenotype'>
                         <h3>Selecting Binary Phenotypes</h3>
                         <hr></hr>
                         <p>Binary phenotypes were selected with the following criteria (Figure 2):</p>
@@ -174,11 +174,11 @@
                         <br>
                         <v-card>
                             <b>Figure 2.</b>Flow chart of filtering criteria for binary variables.
-                            <img src="../../assets/binary_diagram.png" alt="Figure 2 - Binary Diagram" class="img-fluid mt-3" />
+                            <img src="@/assets/binary_diagram.png" alt="Figure 2 - Binary Diagram" class="img-fluid mt-3" />
                         </v-card>
-                    </div>
+                    </div> -->
 
-                    <div v-if="selectedContent === 'ContinuousPhenotype'" id = 'ContinuousPhenotype'>
+                    <div v-if="selectedContent === 'ContinuousPhenotype'" id="ContinuousPhenotype">
                         <h3>Selecting Continuous Phenotypes</h3>
                         <hr></hr>
                         <p>Continous phenotypes were selected with the following criteria (Figure 3):</p>
@@ -189,11 +189,11 @@
                             <li>The variable has does not have one value which accounts for more than 10% of all values</li>
                             <li>The variable has GWAS relevance</li>
                         </ol>
-                        <p>The final number of continuous phenotypes was 357.</p>
+                        <p>The final number of continuous phenotypes was 225 for combined, 211 for the female stratification and 207 for the male stratification</p>
                         <br>
                         <v-card>
                             <b>Figure 3.</b>Flow chart of filtering criteria for continuous variables.
-                            <img src="../../assets/continuous_diagram.png" alt="Figure 3 - Continuous Diagram" class="img-fluid mt-3" />
+                            <img src="@/assets/Continuous_Diagram225.drawio.png" alt="Figure 3 - Continuous Diagram" class="img-fluid mt-3" />
                         </v-card>
                     </div>
 
@@ -256,115 +256,14 @@
                             <li>Download button now includes stratification in all phenotypes page (04/30/2024);</li>
                             <li>Added functionality to show all QQ plots (04/18/2024).</li>
                         </ul>    
-
                     </div>
-
-
-                <div v-if="selectedContent === 'BinaryPhenotype'" id = 'BinaryPhenotype'>
-                    <h3>Selecting Binary Phenotypes</h3>
-                    <hr></hr>
-                    <p>Binary phenotypes were selected with the following criteria (Figure 2):</p>
-                    <ol>
-                        <li>The variable is binary (2 choices)</li>
-                        <li>The variable has more than 1000 cases</li>
-                        <li>The variable has GWAS relevance</li>
-                    </ol>
-                    <p>The final number of continuous phenotypes was 348.</p>
-                    <br>
-                    <v-card>
-                        <b>Figure 2.</b>Flow chart of filtering criteria for binary variables.
-                        <img src="../../assets/binary_diagram.png" alt="Figure 2 - Binary Diagram" class="img-fluid mt-3" />
-                    </v-card>
-                </div>
-
-                <div v-if="selectedContent === 'ContinuousPhenotype'" id = 'ContinuousPhenotype'>
-                    <h3>Selecting Continuous Phenotypes</h3>
-                    <hr></hr>
-                    <p>Continous phenotypes were selected with the following criteria (Figure 3):</p>
-                    <ol>
-                        <li>Removed outliers <span>&#177;</span>5 standard deviations from the mean</li>
-                        <li>The variable has more than 20 uniques numeric values, as to remove semi-quantitative variables that are not modeled correctly in linear regression.</li>
-                        <li>The variable has more than 1000 total numeric values</li>
-                        <li>The variable has does not have one value which accounts for more than 10% of all values</li>
-                        <li>The variable has GWAS relevance</li>
-                    </ol>
-                    <p>The final number of continuous phenotypes was 357.</p>
-                    <br>
-                    <v-card>
-                        <b>Figure 3.</b>Flow chart of filtering criteria for continuous variables.
-                        <img src="../../assets/continuous_diagram.png" alt="Figure 3 - Continuous Diagram" class="img-fluid mt-3" />
-                    </v-card>
-                </div>
-
-                <div v-if="selectedContent === 'Regenie'" id="Regenie">
-                    <h3>Regenie</h3>
-                    <hr></hr>
-                    <p>Association testing was performed using <a href="https://rgcgithub.github.io/regenie/" target="_blank">Regenie</a> v3.2.1, which handles unbalanced case-control ratios and accounts for population structure and relatedness. Our automated Nextflow pipeline for executing Regenie in a highly parallel way is available <a href="https://github.com/CERC-Genomic-Medicine/Regenie_nextflow" target = "_blank" >here</a>.</p>
-                    <p>After filtering european sub-population, we proceeded to further filter common non-imputed variants for step 1 of Regenie.</p>
-                    <p>We performed the following:</p>
-                    <ol>
-                        <li>Removed variants with sample missingness of > 0.1</li>
-                        <li>Removed samples with genotype missingness of > 0.1</li>
-                        <li>Variants departing from Hardy-Weinberg equilibrium with a p-value less than 1e-15</li>
-                        <li>Linkage disequilibrium pruning of correlated variants with window size of 1000, step size of 100 and Rsq threshold of 0.9</li>
-                    </ol>
-                    <p>At the end, we had this distribution of variants per chromosome for 24,505 individuals:</p>
-                    <v-data-table-virtual
-                        :items="SNPdistribution_regenie" 
-                        :headers="headers"
-                        height="300"
-                        >
-                        <template v-slot:item.snp="{ value }">
-                            <v-chip>
-                                {{ value }}
-                            </v-chip>
-                        </template>
-                    </v-data-table-virtual>
-                    <p>For a total of 338,706 SNPs.</p>
-                    <p>For both binary and continuous variables, we used a block size of 1000, leave-one-out cross validation</p>
-                    <p>For binary variables, the firth approximation was used for variants with p-value less than 0.05 for both steps.</p>
-                    <p>For continuous variables, rank inverse normal transformation was used for both steps.</p>
-                    <p>For both steps, we used the covariates of: genotyping batch (1-5), sex, age, age<sup>2</sup>, 1-20 PCs</p>
-                </div>
-                
-                <div v-if="selectedContent === 'PheWeb'" id="PheWeb"> 
-                    <p>The CLSA PheWeb is built on the Vue3 + Vite platform</p>
-                </div>
-                <div v-if="selectedContent === 'UpdateHistory'" id='UpdateHistory'>
-                    <h2 class="text-center">Update History</h2>
-                    <hr>
-                    <ul>
-                        <li>Added external links for gene page: link to NCBI, Emsemble and Open Targets (11/07/2024); </li>
-                        <li>Added filtering in phenotypes page (11/01/2024);</li>
-                        <li>Added support for Miami plot and Manhattan plot filtering (10/23/2024);</li>
-                        <li>Enabled selecting sex from the GWAS table (10/23/2024);</li>
-                        <li>Enabled filtering functionality by sex (10/22/2024);</li>
-                        <li>Enabled displaying tophits table & download functionality for the phenotypes table (10/22/2024);</li>
-                        <li>The rsid and nearest genes columns now features clickable rsid/gene names, allowing users to easily access detailed information on external databases (10/17/2024);</li>
-                        <li>Enabled sorting and searching functionalities in the phenotypes table (10/10/2024);</li>
-                        <li>Added support to download Manhattan plot and Miami plot in PNG and SVG format (10/10/2024);</li>
-                        <li>Added LocusZoom panels for all stratifications in LocusZoom region plots (09/07/2024);</li>
-                        <li>Added LocusZoom panels for all stratification combinations in LocusZoom PheWAS plots (09/07/2024);</li>
-                        <li>Added functionality to MAF filtering for Miami plot (07/29/2024);</li>
-                        <li>Added buttons to order 'category', 'phenotype', '# samples', '# Loci&lt;5e-8' and 'P-value' in all phenotypes page (07/19/2024);</li>
-                        <li>Added stratification, ancestry and interaction term columns to tables (07/18/2024);</li>
-                        <li>Added functionality to allow multiple of same phenotype names, if they have unique stratification combination (07/03/2024);</li>
-                        <li>Added Miami plot functionality: allow users to choose 'male' and 'female' on page loading, if it exists (05/23/2024);</li>
-                        <li>Added drop downs, where users can alternate data on top and bottom plots, or generate simple Manhattan plot (05/20/2024);</li>
-                        <li>Added stratifications to 'all phenotypes' table as columns in all phenotypes page (05/03/2024);</li>    
-                        <li>Download button now includes stratification in all phenotypes page (04/30/2024);</li>
-                        <li>Added functionality to show all QQ plots (04/18/2024).</li>
-                    </ul>    
-
-                </div>
-
             </div>
         </v-main>
     </v-app>
 </template>
 
 <script setup name="About">
-    import Navbar from '../../components/Navbar.vue';
+    import Navbar from '@/components/Navbar.vue';
     import { ref } from 'vue'
 
     const selectedContent = ref('Overview');
