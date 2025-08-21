@@ -89,7 +89,9 @@ npm run preview -- --port 8080
 **A) Development Setup**
 
 A development server allows users more flexibility and with their website. This is the best option when testing changes to the code.
-`npm run dev`
+```
+npm run dev
+```
 
 **B) Production Setup**
 
