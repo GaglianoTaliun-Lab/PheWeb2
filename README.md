@@ -36,7 +36,7 @@ npm install
 ```
 
 # Configuring PheWeb2 UI
-1. Make sure your PheWeb2 API endpoint is running. Follow insturctions at [...](...)
+1. Make sure your PheWeb2 API endpoint is running. Follow insturctions at [PheWeb2-API GitHub](https://github.com/GaglianoTaliun-Lab/PheWeb2-API)
  
 2. Modify your .env file:
 ```
