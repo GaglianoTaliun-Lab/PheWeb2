@@ -4,7 +4,7 @@
       <!-- <v-row align="center" justify="start" style="margin-left: 1%" class="d-flex, width: 100%;"> -->
         <v-col cols="auto" style="margin-left:2%" class="align-center d-flex">
           <router-link :to="{ name: 'Home' }" tag="v-btn" icon="$vuetify">
-                  <img src="../assets/favicon.svg" alt="Icon" class="custom-icon">
+                  <img src="@/assets/favicon.svg" alt="Icon" class="custom-icon">
           </router-link>
         </v-col>
         <!-- <v-col cols="auto" style="margin-left:2%" class="width: 150px;">
