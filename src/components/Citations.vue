@@ -4,6 +4,9 @@
     <v-card-text>
       <h5 class="citation-heading"><strong>Please Cite:</strong></h5>
       <ul>
+	<li>
+	  Preprint: Bellavance, J., Xiao, H., Chang, L., Kazemi, M., Wickramasinghe, S., Mayhew, A.J., Raina, P., VandeHaar, P., Taliun, D., & Gagliano Taliun, S.A. (2025). Exploring and visualizing stratified genome-wide association study results with PheWeb 2.
+        </li>
         <li>
           Gagliano Taliun, S. A., VandeHaar, P., Boughton, A. P., Welch, R. P., Taliun, D., Schmidt, E. M., Zhou, W., Nielsen, J. B., Willer, C. J., Lee, S., Fritsche, L. G., Boehnke, M., & Abecasis, G. R. (2020). Exploring and visualizing large-scale genetic associations by using PheWeb. 
           <em>Nature Genetics</em>, 52(6), 550–552. 

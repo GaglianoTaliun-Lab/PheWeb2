@@ -59,7 +59,8 @@ import Navbar from '../../components/Navbar.vue';
 const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URL
 
 const jumpToAPI = () => {
-    window.open(api, '_blank');
+    const base = api.replace(/\/+$/, '');
+    window.open(`${base}/docs`, '_blank');
 }
 
 </script>

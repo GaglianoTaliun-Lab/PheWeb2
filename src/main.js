@@ -31,7 +31,7 @@ app.component('font-awesome-icon', FontAwesomeIcon)
 app.use(router);
 app.use(vuetify);
 const gaId = import.meta.env.VITE_APP_GA_ID;
-
+//console.log(gaId)
 if (gaId) {
   const gtag = createGtag({
     tagId: gaId,
