@@ -15,8 +15,8 @@
                 <v-list-item link variant="plain" @click="selectContent('PhenotypeAssociation')" title="4. Phenotype Association"></v-list-item>
                 <v-list-item link variant="plain" @click="selectContent('AncestryEuro')" subtitle="4.1 Ancestry Check and European Subset"></v-list-item>
                 <!-- <v-list-item link variant="plain" @click="selectContent('BinaryPhenotype')" subtitle="4.2 Selecting Binary Phenotypes"></v-list-item> -->
-                <v-list-item link variant="plain" @click="selectContent('ContinuousPhenotype')" subtitle="4.3 Selecting Continuous Phenotype"></v-list-item>
-                <v-list-item link variant="plain" @click="selectContent('Regenie')" subtitle="4.4 Association Model (Regenie)"></v-list-item>
+                <v-list-item link variant="plain" @click="selectContent('ContinuousPhenotype')" subtitle="4.2 Selecting Continuous Phenotype"></v-list-item>
+                <v-list-item link variant="plain" @click="selectContent('Regenie')" subtitle="4.3 Association Model (Regenie)"></v-list-item>
                 <v-list-item link variant="plain" @click="selectContent('PheWeb')" title="5. PheWeb"></v-list-item>
                 <v-list-item link variant="plain" @click="selectContent('UpdateHistory')" title="6. Update History"></v-list-item>
             </v-navigation-drawer>

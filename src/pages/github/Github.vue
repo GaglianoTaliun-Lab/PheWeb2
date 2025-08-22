@@ -15,14 +15,14 @@
                 <div class="d-flex justify-center mt-5">
                     <v-btn @click="jumpToGithub"> 
                         <v-icon class="mr-2">mdi-github</v-icon> 
-                        PheWeb 2.0 GitHub 
+                        PheWeb 2 GitHub 
                         <v-icon class="ml-2">mdi-open-in-new</v-icon>
                     </v-btn>
                 </div>
                 <div class="d-flex justify-center mt-5">
                     <v-btn @click="jumpToAPI"> 
                         <v-icon class="mr-2">mdi-github</v-icon> 
-                        PheWeb 2.0 API GitHub
+                        PheWeb 2 API GitHub
                         <v-icon class="ml-2">mdi-open-in-new</v-icon>
                     </v-btn>
                 </div>
@@ -43,11 +43,11 @@ import Navbar from '../../components/Navbar.vue';
 const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URL
 
 const jumpToGithub = () => {
-    window.open('https://github.com/GaglianoTaliun-Lab/PheWeb2.0', '_blank');
+    window.open('https://github.com/GaglianoTaliun-Lab/PheWeb2', '_blank');
 }
 
 const jumpToAPI = () => {
-    window.open('https://github.com/GaglianoTaliun-Lab/PheWeb2.0-API', '_blank');
+    window.open('https://github.com/GaglianoTaliun-Lab/PheWeb2-API', '_blank');
 }
 
 </script>
