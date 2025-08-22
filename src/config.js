@@ -3,7 +3,7 @@ export const VITE_APP_TITLE="CLSA-PheWeb"
 export const VITE_APP_SUBTITLE1="V2"
 
 // Set the date of the release, which is displayed in the footer of each page
-export const VITE_APP_DATE = "2024-10-24"
+export const VITE_APP_DATE = "2025-08"
 
 // Set the default GWAS stratification to display on the Miami plot
 // This sets the default GWAS stratification to display on the Miami plot

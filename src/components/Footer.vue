@@ -5,11 +5,11 @@
 </template>
 
 <script>
+import { VITE_APP_DATE } from "@/config";
 export default {
   data() {
     return {
-      // Manually set the last updated date here
-      lastUpdated: import.meta.env.VITE_APP_DATE,  // Set the desired date here
+      lastUpdated: VITE_APP_DATE,  // Set the desired date here
     };
   },
 };
