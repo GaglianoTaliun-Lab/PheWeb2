@@ -135,14 +135,20 @@
                         <p>These steps resulted in 24,505 individuals in the European subset for analysis.</p>
                         <br/>
                         <!-- Insert the image here -->
-                        <v-card>
+                        <v-card class="pa-4">
                             <img src="@/assets/eur_vs_reference_square_pcs.png" alt="Figure 1 - PCA Projection" class="img-fluid mt-3" />
-                            <b>Figure 1.</b>CLSA samples with inferred European ancestry projected onto the HGDP and 1KG's PCA space.
+                            <br>
+                            <span>
+                              <b>Figure 1.</b>CLSA samples with inferred European ancestry projected onto the HGDP and 1KG's PCA space.
+                            </span>
                         </v-card>
-                        <v-card>
+                        <v-card class="pa-4">
                             <img src="@/assets/incrfont_top3pcs_eur_subset_square_title.png" alt="Figure 2 - Top 3 Principal Components" class="img-fluid mt-3" />
+                            <br>
+                            <span>
                             <b>Figure 2.</b>Top 3 principal components of CLSA samples with inferred European ancestry (N=24505).
-                        </v-card>
+                            </span>
+                        </v-card>                        
                         
                     </div>
 
