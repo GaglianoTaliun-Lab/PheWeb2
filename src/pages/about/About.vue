@@ -111,30 +111,15 @@
                     <h2 class="text-center">TOPMed Imputation</h2>
                     <hr>
                     <p>Genotype imputation is a computational method to infer genotypes at genetic variants that are not directly capture by the genotype array, but are present in reference whole-genome sequences.</p>
-                    <p>Genotype imputation was carried out by the CLSA, and <a href="https://www.nhlbi.nih.gov/science/trans-omics-precision-medicine-topmed-program" target="_blank"></a>TOPMed version r2 was used as a reference panel.</p>
-                    <p>As input to the imputation process, the CLSA team used all 26,622 participants and 716,347 genotyped variants that:</p>
+                    <p>Genotype imputation was carried out using <a href="https://www.nhlbi.nih.gov/science/trans-omics-precision-medicine-topmed-program" target="_blank"></a>TOPMed version r3 as the reference panel.</p>
+                    <p>As input to the imputation process, we included 26,622 CLSA participants and 716,347 genotyped variants:</p>
                     <ol>
-                        <li>Pass all tests (no discordance from genotype frequency, no departure form HWE, no discordance from controls, no discordance in genotype frequency between males and females).</li>
-                        <li>Genotype missingness of < 0.05</li>
+                        <li>Passing all tests (no discordance from genotype frequency, no departure form HWE, no discordance from controls, no discordance in genotype frequency between males and females).</li>
+                        <li>Genotype missingness < 0.05</li>
                         <li>MAF > 0.0001</li>
                     </ol>
-                    <p>The TOPMed reference panel version r2, contains 97,256 reference samples belonging to diverse genetic ancestries and 308,107,085 genetic variants. EAGLE2 and Minimac where used to pre-phase and impute the genotyping data. </p>
+                    <p>The TOPMed reference panel version r3, contains 133,597 reference samples belonging to diverse genetic ancestries and 445,600,184 genetic variants. EAGLE2.4 and Minimac v2.0.0-beta3 were used to pre-phase and impute the genotyping data. </p>
                 </div>
-
-                    <!-- TOPMed Imputation -->
-                    <div v-if="selectedContent === 'TOPMedImputation'" id='TOPMedImputation'>
-                        <h2 class="text-center">TOPMed Imputation</h2>
-                        <hr>
-                        <p>Genotype imputation is a computational method to infer genotypes at genetic variants that are not directly capture by the genotype array, but are present in reference whole-genome sequences.</p>
-                        <p>Genotype imputation was carried out by the CLSA, and <a href="https://www.nhlbi.nih.gov/science/trans-omics-precision-medicine-topmed-program" target="_blank"></a>TOPMed version r2 was used as a reference panel.</p>
-                        <p>As input to the imputation process, the CLSA team used all 26,622 participants and 716,347 genotyped variants that:</p>
-                        <ol>
-                            <li>Pass all tests (no discordance from genotype frequency, no departure form HWE, no discordance from controls, no discordance in genotype frequency between males and females).</li>
-                            <li>Genotype missingness of < 0.05</li>
-                            <li>MAF > 0.0001</li>
-                        </ol>
-                        <p>The TOPMed reference panel version r3, contains 133,597 reference samples belonging to diverse genetic ancestries and 445,600,184 genetic variants. EAGLE v2.4 and Minimac v2.0.0-beta3 were used to pre-phase and impute the genotyping data. </p>
-                    </div>
 
                     <!-- Ancestry Check and European Subset  -->
                     <div v-if="selectedContent === 'AncestryEuro'" id='AncestryEuro'>
@@ -222,8 +207,7 @@
                             </template>
                         </v-data-table-virtual>
                         <p>For a total of 338,706 SNPs.</p>
-                        <p>For both binary and continuous variables, we used a block size of 1000, leave-one-out cross validation</p>
-                        <p>For binary variables, the firth approximation was used for variants with p-value less than 0.05 for both steps.</p>
+                        <p>We used a block size of 1000, leave-one-out cross validation</p>
                         <p>For continuous variables, rank inverse normal transformation was used for both steps.</p>
                         <p>For both steps, we used the covariates of: genotyping batch (1-5), sex, age, age<sup>2</sup>, 1-20 PCs</p>
                     </div>
