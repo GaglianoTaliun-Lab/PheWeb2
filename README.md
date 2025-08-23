@@ -66,58 +66,23 @@ PheWeb2 is a new version of the original [PheWeb](https://github.com/statgen/phe
    - Contact Us: [src/pages/contactUs/Contact.vue](src/pages/contactUs/Contact.vue)
    - API: [src/pages/api/API.vue](src/pages/api/API.vue)
    - GitHub: [src/pages/github/Github.vue](src/pages/github/Github.vue)
-
-        
-# Build the UI
-```
-npm run build
-```
-
-# Run the UI
-```
-npm run preview -- --port 8080
-```
-
-> [!IMPORTANT]
-> As of the current release, images need to be manually edited to be removed or edited. 
-> All images are present in [the assets folder](src/assets).
-> Here is a list of current image referral locations:
-> - [Logo at the top of tab in browser - line 5](src/index.html)
-> - [Logo in navbar - line 7](src/components/Navbar.vue)
-> - [Large logo in home page - line 6](src/pages/Home.vue)
-> - [Images in acknowledgements on home page - lines 3-8](src/components/AcknowledgeImage.vue)
-> - [Images in about page - lines 154, 158 & 196](src/pages/About.vue)
- 
-5. Compile with either the development setup, production setup or production-as-a-service setup:
-
-**A) Development Setup**
-
-A development server allows users more flexibility and with their website. This is the best option when testing changes to the code.
+  
+## 3a. Run in development mode
+A development server provides users with greater flexibility when working on their website, allowing for automated refreshes upon code modifications. This setup is ideal for testing changes effectively.
 ```
 npm run dev
 ```
 
-**B) Production Setup**
+## 3b. Run in production mode
+A production server optimizes deployment for faster page reload times and enhanced security. However, this setup sacrifices certain development features, such as hot-reloading (automatic changes). This configuration is recommended for deploying the public version of your PheWeb2 UI instance.
 
-A production server allows Vite to optimize deployement for faster page reload times and better security. In exchange, development features such as hot-reloading (automatic changes) are not available. This is the recommend set-up when deploying the public version of your PheWeb instance.
-While this is not a completely production-ready build, this version utilises the 'serve' package to bypass the need for root control (useful for HPC environments, for example).
+1. Build the PheWeb2 web application:
+   ```
+   npm run build
+   ```
+2. To preview your production PheWeb2 instance, run the command provided. After executing this command, you will be able to access PheWeb2 through your web browser.
+   ```
+   npm run preview -- --port 8080
+   ```
+3. To complete the production setup, configure your web server (Apache, Nginx, or Node.js) to serve the static files located in the generated `dist` directory.
 
-Build dependencies
-```
-npm run build
-```
-
-Runs production-like server. 
-
-```
-npx serve -s dist -l 8080
-```
-> [!NOTE]
-> The convention is port 8080, but you may change this.
-
- 
-
-> [!NOTE]
-> For more information on running the PheWeb2 frontend as a service (a great option for self-hosted web servers), please consult the appropriate [README](service/README.md).
-
->> in .env, modify your GA id if applicable
