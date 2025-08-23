@@ -55,17 +55,17 @@ PheWeb2 is a new version of the original [PheWeb](https://github.com/statgen/phe
 4. To effectively represent your study, follow these steps to update the images:
    1. Replace, remove, or add new images in the [src/assets](src/assets) directory as needed.
    2. Modify the following code where necessary:
-      - Update the logo at the top of the browser tab in [index.html].
-      - Change the logo in the navbar located at [src/components/Navbar.vue].
-      - Adjust the large logo on the main page in [src/pages/Home.vue].
-      - Update images in the acknowledgements section on the main page found in [src/components/AcknowledgeImage.vue].
-      - Modify images on the about page in [src/pages/about/About.vue].
+      - Update the logo at the top of the browser tab in [index.html](index.html).
+      - Change the logo in the navbar located at [src/components/Navbar.vue](src/components/Navbar.vue).
+      - Adjust the large logo on the main page in [src/pages/Home.vue](src/pages/Home.vue).
+      - Update images in the acknowledgements section on the main page found in [src/components/AcknowledgeImage.vue](src/components/AcknowledgeImage.vue).
+      - Modify images on the about page in [src/pages/about/About.vue](src/pages/about/About.vue).
 
 5. Please modify the text and links in the following sections to accurately reflect your study:
-   - [About](src/pages/about/About.vue)
-   - [Contact Us](src/pages/contactUs/Contact.vue)
-   - [API](src/pages/api/API.vue)
-   - [GitHub](pages/github/Github.vue)
+   - About: [src/pages/about/About.vue](src/pages/about/About.vue)
+   - Contact Us: [src/pages/contactUs/Contact.vue](src/pages/contactUs/Contact.vue)
+   - API: [src/pages/api/API.vue](src/pages/api/API.vue)
+   - GitHub: [src/pages/github/Github.vue](src/pages/github/Github.vue)
 
         
 # Build the UI
