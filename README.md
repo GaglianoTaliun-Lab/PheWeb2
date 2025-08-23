@@ -52,6 +52,22 @@ PheWeb2 is a new version of the original [PheWeb](https://github.com/statgen/phe
    - **PRIORITY_STRATIFICATIONS:** The stratifications you wish to display in your Miami plots upon initial opening.
    - **HG_BUILD_NUMBER:** The Human Genome version number used to query UCSC data.
 
+4. To effectively represent your study, follow these steps to update the images:
+   1. Replace, remove, or add new images in the [src/assets](src/assets) directory as needed.
+   2. Modify the following code where necessary:
+      - Update the logo at the top of the browser tab in [index.html].
+      - Change the logo in the navbar located at [src/components/Navbar.vue].
+      - Adjust the large logo on the main page in [src/pages/Home.vue].
+      - Update images in the acknowledgements section on the main page found in [src/components/AcknowledgeImage.vue].
+      - Modify images on the about page in [src/pages/about/About.vue].
+
+5. Please modify the text and links in the following sections to accurately reflect your study:
+   - [About](src/pages/about/About.vue)
+   - [Contact Us](src/pages/contactUs/Contact.vue)
+   - [API](src/pages/api/API.vue)
+   - [GitHub](pages/github/Github.vue)
+
+        
 # Build the UI
 ```
 npm run build
