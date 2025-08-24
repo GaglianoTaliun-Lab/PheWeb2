@@ -42,7 +42,7 @@ PheWeb2 is a new version of the original [PheWeb](https://github.com/statgen/phe
  
 2. To configure the PheWeb2 UI, update the following variables in the [.env](.env) file:
    - **VITE_APP_CLSA_PHEWEB_API_URL:** Set this to the PheWeb2 API endpoint (e.g., `"http://127.0.0.1:9999"`).
-   - **VITE_PORT:** Specify the port number for the PheWeb2 UI (e.g., 8087).
+   - **VITE_PORT:** Specify the port number for the PheWeb2 UI (e.g., 8087). This port will be utilized during the development mode.
    - **VITE_APP_GA_ID:** (Optional) To monitor the number of visitors per page in Google Analytics 4, specify the Google tag. If you do not wish to track this information, leave the field as an empty string (i.e., `""`).
  
 3. To adjust the PheWeb2 UI look-and-feel, update the following variables in the [src/config.js](src/config.js) configuration file:
@@ -84,5 +84,5 @@ A production server optimizes deployment for faster page reload times and enhanc
    ```
    npm run preview -- --port 8080
    ```
-3. To complete the production setup, configure your web server (Apache, Nginx, or Node.js) to serve the static files located in the generated `dist` directory.
+3. To complete the production setup, configure your web server (Apache, Nginx, or Node.js) to serve the static files from the generated `dist` directory. For instance, in Apache2, you typically copy the contents of the `dist` directory to the `/var/www/html` folder.
 
