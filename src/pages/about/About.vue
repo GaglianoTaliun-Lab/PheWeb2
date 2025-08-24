@@ -4,87 +4,82 @@
         <v-main>
             <v-btn :icon="drawer ? 'mdi-menu-down' : 'mdi-menu-right'"  @click="drawer = !drawer"></v-btn>
             <v-navigation-drawer v-model="drawer" app :width="200" align="left" location="left"> 
-                <v-list-item link variant="plain" @click="selectContent('Overview')" title="Overview"></v-list-item>
+                <v-list-item link variant="plain" @click="selectContent('Overview')" title="Introduction"></v-list-item>
                 <v-divider></v-divider>
                 <v-list-item link variant="plain" @click="selectContent('GenotypeData')" title="1. Genotype Data"></v-list-item>
-                <v-list-item link variant="plain" @click="selectContent('LiftOver')" title="2. LiftOver"></v-list-item>
-                <v-list-item link variant="plain" @click="selectContent('Pre-LiftOver')" subtitle="2.1 Sample-level and variant-level filters"></v-list-item>
-                <v-list-item link variant="plain" @click="selectContent('LiftOverGRCh38')" subtitle="2.2 LiftOver to GRCh38"></v-list-item>
-                <v-list-item link variant="plain" @click="selectContent('HweRuth')" subtitle="2.3. Ancestry-adjusted HWE filters"></v-list-item>
-                <v-list-item link variant="plain" @click="selectContent('TOPMedImputation')" title="3. TOPMed Imputation"></v-list-item>
-                <v-list-item link variant="plain" @click="selectContent('PhenotypeAssociation')" title="4. Phenotype Association"></v-list-item>
-                <v-list-item link variant="plain" @click="selectContent('AncestryEuro')" subtitle="4.1 Ancestry Check and European Subset"></v-list-item>
+                <v-list-item link variant="plain" @click="selectContent('Filtering')" subtitle="1.1. Filtering"></v-list-item>
+                <v-list-item link variant="plain" @click="selectContent('LiftOverGRCh38')" subtitle="1.2. Converting to GRCh38"></v-list-item>
+                <v-list-item link variant="plain" @click="selectContent('TOPMedImputation')" title="2. Genotype Imputation"></v-list-item>
+                <v-list-item link variant="plain" @click="selectContent('AncestryEuro')" title="3. Genetic Ancestries"></v-list-item>
                 <!-- <v-list-item link variant="plain" @click="selectContent('BinaryPhenotype')" subtitle="4.2 Selecting Binary Phenotypes"></v-list-item> -->
-                <v-list-item link variant="plain" @click="selectContent('ContinuousPhenotype')" subtitle="4.2 Selecting Continuous Phenotype"></v-list-item>
-                <v-list-item link variant="plain" @click="selectContent('Regenie')" subtitle="4.3 Association Model (Regenie)"></v-list-item>
-                <v-list-item link variant="plain" @click="selectContent('PheWeb')" title="5. PheWeb"></v-list-item>
-                <v-list-item link variant="plain" @click="selectContent('UpdateHistory')" title="6. Update History"></v-list-item>
+                <v-list-item link variant="plain" @click="selectContent('ContinuousPhenotype')" title="4. Continuous Phenotypes"></v-list-item>
+                <v-list-item link variant="plain" @click="selectContent('SingleVariant')" title="5. Single Variant Association"></v-list-item>
+                <v-list-item link variant="plain" @click="selectContent('LD')" subtitle="5.1. Relatedness and Population Structure"></v-list-item>
+		<v-list-item link variant="plain" @click="selectContent('Regenie')" subtitle="5.2. Regression Model"></v-list-item>
+		<v-list-item link variant="plain" @click="selectContent('PheWeb')" subtitle="6. PheWeb2 Data"></v-list-item>
+
+		<!--<v-list-item link variant="plain" @click="selectContent('PheWeb')" title="5. PheWeb"></v-list-item>
+		<v-list-item link variant="plain" @click="selectContent('UpdateHistory')" title="6. Update History"></v-list-item>-->
             </v-navigation-drawer>
             <div  align="left" style="padding: 2%;">
                 <!-- OVERVIEW SECTION -->
                 <div v-if="selectedContent === 'Overview'" id="Overview"> 
                 <div>
-                    <h2 class="text-center">About CLSA PheWeb</h2>
+                    <h2 class="text-center">About Canadian Longitudinal Study on Aging PheWeb</h2>
                 </div>
                 <hr>
-                <p> This platform presents multiple analyses conducted using CLSA data to the scientific community as well as the public at large. The <a href="https://www.clsa-elcv.ca/" target="_blank">CLSA</a> cohort is specific to Canada. </p>
-                <p> This platform displays genome-wide association (GWAS) and phenome-wide association (PheWAS) results from the CLSA cohort (i.e., statistical associations between individuals' trait information and genomic variations across the available traits in the cohort). </p>
-                </div>
+	            <p>This platform presents genome-wide association (GWAS) and phenome-wide association (PheWAS) results from the  <a href="https://www.clsa-elcv.ca/" target="_blank">Canadian Longitudinal Study on Aging (CLSA) cohort</a>, showing statistical associations between various traits and genetic variations collected and assessed by the cohort.</p>
+
+		    <p>The following sections of the About page offer a brief description of the data preparation and analytical pipeline. If you have any specific questions or require more detailed information, please feel free to reach out. Our contact information is available on the <a href="contact">Contact page</a>.</p>
+		</div>
                 
                 <!-- DATA DESCRIPTION -->
                 <div v-if="selectedContent === 'GenotypeData'" id="GenotypeData">
-                    <h2 class="text-center">Genotype Data</h2>
+                    <h2>1. Genotype Data</h2>
                     <hr>
-                    <p>Original non-imputed CLSA genotype data (v3) has 794,409 variants for 26,622 participants.</p>
-                    <p>Participants were genotyped using the Affrymetrix UK Biobank Axiom array.</p>
-                    <p>Originally, all genomic positions were reported in reference to human genome build GRCh37.</p>
-                    <p>More information can be found on the <a href="https://bmjopen.bmj.com/content/12/3/e059021" target="_blank">official genomic cohort profile paper</a>.</p>
+		    <p>The original non-imputed CLSA genotype data (v3) comprises 794,409 variants from 26,622 participants. Participants were genotyped using the Affymetrix UK Biobank Axiom array, with all genomic positions reported based on the human genome build GRCh37. For further details, please refer to the <a href="https://bmjopen.bmj.com/content/12/3/e059021" target="_blank">official genomic cohort profile paper</a>.
+		    </p>
                 </div>
-
-                <!-- LiftOver and CLSA filtering Overview -->
-                <div v-if="selectedContent === 'LiftOver'" id="LiftOver">
-                    <h2 class="text-center">LiftOver</h2>
+                   
+                <div v-if="selectedContent === 'Filtering'" id="Filtering">
+                    <h3>1.1. Filtering</h3>
                     <hr>
-                    <p>We performed liftOver to convert genomic positions from GRCh37 to GRCh38, as described in the following sections.</p>
-                </div>
-                    
-                <div v-if="selectedContent === 'Pre-LiftOver'" id="Pre-LiftOver">
-                    <h3>Sample-level and variant-level filters</h3>
-                    <hr>
-                    <p>CLSA flagged variants that may have low quality due to:</p>
-                    <ol>
-                        <li>Batch Discordance (14,753 variants)</li>
-                        <li>Hardy-Weinberg Discordance (7,790 variants, with p < 3.15e-10)</li>
-                        <li>Control Genotype Discordance (27,937 variants)</li>
-                        <li>Sex Discordance (248 variants)</li>
+		    <p>The CLSA flagged genetic data that did not meet individual-level and variant-level quality control criteria, as detailed in the <a href="https://bmjopen.bmj.com/content/12/3/e059021" target="_blank">official profile paper</a>.</p>
+		    <p>First, we removed genetic variants flagged by CLSA that did not pass the following quality control criteria:</p>
+		    <ol>
+			<li><b>Genotyping batch discordance</b>: 14,753 variants</li>
+			<li><b>Hardy-Weinberg discordance</b>: 7,790 variants</li>
+			<li><b>Control genotype discordance</b>: 27,937 variants</li>
+			<li><b>Sex discordance</b>: 248 variants</li>
                     </ol>
-                    <p>Before liftOver, we removed these flagged variants. This filter removed 37,706 variants, resulting in 756,703 kept.</p>
-                    <p>With regard to sample quality control, we removed samples:</p>
+		    <p>A total of 756,703 variants were retained after applying variant-level quality control filters that removed 37,706 variants.</p>
+                    <p>Second, we removed samples flagged by CLSA that did not meet the following quality control criteria:</p>
                     <ol>
-                        <li>Identified as an outlier in relation to heterozygosity or genotype missingness (15 samples)</li>
-                        <li>Differing reported sex versus chromosomal sex (48 samples)</li>
-                        <li>Missing self-reported sex (0 samples)</li>
-                        <li>Missing chromosomal sex (15 samples)</li>
+			<li><b>Identified as an outlier in relation to heterozygosity or genotype missingness</b>: 15 samples</li>
+			<li><b>Discrepancy between reported sex and chromosomal sex</b>: 48 samples</li>
+			<li><b>Missing self-reported sex</b>: 0 samples</li>
+			<li><b>Unresolved chromosomal sex</b>: 15 samples</li>
                     </ol>
-                    <p>These filters removed 63 samples, keeping 26,563.</p>
-                    <p>Finally, we excluded monomorphic variants which resulted from sample exclusions. This removed an additional 14,682 variants, such that 742,021 remained.</p>
+		    <p>The filters removed 63 samples, resulting in a total of 26,563 samples retained.</p>
+		    <p>Finally, we excluded monomorphic variants that resulted from sample exclusions, leading to the removal of an additional 14,682 variants. Consequently, we were left with 742,021 variants.</p>
 
+		    <p>Note: Using the <a href="https://github.com/statgen/ruth" target = "_blank" >Robust Unified Hardy-Weinberg Equilibrium Test (RUTH)</a>, we confirmed the CLSA's exclusion criteria for Hardy-Weinberg equilibrium. We ran RUTH utilizing the first 20 principal components with a likelihood-ratio test and a maximum lambda parameter of 0, focusing on the GT field. Seed 101 was used, and no additional variants were excluded based on this test.</p>
                 </div>
 
                 <div v-if="selectedContent === 'LiftOverGRCh38'" id="LiftOverGRCh38" >
-                    <h3>LiftOver to GRCh38 Reference</h3>
+                    <h3>1.2. Converting to GRCh38</h3>
                     <hr>
-                    <p>We converted genotype array data for assessed SNPs from genome build GRCh37 to GRCh38 aligned to the "+" strand using LiftOver. The conversion included the following steps:</p>
+                    <p>We converted genotype array data from the original genome build GRCh37 to GRCh38 (both aligned to the "+" strand), following these steps:</p>
                     <ol>
-                        <li>We lifted genetic positions from GRCh37 to GRCh38 using the UCSC LiftOver tool and the corresponding chain files.</li>
-                        <li>We excluded variants that did not map to GRCh38, mapped to alternate contigs in GRCh38, or located on the mitochondrial chromosome.</li>
-                        <li>We aligned A1/A2 alleles in the original PLINK files to the REF/ALT alleles on the "+" strand using the plink2reference.py script.</li>
-                        <li>We excluded palindromic variants (A/T and G/C), variants for which A1/A2 alleles didn't match REF/ALT, and for which A1/A2 alleles were not A, C, G, or T.</li>
-                        <li>We renamed all variants to follow the CHR:POS:REF:ALT notation.</li>
+			    <li>Lifted genetic positions from GRCh37 to GRCh38 using the <a href="https://genome.ucsc.edu/cgi-bin/hgLiftOver" target="_blank">UCSC LiftOver tool</a> and corresponding chain files.</li>
+                        <li>Excluded variants that did not map to GRCh38, mapped to alternate contigs in GRCh38, or were located on the mitochondrial chromosome.</li>
+			<li>Aligned A1/A2 alleles in the original PLINK files to the REF/ALT alleles on the "+" strand using the <a href="https://github.com/CERC-Genomic-Medicine/scripts/blob/master/plink2reference.py" target="_blank">plink2reference.py script</a>.</li>
+                        <li>Excluded palindromic variants (A/T and G/C), variants where A1/A2 alleles didn't match REF/ALT, and those where A1/A2 alleles were not A, C, G, or T.</li>
+                        <li>Renamed all variants to follow the CHR:POS:REF:ALT notation.</li>
                     </ol>
-                    <p>We started with 742,021 variants (GRCh37) and following these steps, ended up with 682,192 variants (GRCh38) successfully lifted over.</p>
+		    <p>Starting with 742,021 variants from GRCh37, we successfully lifted over 682,192 variants to GRCh38 after applying these steps.</p>
                     <br>
-                    <p> Table 1. Distribution of SNPs per chromosome after liftOver steps.</p>
+		    <p><b>Table 1.</b> Number of variants per chromosome after converting to GRCh38.</p>
                     <v-data-table-virtual
                         :items="SNPdistribution" 
                         :headers="headers"
@@ -98,55 +93,45 @@
                     </v-data-table-virtual>
                 </div>
 
-                <div v-if="selectedContent === 'HweRuth'" id='HweRuth'>
-                    <h3>Ancestry-adjusted HWE filters</h3>
-                    <hr>
-                    <p>Using Robust Unified Hardy-Weinberg Equilibrium Test (<a href="https://github.com/statgen/ruth" target = "_blank" >RUTH</a>), we confirmed the CLSA's hardy-weinberg equilibrium exclusion criteria.</p>
-                    <p>We ran RUTH on the results from step 2.2 using the 20 first PCs using the likelihood-ratio test with max lambda parameter of 0, using the GT field. We used seed 101.</p>
-                    <p>No additional variants were excluded using this test.</p>
-                </div> 
-
                 <!-- TOPMed Imputation -->
                 <div v-if="selectedContent === 'TOPMedImputation'" id='TOPMedImputation'>
-                    <h2 class="text-center">TOPMed Imputation</h2>
+                    <h2>2. Genotype Imputation</h2>
                     <hr>
-                    <p>Genotype imputation is a computational method to infer genotypes at genetic variants that are not directly capture by the genotype array, but are present in reference whole-genome sequences.</p>
-                    <p>Genotype imputation was carried out using <a href="https://www.nhlbi.nih.gov/science/trans-omics-precision-medicine-topmed-program" target="_blank"></a>TOPMed version r3 as the reference panel.</p>
-                    <p>As input to the imputation process, we included 26,622 CLSA participants and 716,347 genotyped variants:</p>
-                    <ol>
-                        <li>Passing all tests (no discordance from genotype frequency, no departure form HWE, no discordance from controls, no discordance in genotype frequency between males and females).</li>
-                        <li>Genotype missingness < 0.05</li>
-                        <li>MAF > 0.0001</li>
-                    </ol>
-                    <p>The TOPMed reference panel version r3, contains 133,597 reference samples belonging to diverse genetic ancestries and 445,600,184 genetic variants. EAGLE2.4 and Minimac v2.0.0-beta3 were used to pre-phase and impute the genotyping data. </p>
+                    <p>Genotype imputation is a computational method used to infer genotypes at genetic variants that are not directly captured by genotype arrays, but are present in reference whole-genome sequences.</p>
+
+		    <p>We used the TOPMed r3 panel to impute the filtered genotype array data on the GRCh38 build via the <a href="https://imputation.biodatacatalyst.nhlbi.nih.gov/" target="_blank">TOPMed Imputation Server</a>. This panel comprises 133,597 deeply genotyped samples and 445,600,184 unique variants across the autosomes and chromosome X.</p>
+		    <p>To prepare the data for imputation, we divided it into two overlapping batches, each with 25,000 randomly allocated individuals, and imputed (including phasing) them separately. After imputation, we merged the batches using <a href="https://github.com/statgen/hds-util.git" target="_blank">hds-util</a>. Specifically, we utilized the imputed genotype dosages for 25,000 individuals from the first batch and the remaining 1,563 individuals from the second batch. For males in the non-pseudo-autosomal regions of chromosome X, we represented genotype dosages as haploids (i.e., imputed genotype dosage ≤ 1).</p>
+		    <p>As a result of this imputation process, we obtained a total of 445,125,610 variants across the autosomes and chromosome X, with 138,546,712 variants remaining after filtering for imputation quality (r2≥0.3).</p>
                 </div>
 
                     <!-- Ancestry Check and European Subset  -->
                     <div v-if="selectedContent === 'AncestryEuro'" id='AncestryEuro'>
-                        <h2 class="text-center">Subsetting the European sub-population</h2>
-                        <hr>
-                        <p>We ran our own ancestry check and filtering using a custom pipeline implementing methods seen <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9900804/" target="_blank">here</a>. The pipeline can be found <a href="https://github.com/CERC-Genomic-Medicine/HGDP_1KG_ancestry_inference" target="_blank">here</a></p>
-                        <p>We subset individuals of predicted European genetic ancestry. For ancestry prediction we followed the following steps:</p>
-                        <ol>
-                            <li>We used <a href="https://csg.sph.umich.edu/chaolong/LASER/TRACE_Manual.pdf" target = "_blank">TRACE</a> to project principal components onto Human Genome Diversity Project (HGDP) and 1000 Genomes Project (1KG) combined references (Figure 1). We removed individuals that had a Z score of <span>&#177;</span>5.</li>
-                            <li>Using the projection results, we used a RandomForestModel to calculate probabilities of ancestry group.</li>
-                            <li>We used 0.79 probability as the inclusion threshold for the European subset.</li>
+                        <h2>3. Genetic Ancestries</h2>
+                        <hr>                
+			<p>
+			The majority (>90%) of the CLSA participants are individuals of European genetic ancestry as was descirbed in the <a href="https://bmjopen.bmj.com/content/12/3/e059021" target="_blank">official cohort profile paper</a>.
+			We selected individuals for our European genetic ancestry stratification using the following steps:
+			</p>
+			<ol>
+			    <li><b>Principal Component Projection</b>: We used <a href="https://www.cell.com/ajhg/fulltext/S0002-9297(15)00155-X" target="_blank">TRACE</a> to project principal components onto combined references from <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9900804/" target="_blank">the Human Genome Diversity Project (HGDP) and the 1000 Genomes Project (1KG)</a> (see <b>Figure 1</b>). Individuals with a Z score of ±5 were removed from consideration.</li>
+			    <li><b>Ancestry Group Probability Calculation</b>: Using the projection results, we employed a <a href="https://github.com/CERC-Genomic-Medicine/HGDP_1KG_ancestry_inference" target="_blank">RandomForestModel</a> to calculate the probabilities of ancestry groups.</li>
+			    <li><b>Inclusion Threshold</b>: We set the inclusion threshold for the European subset at a probability of 0.79.</li>
                         </ol>
-                        <p>These steps resulted in 24,505 individuals in the European subset for analysis.</p>
+			<p>These steps resulted in a total of 24,505 individuals in the European genetic ancestry subset for association analysis (see <b>Figure 2</b>).</p>
                         <br/>
                         <!-- Insert the image here -->
                         <v-card class="pa-4">
                             <img src="@/assets/eur_vs_reference_square_pcs.png" alt="Figure 1 - PCA Projection" class="img-fluid mt-3" />
                             <br>
                             <span>
-                              <b>Figure 1.</b>CLSA samples with inferred European ancestry projected onto the HGDP and 1KG's PCA space.
+                              <b>Figure 1.</b>CLSA samples with inferred European genetic ancestry projected onto the HGDP and 1KG's PCA space.
                             </span>
                         </v-card>
                         <v-card class="pa-4">
                             <img src="@/assets/incrfont_top3pcs_eur_subset_square_title.png" alt="Figure 2 - Top 3 Principal Components" class="img-fluid mt-3" />
                             <br>
                             <span>
-                            <b>Figure 2.</b>Top 3 principal components of CLSA samples with inferred European ancestry (N=24505).
+                            <b>Figure 2.</b>Top 3 principal components of CLSA samples with inferred European genetic ancestry (N=24,505).
                             </span>
                         </v-card>                        
                         
@@ -170,58 +155,70 @@
                     </div> -->
 
                     <div v-if="selectedContent === 'ContinuousPhenotype'" id="ContinuousPhenotype">
-                        <h3>Selecting Continuous Phenotypes</h3>
+                        <h2>4. Continuous Phenotypes</h2>
                         <hr></hr>
-                        <p>Continous phenotypes were selected with the following criteria (Figure 3):</p>
-                        <ol>
-                            <li>Removed outliers <span>&#177;</span>5 standard deviations from the mean</li>
-                            <li>The variable has more than 20 uniques numeric values, as to remove semi-quantitative variables that are not modeled correctly in linear regression.</li>
-                            <li>The variable has more than 1000 total numeric values</li>
-                            <li>The variable has does not have one value which accounts for more than 10% of all values</li>
-                            <li>The variable has GWAS relevance</li>
+			<p>The criteria for selecting continuous phenotypes for association analysis are as follows (see <b>Figure 1</b>):</p>
+			<ol>
+			    <li>Outlier values beyond ±5 standard deviations from the mean were removed.</li>
+			    <li>Only phenotypes with more than 20 unique numeric values were retained to exclude semi-quantitative variables that do not model correctly in linear regression.</li>
+			    <li>Phenotypes with more than 1000 non-missing numeric values were kept.</li>
+			    <li>Phenotypes where any single value accounts for more than 10% of all values were dropped.</li>
+			    <li>Only phenotypes with GWAS relevance were included.</li>
                         </ol>
-                        <p>The final number of continuous phenotypes was 225 for combined, 211 for the female stratification and 207 for the male stratification</p>
+			<p>As a result, the final count of continuous phenotypes was 225 for the combined dataset, 211 for females, and 207 for males.</p>
                         <br>
                         <v-card>
-                            <b>Figure 3.</b>Flow chart of filtering criteria for continuous variables.
+                            <b>Figure 1</b>. Flow chart of filtering criteria for continuous variables.
                             <img src="@/assets/Continuous_Diagram225.drawio.png" alt="Figure 3 - Continuous Diagram" class="img-fluid mt-3" />
                         </v-card>
                     </div>
 
-                    <div v-if="selectedContent === 'Regenie'" id="Regenie">
-                        <h3>Regenie</h3>
+                    <div v-if="selectedContent === 'SingleVariant'" id="SingleVariant">
+                        <h2>5. Single Variant Association</h2>
                         <hr></hr>
-                        <p>Association testing was performed using <a href="https://rgcgithub.github.io/regenie/" target="_blank">Regenie</a> v3.2.1, which handles unbalanced case-control ratios and accounts for population structure and relatedness. Our automated Nextflow pipeline for executing Regenie in a highly parallel way is available <a href="https://github.com/CERC-Genomic-Medicine/Regenie_nextflow" target = "_blank" >here</a>.</p>
-                        <p>After filtering european sub-population, we proceeded to further filter common non-imputed variants for step 1 of Regenie.</p>
-                        <p>We performed the following:</p>
-                        <ol>
-                            <li>Removed variants with sample missingness of > 0.1</li>
-                            <li>Removed samples with genotype missingness of > 0.1</li>
-                            <li>Variants departing from Hardy-Weinberg equilibrium with a p-value less than 1e-15</li>
-                            <li>Linkage disequilibrium pruning of correlated variants with window size of 1000, step size of 100 and Rsq threshold of 0.9</li>
-                        </ol>
-                        <p>At the end, we had this distribution of variants per chromosome for 24,505 individuals:</p>
-                        <v-data-table-virtual
-                            :items="SNPdistribution_regenie" 
-                            :headers="headers"
-                            height="300"
-                            >
-                            <template v-slot:item.snp="{ value }">
-                                <v-chip>
-                                    {{ value }}
-                                </v-chip>
-                            </template>
-                        </v-data-table-virtual>
-                        <p>For a total of 338,706 SNPs.</p>
-                        <p>We used a block size of 1000, leave-one-out cross validation</p>
-                        <p>For continuous variables, rank inverse normal transformation was used for both steps.</p>
-                        <p>For both steps, we used the covariates of: genotyping batch (1-5), sex, age, age<sup>2</sup>, 1-20 PCs</p>
-                    </div>
-                    
-                    <div v-if="selectedContent === 'PheWeb'" id="PheWeb"> 
-                        <p>The CLSA PheWeb is built on the Vue.js platform</p>
-                    </div>
-                    <div v-if="selectedContent === 'UpdateHistory'" id='UpdateHistory'>
+			<p>
+			To conduct single variant association tests, we utilized <a href="https://rgcgithub.github.io/regenie/" target="_blank">Regenie v4.1</a>, which performs linear regression while accounting for population structure and relatedness. To streamline our analyses across hundreds of traits, we developed a Nextflow pipeline that executes Regenie in a highly parallelized manner. This pipeline is available <a href="https://github.com/CERC-Genomic-Medicine/Regenie_nextflow" target = "_blank" >here</a>.
+			</p>
+		    </div>
+		    
+		    <div v-if="selectedContent === 'LD'" id="LD">
+		        <h3>5.1. Relatedness and Population Structure</h3>
+			<p>To model population structure and relatedness, we applied linkage disequilibrium (LD) pruning to the filtered GRCh38 genotyping data to select only  common independent genetic variants.</p>
+			<p>For each stratification, we conducted LD pruning as follows:</p>
+			<ol>
+			<li>We selected only biallelic SNPs with minor allele frequency (MAF) >1%, Hardy-Weinberg test p < 10e-15, per-variant and per-sample missing genotype frequencies < 10%. </li>
+			<li>We further pruned SNPs based on LD using the PLINK2 <i>–-indeppairwise</i> option with the window size of 1,000 kbp, step size of 100 SNPs, and r2 LD threshold of 0.9 (i.e. two `SNPs with r2 > 0.9 were considered in LD).</li>
+			<li>We also removed SNPs in known <a href="https://doi.org/10.1038/nprot.2010.116" target="_blank">long-range LD regions</a> and low-complexity regions defined in the UCSC Genome Browser (RepeatMasker and WM+SDust tracks).</li>
+			</ol>
+			<p>This process resulted in 339,020 independent SNPs for all 26,563 individuals and 338,934 independent SNPs for the 24,505 individuals in the European genetic ancestry stratification.</p>
+			
+			<p>We conducted principal component analyses (PCA) on pruned genotyping array data using the PLINK2 <i>--pca</i> option for each stratification separately.</p>
+
+		    </div>
+                      
+		     <div v-if="selectedContent === 'Regenie'" id="Regenie">
+			<h3>5.2. Regression Model</h3>
+			<p>We tested the additive effect of the genetic variant on the phenotype within each stratification using linear regression. Specifically, we:</p>
+			<ul>
+			<li>Applied a rank inverse normal transformation for all continuous traits using the built-in Regenie option during polygenic effect estimation and association testing.</li>
+			<li>Utilized pruned genotyping array data corresponding to the stratification to estimate polygenic effects.</li>
+			<li>Included several covariates: the first 20 principal components related to stratification, genotyping batch (1-5), sex, participant age at the data collection site visit, and age squared to account for potential non-linear relationships. Note that in sex-stratified analyses, sex was not included as a covariate.</li>
+			<li>Estimated genotype-by-sex interaction effects for sex-combined analyses using Regenie's built-in <i>--interaction</i> option.</li>
+			<li>Excluded variants with a minor allele count (MAC) of less than 5 from the single variant association tests, as recommended in Regenie’s documentation.</li>
+			<li>Excluded individuals with missing information for a trait from the analysis, leading to slight variations in sample sizes across tested traits.</li>
+			</ul>
+
+		    </div>
+
+		    <div v-if="selectedContent === 'PheWeb'" id="PheWeb">
+			<h2>6. PheWeb2 Data</h2>
+			<p>The CLSA GWAS/PheWas generated terabytes of summary statistics. Before loading these data into CLSA PheWeb, we applied the following best-practice filters:</p>
+			<ol>
+				<li><b>Genotype Imputation Quality</b>: Only include genotype-phenotype association results for variants with a genotype imputation quality (r² > 0.3)</li>
+				<li><b>Sex-by-Genotype Interaction</b>: Incorporate interaction results only for genetic variants that had at least 160 alleles in the study population.</li>
+			</ol>
+          	   </div>          
+                                        <!-- <div v-if="selectedContent === 'UpdateHistory'" id='UpdateHistory'>
                         <h2 class="text-center">Update History</h2>
                         <hr>
                         <ul>
@@ -246,9 +243,9 @@
                             <li>Download button now includes stratification in all phenotypes page (04/30/2024);</li>
                             <li>Added functionality to show all QQ plots (04/18/2024).</li>
                         </ul>    
-                    </div>
-            </div>
-        </v-main>
+		    </div> -->
+	    </div>
+	</v-main>
     </v-app>
 </template>
 
