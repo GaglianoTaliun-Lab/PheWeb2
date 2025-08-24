@@ -3,117 +3,86 @@
 <img width="1600" height="900" alt="image" src="https://github.com/user-attachments/assets/3f823732-523a-4659-8173-f4bd42e80a7a" />
 
 
-PheWeb 2 is a new version of the original [PheWeb](https://github.com/statgen/pheweb) tool for interactive querying, visualizing, and sharing summary-level results from GWAS/PheWAS studies.
+PheWeb2 is a new version of the original [PheWeb](https://github.com/statgen/pheweb) tool, designed for interactive querying, visualizing, and sharing summary-level results from GWAS abd PheWAS studies.
 
-In PheWeb 2, we moved all the UI functionality to the Vue 3 and Vite frameworks, dramatically simplifying code readability, maintenance of old features, and development of new features. 
+:star: **PheWeb2 introduces several new functionalities for users compared to its predecessor:**
+1. Import and visualizations of GWAS stratified by genetic ancestry groups (with no limit on the number of groups).
+2. Import and visualizations of GWAS stratified by sex.
+3. Import and visualizations of genotype-by-sex interactions.
+4. Side-by-side comparisons of stratified GWAS and PheWAS using dynamic Miami plots, stacked LocusZoom plots, and dynamic tables.
 
-We also de-coupled UI from the underlying data model by introducing a separate [PheWeb 2 API](https://github.com/GaglianoTaliun-Lab/PheWeb2-API) server to allow their independent scaling and improve re-usability.
 
-As a result of this migration, PheWeb 2 allows the following
-- Import and visualizations of GWAS stratified by genetic ancestry groups (unlimited number).
-- Import and visualizations of GWAS stratified by sex.
-- Side-by-side comparisons of stratified GWAS/PheWAS through interactive Miami plots.
+:star: **PheWeb2 has improved code maintenance and reusability by decoupling the data model and application programming interface (API) from the user interface (UI).** This enhancement allows for results to be queried by other external resources and applications.
+
+:star: **PheWeb2 has migrated its UI implementation to the latest tools for building web user interfaces, including [Vue 3](https://vuejs.org/) and [Vite](https://vite.dev/).** This migration significantly enhances code readability, maintenance, and the development of new features.
+
+> [!Tip]
+> If you intend to use your own GWAS summary statistics data with PheWeb2, you should first install and launch the [PheWeb2 API](https://github.com/GaglianoTaliun-Lab/PheWeb2-API).
+
+
+## 1. Install
 
 > [!NOTE]
 > The code was developed and tested with Node.js 20.16.0+ on Linux-based OS.
 
+1. Download and install Node.js following the instructions at [https://nodejs.org/en/download/](https://nodejs.org/en/download/).
+2. Clone this repository:
+   ```
+   git clone https://github.com/GaglianoTaliun-Lab/PheWeb2.git
+   cd PheWeb2
+   ```
+3. Install dependencies required by PheWeb2 UI:
+   ```
+   npm install
+   ```
 
-# You can install the PheWeb2 frontend and all required dependencies using the following steps:
+## 2. Configure
 
-1. Install nodejs following the instructions at [https://nodejs.org/en/download/](https://nodejs.org/en/download/)
-
-1. Clone this repository:
-```
-git clone https://github.com/GaglianoTaliun-Lab/PheWeb2.git
-cd PheWeb2
-```
+1. Ensure you have a PheWeb2 API endpoint running. If you need to deploy one, follow the instructions available at [PheWeb2 API](https://github.com/GaglianoTaliun-Lab/PheWeb2-API).
  
-2. Install dependencies:
-All dependencies are present in the [package.json](package.json)
-
-```
-npm install
-```
-
-# Configuring PheWeb2 UI
-1. Make sure your PheWeb2 API endpoint is running. Follow insturctions at [PheWeb2-API GitHub](https://github.com/GaglianoTaliun-Lab/PheWeb2-API)
+2. To configure the PheWeb2 UI, update the following variables in the [.env](.env) file:
+   - **VITE_APP_CLSA_PHEWEB_API_URL:** Set this to the PheWeb2 API endpoint (e.g., `"http://127.0.0.1:9999"`).
+   - **VITE_PORT:** Specify the port number for the PheWeb2 UI (e.g., 8087).
+   - **VITE_APP_GA_ID:** (Optional) To monitor the number of visitors per page in Google Analytics 4, specify the Google tag. If you do not wish to track this information, leave the field as an empty string (i.e., `""`).
  
-2. Modify your .env file:
-```
-# Specify the url address of PheWeb2 API
-VITE_APP_CLSA_PHEWEB_API_URL="http://127.0.0.1:9543"
+3. To adjust the PheWeb2 UI look-and-feel, update the following variables in the [src/config.js](src/config.js) configuration file:
+   - **VITE_APP_TITLE:** The main title displayed on the PheWeb2 homepage.
+   - **VITE_APP_SUBTITLE1:** The subtitle featured on the PheWeb2 homepage.
+   - **VITE_APP_DATE:** The date of the last update, shown at the bottom of each page.
+   - **PRIORITY_STRATIFICATIONS:** The stratifications you wish to display in your Miami plots upon initial opening.
+   - **HG_BUILD_NUMBER:** The Human Genome version number used to query UCSC data.
 
-# Specify the port of PheWeb UI
-VITE_PORT=8087
-```
+4. To effectively represent your study, follow these steps to update the images:
+   1. Replace, remove, or add new images in the [src/assets](src/assets) directory as needed.
+   2. Modify the following code where necessary:
+      - Update the logo at the top of the browser tab in [index.html](index.html).
+      - Change the logo in the navbar located at [src/components/Navbar.vue](src/components/Navbar.vue).
+      - Adjust the large logo on the main page in [src/pages/Home.vue](src/pages/Home.vue).
+      - Update images in the acknowledgements section on the main page found in [src/components/AcknowledgeImage.vue](src/components/AcknowledgeImage.vue).
+      - Modify images on the about page in [src/pages/about/About.vue](src/pages/about/About.vue).
 
-An .env file exists in the top level of the directory to store private options relating to your PheWeb website. Your .env file needs to include the port of your PheWeb backend in order to retrieve data.
-We have a sample .env file called sample-env. Copy the file, rename to '.env' and adjust the options to your needs in order for the changes to take effect.
-
-The available options are:
- - `VITE_APP_CLSA_PHEWEB_API_URL`: The URL of your PheWeb2-API backend, in quotes (example: "http://127.0.0.1:9999")
- - `VITE_PORT`: The port on which you wish to host your frontend. (example: 8087)
- 
-3. Adjust [configuration](src/config.js) settings:
-The main configuration file for the frontend is located at `src/config.js`. The current options are placeholders.
-
-Here are the currently available options:
-- `PRIORITY_STRATIFICATIONS`: The stratifications you want to prioritise in your PheWeb. These stratifications will be the first selected in order of priority that you've set in the configuration in the miami and PheWAS page. (Optional)
-- `HG_BUILD_NUMBER`: The number of the reference build. (Optional)
-- `VITE_APP_TITLE`: The title of your PheWeb that will be present on the title page. (Optional)
-- `VITE_APP_SUBTITLE1`: The subtitle of your PheWeb that will be present on the title page. (Optional)
-- `VITE_APP_DATE`: The date of last update of your PheWeb. Will be present on the bottom of the page. (Optional)
-
-# Build the UI
-```
-npm run build
-```
-
-# Run the UI
-```
-npm run preview -- --port 8080
-```
-
-> [!IMPORTANT]
-> As of the current release, images need to be manually edited to be removed or edited. 
-> All images are present in [the assets folder](src/assets).
-> Here is a list of current image referral locations:
-> - [Logo at the top of tab in browser - line 5](src/index.html)
-> - [Logo in navbar - line 7](src/components/Navbar.vue)
-> - [Large logo in home page - line 6](src/pages/Home.vue)
-> - [Images in acknowledgements on home page - lines 3-8](src/components/AcknowledgeImage.vue)
-> - [Images in about page - lines 154, 158 & 196](src/pages/About.vue)
- 
-5. Compile with either the development setup, production setup or production-as-a-service setup:
-
-**A) Development Setup**
-
-A development server allows users more flexibility and with their website. This is the best option when testing changes to the code.
+5. Please modify the text and links in the following sections to accurately reflect your study:
+   - About: [src/pages/about/About.vue](src/pages/about/About.vue)
+   - Contact Us: [src/pages/contactUs/Contact.vue](src/pages/contactUs/Contact.vue)
+   - API: [src/pages/api/API.vue](src/pages/api/API.vue)
+   - GitHub: [src/pages/github/Github.vue](src/pages/github/Github.vue)
+  
+## 3a. Run in development mode
+A development server provides users with greater flexibility when working on their website, allowing for automated refreshes upon code modifications. This setup is ideal for testing changes effectively.
 ```
 npm run dev
 ```
 
-**B) Production Setup**
+## 3b. Run in production mode
+A production server optimizes deployment for faster page reload times and enhanced security. However, this setup sacrifices certain development features, such as hot-reloading (automatic changes). This configuration is recommended for deploying the public version of your PheWeb2 UI instance.
 
-A production server allows Vite to optimize deployement for faster page reload times and better security. In exchange, development features such as hot-reloading (automatic changes) are not available. This is the recommend set-up when deploying the public version of your PheWeb instance.
-While this is not a completely production-ready build, this version utilises the 'serve' package to bypass the need for root control (useful for HPC environments, for example).
+1. Build the PheWeb2 web application:
+   ```
+   npm run build
+   ```
+2. To preview your production PheWeb2 instance, run the command provided. After executing this command, you will be able to access PheWeb2 through your web browser.
+   ```
+   npm run preview -- --port 8080
+   ```
+3. To complete the production setup, configure your web server (Apache, Nginx, or Node.js) to serve the static files located in the generated `dist` directory.
 
-Build dependencies
-```
-npm run build
-```
-
-Runs production-like server. 
-
-```
-npx serve -s dist -l 8080
-```
-> [!NOTE]
-> The convention is port 8080, but you may change this.
-
- 
-
-> [!NOTE]
-> For more information on running the PheWeb2 frontend as a service (a great option for self-hosted web servers), please consult the appropriate [README](service/README.md).
-
->> in .env, modify your GA id if applicable
