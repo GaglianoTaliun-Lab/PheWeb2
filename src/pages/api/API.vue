@@ -44,7 +44,7 @@
             <div class="d-flex justify-center mt-10">
                 <v-btn @click="jumpToAPI"> 
                     <v-icon class="mr-2">mdi-file-document-outline</v-icon> 
-                    PheWeb 2.0 API Documentation
+                    PheWeb 2 API Documentation
                     <v-icon class="ml-2">mdi-open-in-new</v-icon>
                 </v-btn>
             </div>
