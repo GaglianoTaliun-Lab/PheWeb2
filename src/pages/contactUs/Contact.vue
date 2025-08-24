@@ -59,7 +59,7 @@
 <script setup name="Contact">  
 import Navbar from '../../components/Navbar.vue';
 import { ref } from 'vue';
-const selectedContent = ref('Acknowledgements');
+const selectedContent = ref('Team');
 
 const drawer = ref(true);
 
