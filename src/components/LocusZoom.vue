@@ -120,11 +120,11 @@ const fetchData = async () => {
 
     currentPhenoList.value = phenocode_list;
 
-    var remoteBase = "https://portaldev.sph.umich.edu/api/v1/";
+    var remoteBase = "https://services.locuszoom.org/api/v1/";
 
     data_sources_new.value = new LocusZoom.DataSources()
         .add("catalog", ["GwasCatalogLZ", {url: remoteBase + 'annotation/gwascatalog/results/', params: { build: "GRCh38" }}])
-        .add("ld", ["LDServer", { url: "https://portaldev.sph.umich.edu/ld/",
+        .add("ld", ["LDServer", { url: "https://services.locuszoom.org/ld/",
             params: { source: '1000G', build: 'GRCh38', population: 'ALL' }
         }])
         .add("gene", ["GeneLZ", { url: remoteBase + "annotation/genes/", params: {build: 'GRCh38'} }])
