@@ -65,8 +65,23 @@ function handlePanelRemoval(panelPhenocode){
     <v-app>
         <Navbar />
         <v-main class="pt-10">
-            <h1 v-if="phenostring">{{phenocode}}: {{phenostring}}</h1>
-            <h1 v-else>{{phenocode}}</h1>
+            <h1 v-if="phenostring">{{phenocode}}: {{phenostring}}
+		             <v-tooltip location="top">
+              <template #activator="{ props }">
+                <v-icon v-bind="props" icon="mdi-information-outline" size="20" />
+              </template>
+              <span>This page presents a LocusZoom view for the selected phenotype and genetic variant, displaying all associations within a 500 Kbp window around the chosen variant.</span>
+            </v-tooltip>
+	    </h1>
+            <h1 v-else>{{phenocode}}
+		<v-tooltip location="top">
+              <template #activator="{ props }">
+                <v-icon v-bind="props" icon="mdi-information-outline" size="20" />
+              </template>
+              <span>This page presents a LocusZoom view for the selected phenotype and genetic variant, displaying all associations within a 500 Kbp window around the chosen variant.</span>
+            </v-tooltip>
+
+	    </h1>
 
 
 

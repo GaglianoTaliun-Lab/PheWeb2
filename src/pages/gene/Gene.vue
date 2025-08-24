@@ -3,7 +3,14 @@
     <Navbar /> 
     <v-main class="responsive-main"> 
       <div v-if="geneChrom && geneStart && geneStop">
-        <h2 style="font-weight: bold;"><i>{{ geneName }}</i> ({{ geneChrom }}:{{ geneStart }}-{{ geneStop }})</h2>
+        <h2 style="font-weight: bold;"><i>{{ geneName }}</i> ({{ geneChrom }}:{{ geneStart }}-{{ geneStop }})
+	      <v-tooltip location="top">
+              <template #activator="{ props }">
+                <v-icon v-bind="props" icon="mdi-information-outline" size="20" />
+              </template>
+              <span>This page displays the most significant association p-value for each phenotype and stratification, located near the specified gene.</span>
+            </v-tooltip>
+	</h2>
       </div>
       <div v-else>
         <h2 style="font-weight: bold;"><i>{{ geneName }}</i></h2>

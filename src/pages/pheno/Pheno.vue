@@ -4,8 +4,22 @@
       <Navbar2 />
       <v-main class="responsive-main">
           <div>
-            <h1 v-if="phenostring">{{phenocode}}: {{phenostring}}</h1>
-            <h1 v-else>{{phenocode}}</h1>
+            <h1 v-if="phenostring">{{phenocode}}: {{phenostring}}
+	      <v-tooltip location="top">
+              <template #activator="{ props }">
+                <v-icon v-bind="props" icon="mdi-information-outline" size="20" />
+              </template>
+              <span>This page provides a Manhattan/Miami view for a specific phenotype, showcasing the associations between all genetic variants and the respective phenotype.</span>
+            </v-tooltip>
+	    </h1>
+            <h1 v-else>{{phenocode}}
+		<v-tooltip location="top">
+              <template #activator="{ props }">
+                <v-icon v-bind="props" icon="mdi-information-outline" size="20" />
+              </template>
+              <span>This page provides a Manhattan/Miami view for a specific phenotype, showcasing the associations between all genetic variants and the respective phenotype.</span>
+            </v-tooltip>
+	    </h1>
             <!-- <v-progress-linear
               v-if="isLoading"
               indeterminate

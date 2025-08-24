@@ -2,7 +2,14 @@
     <v-app>
         <Navbar />
         <v-main class="responsive-main">
-            <h2 style="font-weight: bold;">Phenotypes</h2>
+            <h2 style="font-weight: bold;">Phenotypes
+            <v-tooltip location="top">
+              <template #activator="{ props }">
+                <v-icon v-bind="props" icon="mdi-information-outline" size="20" />
+              </template>
+	      <span>This page presents all phenotypes and their stratifications, accompanied by the most significant association p-value.</span>
+            </v-tooltip>
+	    </h2>
             <!-- <p>{{ uniquePhenotypesCount }} of {{ totalPhenotypesCount }} phenotype(s) displayed</p> -->
             <!-- <v-progress-linear
               v-if="isLoading"

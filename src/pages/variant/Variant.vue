@@ -11,7 +11,14 @@
     ></v-progress-linear> -->
 
       <div class="ml-4 mt-2">
-        <h1 class="mb-0">chr{{ variantCodeToLabel(variantCode) }}</h1>
+        <h1 class="mb-0">chr{{ variantCodeToLabel(variantCode) }}
+              <v-tooltip location="top">
+              <template #activator="{ props }">
+                <v-icon v-bind="props" icon="mdi-information-outline" size="20" />
+              </template>
+              <span>This page offers a PheWAS view for a given variant, showcasing the associations between the variant and all corresponding phenotypes.</span>
+            </v-tooltip>
+	</h1>
         <div v-if="nearest_genes">
           <p class="mb-0"> Nearest gene(s): 
             <span v-for="(gene, index) in nearest_genes">
