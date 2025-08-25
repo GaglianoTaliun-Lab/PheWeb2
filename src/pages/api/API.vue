@@ -19,9 +19,6 @@
                         <strong>Intended Use:</strong> This API is meant for <strong>lightweight queries</strong> in research. <br>
                     </li>
                     <li>
-                        <strong>Rate Limits:</strong> A maximum of ... requests per minute/hour is allowed. <br>
-                    </li>
-                    <li>
                         <strong>Data Download:</strong> If you need to download datasets, please use the official download feature on our website instead of making bulk API requests. <br>
                     </li>
                     <li>
