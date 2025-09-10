@@ -8,7 +8,7 @@ Bellavance, J., Xiao, H., Chang, L., Kazemi, M., Wickramasinghe, S., Mayhew, A.J
 <img width="1600" height="900" alt="image" src="https://github.com/user-attachments/assets/3f823732-523a-4659-8173-f4bd42e80a7a" />
 
 
-PheWeb2 is a new version of the original [PheWeb](https://github.com/statgen/pheweb) tool, designed for interactive querying, visualizing, and sharing summary-level results from GWAS abd PheWAS studies.
+PheWeb2 is a new version of the original [PheWeb](https://github.com/statgen/pheweb) tool, designed for interactive querying, visualizing, and sharing summary-level results from GWAS and PheWAS studies.
 
 :star: **PheWeb2 introduces several new functionalities for users compared to its predecessor:**
 1. Import and visualizations of GWAS stratified by genetic ancestry groups (with no limit on the number of groups).
