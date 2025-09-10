@@ -1,6 +1,6 @@
 # PheWeb2
 
-## Please cite our preprint: 
+**Please cite our preprint**: 
 
 Bellavance, J., Xiao, H., Chang, L., Kazemi, M., Wickramasinghe, S., Mayhew, A.J., Raina, P., VandeHaar, P., Taliun, D., & Gagliano Taliun, S.A. (2025). Exploring and visualizing stratified genome-wide association study results with PheWeb 2. https://doi.org/10.21203/rs.3.rs-7463215/v1
 
