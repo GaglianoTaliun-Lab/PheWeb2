@@ -1,4 +1,5 @@
 # PheWeb2
+![License](https://img.shields.io/github/license/GaglianoTaliun-Lab/PheWeb2-API)
 
 **Please cite our preprint**: 
 
