@@ -52,7 +52,7 @@
                   v-model="selectedFilters[category.toLowerCase()]"
                   :items="filterOptions[category.toLowerCase()]"
                   :label="category.charAt(0).toUpperCase() + category.slice(1)"
-                  prepend-icon="mdi-filter-variant"
+                  :prepend-icon="category.toLowerCase() === 'ancestry' ? 'mdi-account-group' : category.toLowerCase() === 'sex' ? 'mdi-gender-male-female' : 'mdi-filter-variant'"
                   class="ma-2 pa-2"
                   variant="underlined"
                 ></v-select>
