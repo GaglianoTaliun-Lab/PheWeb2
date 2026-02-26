@@ -7,8 +7,15 @@ import LocusZoom from 'locuszoom';
 import {onMounted, ref, watch} from 'vue'
 import { useRoute } from 'vue-router';
 import * as utils from '../pages/region/Region.js'
+import { HG_BUILD_NUMBER } from '@/config.js';
 
 const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URL
+const hgToGrchBuildNumber = {
+    '19': '37',
+    '38': '38',
+};
+const locusZoomBuild = `GRCh${hgToGrchBuildNumber[String(HG_BUILD_NUMBER)] ?? String(HG_BUILD_NUMBER)}`;
+const browserBuild = `hg${HG_BUILD_NUMBER}`;
 const props = defineProps({
     data: Array,
     region:{
@@ -121,12 +128,12 @@ const fetchData = async () => {
     // console.log(phenocode_list.value);
     var remoteBase = "https://services.locuszoom.org/api/v1/";
     data_sources_new.value = new LocusZoom.DataSources()
-        .add("catalog", ["GwasCatalogLZ", {url: remoteBase + 'annotation/gwascatalog/results/', params: { build: "GRCh38" }}])
+        .add("catalog", ["GwasCatalogLZ", {url: remoteBase + 'annotation/gwascatalog/results/', params: { build: locusZoomBuild }}])
         .add("ld", ["LDServer", { url: "https://services.locuszoom.org/ld/",
-            params: { source: '1000G', build: 'GRCh38', population: 'ALL' }
+            params: { source: '1000G', build: locusZoomBuild, population: 'ALL' }
         }])
-        .add("gene", ["GeneLZ", { url: remoteBase + "annotation/genes/", params: {build: 'GRCh38'} }])
-        .add("recomb", ["RecombLZ", { url: remoteBase + "annotation/recomb/results/", params: {build:'GRCh38'} }]);
+        .add("gene", ["GeneLZ", { url: remoteBase + "annotation/genes/", params: {build: locusZoomBuild} }])
+        .add("recomb", ["RecombLZ", { url: remoteBase + "annotation/recomb/results/", params: {build: locusZoomBuild} }]);
     
     getPhenoData();
     phenocode_list.value.forEach( function (phenocode, i){
@@ -343,7 +350,7 @@ const getPanels = () => {
                                 "<div>Gene ID: <strong>{{gene_id}}</strong></div>" +
                                 "<div>Transcript ID: <strong>{{transcript_id}}</strong></div>" +
                                 "<div style=\"clear: both;\"></div>" +
-                                "<table width=\"100%\"><tr><td style=\"text-align: right;\"><a href=\"http://gnomad.broadinstitute.org/gene/{{gene_id}}\" target=\"_new\">More data on gnomAD/ExAC</a> and <a href=\"http://bravo.sph.umich.edu/freeze5/hg38/gene/{{gene_id}}\" target=\"_new\">Bravo</a></td></tr></table>")
+                                "<table width=\"100%\"><tr><td style=\"text-align: right;\"><a href=\"http://gnomad.broadinstitute.org/gene/{{gene_id}}\" target=\"_new\">More data on gnomAD/ExAC</a> and <a href=\"http://bravo.sph.umich.edu/freeze5/" + browserBuild + "/gene/{{gene_id}}\" target=\"_new\">Bravo</a></td></tr></table>")
                     },
 
                 })

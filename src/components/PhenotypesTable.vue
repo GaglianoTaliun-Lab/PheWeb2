@@ -52,7 +52,7 @@
                   v-model="selectedFilters[category.toLowerCase()]"
                   :items="filterOptions[category.toLowerCase()]"
                   :label="category.charAt(0).toUpperCase() + category.slice(1)"
-                  :prepend-icon="category.toLowerCase() === 'ancestry' ? 'mdi-account-group' : category.toLowerCase() === 'sex' ? 'mdi-gender-male-female' : 'mdi-filter-variant'"
+                  :prepend-icon="getStratificationIcon(category)"
                   class="ma-2 pa-2"
                   variant="underlined"
                 ></v-select>
@@ -326,7 +326,11 @@
         </div>
       </template>
 
-      <template v-slot:header.ancestry="{ column, isSorted, getSortIcon }">
+      <template
+        v-for="category in STRATIFICATION_CATEGORIES"
+        :key="`header-${category}`"
+        v-slot:[`header.${category.toLowerCase()}`]="{ column, isSorted, getSortIcon }"
+      >
         <div style="display: flex; align-items: left; justify-content: left; text-align: left;">
           <span style="white-space: nowrap;">{{ column.title }}</span>
           <v-tooltip location="top">
@@ -334,24 +338,7 @@
               <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
             </template>
             <span style="white-space: normal;">
-              Genetic ancestries included in analysis
-            </span>
-          </v-tooltip>
-          <template v-if="isSorted(column)">
-            <v-icon :icon="getSortIcon(column)"></v-icon>
-          </template>
-        </div>
-      </template>
-
-      <template v-slot:header.sex="{ column, isSorted, getSortIcon }">
-        <div style="display: flex; align-items: left; justify-content: left; text-align: left;">
-          <span style="white-space: nowrap;">{{ column.title }}</span>
-          <v-tooltip location="top">
-            <template v-slot:activator="{ props }">
-              <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
-            </template>
-            <span style="white-space: normal;">
-              Sexes included in analysis
+              {{ getStratificationTooltip(category) }}
             </span>
           </v-tooltip>
           <template v-if="isSorted(column)">
@@ -401,6 +388,20 @@
     const formatScientific = (num) => {
       if (!num || isNaN(num)) return 'N/A';  
       return Number(num).toExponential(2);  
+    };
+
+    const getStratificationIcon = (category) => {
+      const key = category.toLowerCase();
+      if (key === 'ancestry') return 'mdi-account-group';
+      if (key === 'sex') return 'mdi-gender-male-female';
+      return 'mdi-filter-variant';
+    };
+
+    const getStratificationTooltip = (category) => {
+      const key = category.toLowerCase();
+      if (key === 'ancestry') return 'Genetic ancestries included in analysis';
+      if (key === 'sex') return 'Sexes included in analysis';
+      return `${category} stratification included in analysis`;
     };
 
     // data
