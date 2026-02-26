@@ -55,8 +55,11 @@ PheWeb2 is a new version of the original [PheWeb](https://github.com/statgen/phe
    - **VITE_APP_TITLE:** The main title displayed on the PheWeb2 homepage.
    - **VITE_APP_SUBTITLE1:** The subtitle featured on the PheWeb2 homepage.
    - **VITE_APP_DATE:** The date of the last update, shown at the bottom of each page.
+   - **STRATIFICATION_CATEGORIES** Specific stratification(s) categories of your data (default is "ancestry" & "sex")
    - **PRIORITY_STRATIFICATIONS:** The stratifications you wish to display in your Miami plots upon initial opening.
    - **HG_BUILD_NUMBER:** The Human Genome version number used to query UCSC data.
+   - **ENABLE_INTERACTION_MODE** Option to turn on/off the interaction mode depending on whether you have interaction results from your data
+   
 
 4. To effectively represent your study, follow these steps to update the images:
    1. Replace, remove, or add new images in the [src/assets](src/assets) directory as needed.
