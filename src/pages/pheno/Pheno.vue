@@ -27,7 +27,7 @@
               height="5"
             ></v-progress-linear> -->
             <div class="links m-1 d-flex justify-space-between align-center text-center">
-                <div class="d-none d-md-flex" :class="{ 'chip-disabled': Object.keys(allInteractionPlottingData).length < 1 || isLoading }" >
+                <div v-if="interactionModeEnabled" class="d-none d-md-flex" :class="{ 'chip-disabled': Object.keys(allInteractionPlottingData).length < 1 || isLoading }" >
                   <v-chip
                   size="x-large"
                   label
@@ -39,7 +39,7 @@
                   Show Genotypes x Sex Interaction Results
                 </v-chip>
             </div>
-              <div class="data-portal d-flex d-md-none justify-center align-center text-center">
+              <div v-if="interactionModeEnabled" class="data-portal d-flex d-md-none justify-center align-center text-center">
                 <div v-if="Object.keys(allInteractionPlottingData).length > 0">
                     <v-chip
                     size="x-large"
@@ -64,7 +64,7 @@
           </div>
 
 
-          <div v-if="!isInteractionChecked" class="non-interaction">
+          <div v-if="!interactionModeEnabled || !isInteractionChecked" class="non-interaction">
             <div class="pheno-info col-12 d-flex justify-left align-center text-center mt-0">
               <div class="dropdown p-1" id="dropdown-data1" :class="{ 'dropdown-disabled': isDisabled || isLoading }" >
                   <button  class="btn btn-primary btn-drop" id="button-data1">{{keyToLabel(selectedStratification1)+ " (" + sampleSizeLabel[selectedStratification1] + ")"}}<span class="arrow-container"><span class="arrow-down"></span></span></button>
@@ -183,7 +183,7 @@
           </div>
 
           </div>
-          <div v-else class="interaction">
+          <div v-else-if="interactionModeEnabled" class="interaction">
             <div class="pheno-info col-12 mt-0">
                 <div class="dropdown p-1" id="dropdown-data1" :class="{ 'dropdown-disabled': isDisabled || isLoading }">
                   <button class="btn btn-primary btn-drop" id="button-data1">{{keyToLabel(selectedInteractionStratification1).replace(/\b\w/g, l => l.toUpperCase()) + " (" + sampleSizeInteractionLabel[selectedInteractionStratification1] + ")"}}<span class="arrow-container"><span class="arrow-down"></span></span></button>
@@ -303,10 +303,12 @@ import InteractionMiamiPlot from '@/components/InteractionMiamiPlot.vue'
 import InteractionTable from '@/components/InteractionTable.vue';
 import IsFailing from '@/components/IsFailing.vue';
 import IsLoading from '@/components/IsLoading.vue';
+import { ENABLE_INTERACTION_MODE } from '@/config.js';
 
 import * as functions from './Pheno.js';
 
 const route = useRoute();
+const interactionModeEnabled = ENABLE_INTERACTION_MODE;
 
 const phenocode = route.params.phenocode;
 const url_query = route.query;
@@ -379,18 +381,20 @@ onMounted(async () => {
       isLoading.value = true;
       const response = await axios.get(`${api}/phenotypes/${phenocode}/phenotypes_list`);
 
-      let responseInteraction = {};
-      try {
-        responseInteraction = await axios.get(`${api}/phenotypes/${phenocode}/interaction_list`);
-      } catch (error) {
-        if (error.response && error.response.status === 404) {
-          console.warn(`Interaction list not found for ${phenocode}`);
-          responseInteraction.data = [];
-          isFailedInteractionPlotting.value = true;
-        } else {
-          console.error("Unexpected error:", error);
-          isFailedInteractionPlotting.value = true;
-          throw error; // rethrow if it's not a 404
+      let responseInteraction = { data: [] };
+      if (interactionModeEnabled) {
+        try {
+          responseInteraction = await axios.get(`${api}/phenotypes/${phenocode}/interaction_list`);
+        } catch (error) {
+          if (error.response && error.response.status === 404) {
+            console.warn(`Interaction list not found for ${phenocode}`);
+            responseInteraction.data = [];
+            isFailedInteractionPlotting.value = true;
+          } else {
+            console.error("Unexpected error:", error);
+            isFailedInteractionPlotting.value = true;
+            throw error; // rethrow if it's not a 404
+          }
         }
       }
 
@@ -430,9 +434,9 @@ onMounted(async () => {
       // interaction processing
       // console.log(responseInteraction)
       
-      infoInteraction.value = responseInteraction.data;
+      infoInteraction.value = interactionModeEnabled ? responseInteraction.data : [];
 
-      if (infoInteraction.value.length > 0) {
+      if (interactionModeEnabled && infoInteraction.value.length > 0) {
         for (let i = 0; i < infoInteraction.value.length; i++) {
           const phenocode = infoInteraction.value[i].phenocode;
           const extraInfo = returnInteractionSuffix(infoInteraction.value[i]) + returnStratificationSuffix(infoInteraction.value[i]);
@@ -451,6 +455,12 @@ onMounted(async () => {
           }
         });
 
+      } else if (!interactionModeEnabled) {
+        isInteractionChecked.value = false;
+        allInteractionPlottingData.value = {};
+        qqInteractionData.value = {};
+        qqInteractionSubset.value = {};
+        sampleSizeInteractionLabel.value = {};
       }
 
       populateDataPreview(phenocode)
@@ -578,6 +588,7 @@ const handleRadioChange = () => {
 };
 
 const handleInteractionRadioChange = () => {
+  if (!interactionModeEnabled) return;
   if (selectedInteractionStratification2.value === "No stratification" || selectedInteractionStratification1.value === selectedInteractionStratification2.value){
     manhattanInteractionData.value = {}
     miamiInteractionToggle.value = false;
@@ -658,10 +669,12 @@ const downloadAll = () => {
     downloads.push({ url: api_link, filename: phenocode });
   }
 
-  for (const pheno of infoInteraction.value) {
-    var phenocode = pheno.phenocode + returnInteractionSuffix(pheno) + returnStratificationSuffix(pheno);
-    var api_link = `${api}/phenotypes/${pheno.phenocode}/${returnInteractionSuffix(pheno) + returnStratificationSuffix(pheno)}/download`;
-    downloads.push({ url: api_link, filename: phenocode });
+  if (interactionModeEnabled && Array.isArray(infoInteraction.value)) {
+    for (const pheno of infoInteraction.value) {
+      var phenocode = pheno.phenocode + returnInteractionSuffix(pheno) + returnStratificationSuffix(pheno);
+      var api_link = `${api}/phenotypes/${pheno.phenocode}/${returnInteractionSuffix(pheno) + returnStratificationSuffix(pheno)}/download`;
+      downloads.push({ url: api_link, filename: phenocode });
+    }
   }
 
   // Open one download at a time with a slight delay
@@ -837,6 +850,10 @@ const updateChosenVariantMehod = (variant) => {
 };
 
 function onInteractionCheckboxChange() {
+  if (!interactionModeEnabled) {
+    isInteractionChecked.value = false;
+    return;
+  }
   if (isInteractionChecked.value) {
     var strats = chooseDefaultPhenos(infoInteraction.value)
     selectedInteractionStratification1.value = strats[0].phenocode +returnInteractionSuffix(strats[0]) + returnStratificationSuffix(strats[0])
@@ -1017,5 +1034,3 @@ onUnmounted(() => {
   }
 }
 </style>
-
-

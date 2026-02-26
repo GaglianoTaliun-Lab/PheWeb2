@@ -13,3 +13,6 @@ export const HG_BUILD_NUMBER = "38";
 
 // Labels for the stratification category labels. No need to change this
 export const STRATIFICATION_CATEGORIES = ["ancestry", "sex"]
+
+// Enable switching to interaction mode
+export const ENABLE_INTERACTION_MODE = true;
