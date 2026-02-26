@@ -5,7 +5,8 @@
       <h5 class="citation-heading"><strong>Please Cite:</strong></h5>
       <ul>
 	<li>
-	  Preprint: Bellavance, J., Xiao, H., Chang, L., Kazemi, M., Wickramasinghe, S., Mayhew, A.J., Raina, P., VandeHaar, P., Taliun, D., & Gagliano Taliun, S.A. (2025). Exploring and visualizing stratified genome-wide association study results with PheWeb 2.
+    Bellavance, J., Xiao, H., Chang, L., Kazemi, M., Wickramasinghe, S., Mayhew, A.J., Raina, P., VandeHaar, P., Taliun, D., & Gagliano Taliun, S.A. (2026). Exploring and visualizing stratified GWAS results with PheWeb2. Nature Genetics.
+    <a href="https://doi.org/10.1038/s41588-025-02469-8" target="_blank">https://doi.org/10.1038/s41588-025-02469-8</a>
         </li>
         <li>
           Gagliano Taliun, S. A., VandeHaar, P., Boughton, A. P., Welch, R. P., Taliun, D., Schmidt, E. M., Zhou, W., Nielsen, J. B., Willer, C. J., Lee, S., Fritsche, L. G., Boehnke, M., & Abecasis, G. R. (2020). Exploring and visualizing large-scale genetic associations by using PheWeb. 
