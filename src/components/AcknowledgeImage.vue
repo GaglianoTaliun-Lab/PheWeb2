@@ -1,8 +1,6 @@
 <template>
     <div class="image-container" style="bottom: 0%; ">
         <img src="@/assets/mcgill_sig_red_logo.png" class="rounded" alt="@." style="height: 40px; width: auto;">
-        <img src="@/assets/leaf-cihr-colour-en.jpg" class="rounded" alt="@." style="height: 90px; width: auto;">
-        <img src="@/assets/alliance_logo.svg" class="rounded" alt="@." style="height: 50px; width: auto;">
         <img src="@/assets/Artboard-1-8-200x81.png" class="rounded" alt="@.">
     </div>
 </template>
@@ -17,7 +15,7 @@
   display: flex;
   justify-content: space-around; 
   justify-content: center;
-  align-items: flex-end;
+  align-items: center;
   flex-wrap: wrap; 
 
 }

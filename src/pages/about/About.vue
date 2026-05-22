@@ -10,10 +10,7 @@
         <v-list-item link variant="plain" @click="selectContent('Phenotypes')" title="2. Imaging Traits"></v-list-item>
         <v-list-item link variant="plain" @click="selectContent('Processing')" title="3. Trait Processing"></v-list-item>
         <v-list-item link variant="plain" @click="selectContent('GWAS')" title="4. GWAS"></v-list-item>
-        <v-list-item link variant="plain" @click="selectContent('Loci')" title="5. Loci"></v-list-item>
-        <v-list-item link variant="plain" @click="selectContent('Genes')" title="6. Gene Prioritization"></v-list-item>
-        <v-list-item link variant="plain" @click="selectContent('Downstream')" title="7. Downstream Analyses"></v-list-item>
-        <v-list-item link variant="plain" @click="selectContent('Browser')" title="8. PheWeb2 Data"></v-list-item>
+        <v-list-item link variant="plain" @click="selectContent('Browser')" title="5. PheWeb2 Data"></v-list-item>
       </v-navigation-drawer>
 
       <div class="about-content" align="left">
@@ -21,16 +18,8 @@
           <h2 class="text-center">About Imaging PheWeb</h2>
           <hr>
           <p>
-            This browser presents genome-wide association results and downstream annotations from a UK Biobank v20
-            imaging genetics atlas of cardiac and adiposity imaging-derived phenotypes (IDPs). The resource is intended
-            for interactive lookup of phenotypes, variants, loci, genes, credible sets, and selected downstream
-            annotations from the atlas.
-          </p>
-          <p>
-            The atlas includes 42 IDPs: 11 cardiac MRI-derived traits and 31 DXA-derived adiposity traits. Analyses
-            emphasize locus discovery, cross-trait architecture, sex-stratified effects, fine-mapping, variant-to-gene
-            prioritization, rare-variant burden results, polygenic score PheWAS, and multi-trait decomposition of
-            LVEDV-associated loci.
+            This platform presents genome-wide association (GWAS) and phenome-wide association (PheWAS) results from our genomic atlas of cardiac, adiposity, and bone imaging-derived phenotypes (IDPs). The following sections of the About page offer a brief description of the data preparation and analytical pipeline.
+            If you have any specific questions or require more detailed information, please feel free to reach out. Our contact information is available on the Contact page.
           </p>
         </div>
 
@@ -38,15 +27,14 @@
           <h2>1. Participants</h2>
           <hr>
           <p>
-            Primary discovery analyses used UK Biobank participants in the v20 imaging release. Participants were
-            excluded if they withdrew consent, had discordance between self-reported and genetic sex, had sex chromosome
-            aneuploidy, had excess heterozygosity or missingness, were flagged as outliers, or lacked whole-genome
-            sequencing shipment batch information.
+          Analyses were conducted among UK Biobank participants with imaging-derived phenotypes available in the v20 imaging release. Participants were excluded if they had withdrawn consent, discordance between self-reported and genetic sex, sex chromosome aneuploidy,
+          excess heterozygosity or missingness, outlier flags, or missing whole-genome sequencing shipment-batch information.
+
           </p>
           <p>
             Trait-specific sample sizes were determined by imaging phenotype availability after quality control and
-            covariate harmonization. The maximum analyzed sample size was 75,562 participants for cardiac MRI traits
-            and 66,194 participants for DXA-derived adiposity traits.
+            covariate harmonization. The maximum analyzed sample size was 75,562 participants for cardiac MRI traits, 66,194 participants for DXA-derived adiposity traits,
+            and 62,535 participants for DXA-derived bone traits.
           </p>
         </div>
 
@@ -54,32 +42,42 @@
           <h2>2. Imaging Traits</h2>
           <hr>
           <p>
-            We curated 42 quantitative IDPs from the UK Biobank v20 imaging release. For each participant, a single
+            We curated 97 quantitative IDPs from the UK Biobank v20 imaging release. For each participant, a single
             imaging instance was selected, prioritizing instance 2 and using instance 3 when instance 2 was unavailable.
           </p>
           <p>
             Cardiac traits comprised left ventricular structural, functional, and hemodynamic measures, together with
             body-surface-area-indexed derivatives. Adiposity traits comprised regional fat and lean mass measures,
-            derived ratio traits, BMI- and height-adjusted fat and lean mass traits, and VAT-derived traits.
+            derived ratio traits, BMI- and height-adjusted fat and lean mass traits, and VAT-derived traits. Bone traits comprised bone mineral density (BMD), bone mineral content (BMC), and area.
           </p>
-          <v-table density="compact" class="summary-table">
+          <v-table density="compact" class="summary-table" hover>
+            <colgroup>
+              <col class="domain-column">
+              <col class="numeric-column">
+              <col class="numeric-column">
+            </colgroup>
             <thead>
               <tr>
                 <th>Domain</th>
-                <th>Traits</th>
-                <th>Maximum N</th>
+                <th class="text-end">Traits</th>
+                <th class="text-end">Maximum N</th>
               </tr>
             </thead>
             <tbody>
               <tr>
                 <td>Cardiac MRI</td>
-                <td>11</td>
-                <td>75,562</td>
+                <td class="text-end">11</td>
+                <td class="text-end">75,562</td>
               </tr>
               <tr>
                 <td>DXA adiposity</td>
-                <td>31</td>
-                <td>66,194</td>
+                <td class="text-end">31</td>
+                <td class="text-end">66,194</td>
+              </tr>
+              <tr>
+                <td>DXA bone</td>
+                <td class="text-end">55</td>
+                <td class="text-end">62,535</td>
               </tr>
             </tbody>
           </v-table>
@@ -116,79 +114,17 @@
           </p>
         </div>
 
-        <div v-if="selectedContent === 'Loci'" id="Loci">
-          <h2>5. Loci</h2>
-          <hr>
-          <p>
-            Genome-wide significant loci were defined from pooled-sample summary statistics using LD clumping with an
-            unrelated UK Biobank WGS LD reference panel. Lead variants were used for locus sharing, sex-effect
-            comparisons, multi-trait decomposition, and downstream visualization.
-          </p>
-          <p>
-            The atlas contains 1,305 independent loci across the union of 450 cardiac loci, 883 adiposity loci, and 28
-            exact shared cardiac-adiposity lead loci. Novelty was assessed against prior cardiac MRI and adiposity
-            imaging GWAS lead variants after coordinate harmonization.
-          </p>
-          <p>
-            Cross-trait architecture analyses summarize shared and trait-specific loci within and between cardiac and
-            adiposity domains. Fuji plots, genetic correlation heatmaps, phenotypic correlation heatmaps, and
-            colocalization analyses were used to contextualize pleiotropy and shared signals.
-          </p>
-        </div>
-
-        <div v-if="selectedContent === 'Genes'" id="Genes">
-          <h2>6. Gene Prioritization</h2>
-          <hr>
-          <p>
-            Associated loci were refined with statistical fine-mapping using SuSiE on genome-wide significant regions.
-            Candidate effector genes were prioritized by integrating FLAMES and cS2G, with Open Targets evidence
-            reported as an additional orthogonal evidence layer.
-          </p>
-          <p>
-            In the conservative locus-level table, 804 of the 1,305 independent loci had at least one high-confidence
-            putative effector gene assignment, corresponding to 493 unique putative effector genes.
-          </p>
-          <p>
-            Exome-wide rare-variant burden analyses used REGENIE set-based tests with UK Biobank OQFE exome annotations
-            and predefined masks. These results were compared with common-variant gene prioritization to evaluate
-            complementarity between rare coding burden signals and single-variant locus-to-gene evidence.
-          </p>
-        </div>
-
-        <div v-if="selectedContent === 'Downstream'" id="Downstream">
-          <h2>7. Downstream Analyses</h2>
-          <hr>
-          <p>
-            Sex-stratified analyses repeated association testing in females and males for representative cardiac and
-            adiposity traits. Lead variants from pooled and sex-specific GWAS were harmonized and compared to identify
-            loci with evidence for sex-differential effects.
-          </p>
-          <p>
-            Polygenic scores were generated for all 42 IDPs from pooled-sample UK Biobank GWAS summary statistics and
-            evaluated in 257,716 All of Us participants across 1,815 binary phecode outcomes. These analyses place
-            genetically predicted imaging variation in broader phenotypic context.
-          </p>
-          <p>
-            LVEDV-associated loci were partitioned with Bayesian non-negative matrix factorization using association
-            profiles across external binary traits. This analysis used 82 LVEDV index variants and yielded five
-            clusters with distinct disease-association profiles, including a cardiomyopathy-heart failure cluster.
-            FBXO32 was evaluated as an illustrative candidate gene at a disease-enriched LVEDV locus using human cardiac
-            single-cell expression data.
-          </p>
-        </div>
-
         <div v-if="selectedContent === 'Browser'" id="Browser">
-          <h2>8. PheWeb2 Data</h2>
+          <h2>5. PheWeb2 Data</h2>
           <hr>
           <p>
-            Imaging PheWeb provides interactive access to association statistics across cardiac and adiposity IDPs,
+            Imaging PheWeb provides interactive access to association statistics across IDPs,
             including pooled and sex-stratified analyses where available. Users can browse phenotype-level results,
             variant pages, regional locus views, gene pages, PheWAS-style summaries, and top-hit tables.
           </p>
           <p>
-            Downstream annotations in the browser may include credible-set information, candidate effector genes,
-            colocalization-supported shared loci, rare-variant burden context, and LVEDV cluster assignments, depending
-            on availability for the queried locus or phenotype.
+            Downstream annotations in the browser may include credible-set information, candidate effector genes, and
+            colocalization-supported shared loci, depending on availability for the queried locus or phenotype.
           </p>
         </div>
       </div>
@@ -217,5 +153,29 @@ function selectContent(content) {
 .summary-table {
   max-width: 560px;
   margin-top: 1rem;
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.summary-table :deep(th) {
+  background: rgba(var(--v-theme-surface-variant), 0.22);
+  color: rgba(var(--v-theme-on-surface), 0.9);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.summary-table :deep(td) {
+  font-size: 0.92rem;
+}
+
+.domain-column {
+  width: 55%;
+}
+
+.numeric-column {
+  width: 22.5%;
 }
 </style>

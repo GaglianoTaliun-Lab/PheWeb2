@@ -24,6 +24,7 @@
                 <h2 class="text-center">Development Team</h2>
 		<p>Current members:</p>
 		<ul>
+			<li>Hsuan Megan Tsao</li>
 			<li>Hongyu Xiao</li>
 			<li>Daniel Taliun* (daniel.taliun@mcgill.ca)</li>
 			<li>Satoshi Yoshiji* (satoshi.yoshiji@mcgill.ca)</li>
