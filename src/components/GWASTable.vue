@@ -463,8 +463,12 @@
         errorMessage.value = '';
         try {
           const phenotype = await props.selectedStratification1.split('.')[0]
-          const stratification1 = '.' + props.selectedStratification1.split('.').slice(-2).join('.')
-          const stratification2 = '.' + props.selectedStratification2.split('.').slice(-2).join('.')
+
+          const n_stratifications_1 = props.selectedStratification1.split('.').length - 1; 
+          const n_stratifications_2 = props.selectedStratification1.split('.').length - 1; 
+
+          const stratification1 = '.' + props.selectedStratification1.split('.').slice(-n_stratifications_1).join('.') 
+          const stratification2 = '.' + props.selectedStratification2.split('.').slice(-n_stratifications_2).join('.') 
 
           const response1 = await axios.get(`${api}/phenotypes/${phenotype}/${stratification1}/manhattan`)
 
