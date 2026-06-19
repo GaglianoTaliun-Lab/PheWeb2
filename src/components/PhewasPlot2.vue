@@ -120,43 +120,6 @@ function generatePlot(variant_list){
         LocusZoom.Adapters._items.delete('PheWebSource');
     }
 
-    LocusZoom.Adapters.extend('PheWASLZ', 'PheWebSource', {
-        getData: function(state, fields, outnames, trans) {
-
-            var list = Object.keys(state);
-
-            var panels = list.slice(0, list.indexOf("variant"))
-
-            if (global_panels.length == 0){
-              global_panels = global_panels.concat(panels)
-            } 
-            var panel = global_panels.shift();
-
-
-            // Override all parsing, namespacing, and field extraction mechanisms, and load data embedded within the page
-            trans = trans || [];
-
-            var panel_int = +panel;
-
-            var data = JSON.parse(JSON.stringify(variant_list[panel_int].phenos)); //otherwise LZ adds attributes I don't want to the original data.
-            
-            
-            data.forEach(function(d, i) {
-                data[i].x = i;
-                data[i].id = i.toString();
-                trans.forEach(function(transformation, t){
-                    if (typeof transformation === "function"){
-                        data[i][outnames[t]] = transformation(data[i][fields[t]]);
-                    }
-                });
-            });
-            return function(chain) {
-                return {header: chain.header || {}, body: data};
-            }.bind(this);
-
-        }
-    });
-
     var neglog10_significance_threshold_list = []
 
     variant_list.forEach(variant => {
@@ -164,7 +127,6 @@ function generatePlot(variant_list){
     })
 
     var panel_list = []
-
 
     variant_list.forEach(variant => {
         // sort phenotypes
@@ -194,6 +156,52 @@ function generatePlot(variant_list){
     const unique_categories_list = variant_list.map(() =>
         JSON.parse(JSON.stringify(global_unique_categories))
     );
+
+    const gap = 500;
+
+    var categories_position_map = [...new Set(variant_list.flatMap(v => v.phenos.map(p => p.category)))];
+
+    categories_position_map = categories_position_map.filter(categ => props.categoryList.includes(categ));
+    
+    const global_category_offset = Object.fromEntries(
+        categories_position_map.map((c, i) => [c, i * gap])
+    );
+
+    LocusZoom.Adapters.extend('PheWASLZ', 'PheWebSource', {
+        getData: function(state, fields, outnames, trans) {
+
+            var list = Object.keys(state);
+
+            var panels = list.slice(0, list.indexOf("variant"))
+
+            if (global_panels.length == 0){
+              global_panels = global_panels.concat(panels)
+            } 
+            var panel = global_panels.shift();
+
+
+            // Override all parsing, namespacing, and field extraction mechanisms, and load data embedded within the page
+            trans = trans || [];
+
+            var panel_int = +panel;
+
+            var data = JSON.parse(JSON.stringify(variant_list[panel_int].phenos)); //otherwise LZ adds attributes I don't want to the original data.
+
+            data.forEach(function(d, i) {
+                data[i].x = global_category_offset[data[i].category] + i;
+                data[i].id = i.toString();
+                trans.forEach(function(transformation, t){
+                    if (typeof transformation === "function"){
+                        data[i][outnames[t]] = transformation(data[i][fields[t]]);
+                    }
+                });
+            });
+            return function(chain) {
+                return {header: chain.header || {}, body: data};
+            }.bind(this);
+
+        }
+    });
 
     // Build global, stable category-to-color mapping
     const category_palette = d3.schemeCategory10.concat(d3.schemeCategory10); // 20 fixed colors
@@ -350,7 +358,7 @@ function generatePlot(variant_list){
                         style: {fill: pheno.color, "font-size":"11px", "font-weight":"bold", "text-anchor":"start"},
                         transform: "translate(15, 0) rotate(50)",
                         text: pheno.category,
-                        x: pheno.idx
+                        x: global_category_offset[pheno.category] + pheno.idx
                     };
                 })
 

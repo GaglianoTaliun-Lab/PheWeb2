@@ -11,20 +11,22 @@
                 variant="tonal"
                 style="padding-bottom: 5%; "
             >
-                Please visit our GitHub repository: <br>
-                <div class="d-flex justify-center mt-5">
-                    <v-btn @click="jumpToGithub"> 
-                        <v-icon class="mr-2">mdi-github</v-icon> 
-                        PheWeb 2 GitHub 
-                        <v-icon class="ml-2">mdi-open-in-new</v-icon>
-                    </v-btn>
-                </div>
-                <div class="d-flex justify-center mt-5">
-                    <v-btn @click="jumpToAPI"> 
-                        <v-icon class="mr-2">mdi-github</v-icon> 
-                        PheWeb 2 API GitHub
-                        <v-icon class="ml-2">mdi-open-in-new</v-icon>
-                    </v-btn>
+                <div class="alert-content-wrapper">
+                    Please visit our GitHub repository: <br>
+                    <div class="d-flex justify-center mt-5">
+                        <v-btn @click="jumpToGithub"> 
+                            <v-icon class="mr-2">mdi-github</v-icon> 
+                            PheWeb 2 GitHub 
+                            <v-icon class="ml-2">mdi-open-in-new</v-icon>
+                        </v-btn>
+                    </div>
+                    <div class="d-flex justify-center mt-5">
+                        <v-btn @click="jumpToAPI"> 
+                            <v-icon class="mr-2">mdi-github</v-icon> 
+                            PheWeb 2 API GitHub
+                            <v-icon class="ml-2">mdi-open-in-new</v-icon>
+                        </v-btn>
+                    </div>
                 </div>
             </v-alert>
             <!-- <span class="d-flex justify-center align-center mt-10" style="font-weight: bold;">
@@ -53,5 +55,9 @@ const jumpToAPI = () => {
 </script>
 
 <style scoped>
+
+.alert-content-wrapper {
+    padding-bottom: 1%;
+}
 
 </style>

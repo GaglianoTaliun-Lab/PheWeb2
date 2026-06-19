@@ -56,28 +56,28 @@
             </td>
             <td>
               <!-- af1 -->
-              {{ item.af_pheno1 }}
+              {{ roundEAF(item.af_pheno1) }}
             </td>
             <td v-if="props.selectedStratification2 !== props.selectedStratification1 && props.selectedStratification2 !== 'No stratification'" style="border-right:thin dashed rgba(var(--v-border-color), var(--v-border-opacity));">
               <!-- af2 w/ divider-->
-              {{ item.af_pheno2 }}
+              {{ roundEAF(item.af_pheno2) }}
             </td>
             <td>
               <!-- pval1 -->
               <v-chip v-if="item.pval_pheno1 !== 'NA'" :color="getColour(item.pval_pheno1)">
-                {{ item.pval_pheno1 }}
+                {{ formatScientific(item.pval_pheno1) }}
               </v-chip>
               <span v-else>
-                {{ item.pval_pheno1 }}
+                {{ formatScientific(item.pval_pheno1) }}
               </span>
             </td>
             <td v-if="props.selectedStratification2 !== props.selectedStratification1 && props.selectedStratification2 !== 'No stratification'" style="border-right:thin dashed rgba(var(--v-border-color), var(--v-border-opacity));">
               <!-- pval2 w/ divider -->
               <v-chip v-if="item.pval_pheno2 !== 'NA'" :color="getColour(item.pval_pheno2)" >
-                {{ item.pval_pheno2 }}
+                {{ formatScientific(item.pval_pheno2) }}
               </v-chip>
               <span v-else>
-                {{ item.pval_pheno2 }}
+                {{ formatScientific(item.pval_pheno2) }}
               </span>
             </td>
             <td>
@@ -344,7 +344,8 @@
       import { ref, onMounted, watch, computed } from 'vue';
       import axios from 'axios';
       import { useRoute } from 'vue-router';
-  
+      import { formatScientific, roundEAF } from '../utils/formatters.js';
+
       const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URL
       const route = useRoute();
       // const phenocode = route.params.phenocode;

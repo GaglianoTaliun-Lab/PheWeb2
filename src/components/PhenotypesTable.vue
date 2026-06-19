@@ -140,7 +140,7 @@
 
       <template v-if="hasAF" v-slot:item.af="{ item }">
         <span style="white-space: nowrap;">
-          {{ item.af }}
+          {{ roundEAF(item.af) }}
         </span>
       </template>
 
@@ -372,6 +372,7 @@
 <script setup>
     import { ref, onMounted, computed, watch, reactive, watchEffect } from 'vue';
     import { STRATIFICATION_CATEGORIES} from '@/config.js'
+    import { formatScientific, roundEAF } from '../utils/formatters.js';
 
     const props = defineProps({
       data: Array,
@@ -383,12 +384,6 @@
     const errorMessage = ref('');
 
     const search = ref('');
-
-    // scientific notation
-    const formatScientific = (num) => {
-      if (!num || isNaN(num)) return 'N/A';  
-      return Number(num).toExponential(2);  
-    };
 
     const getStratificationIcon = (category) => {
       const key = category.toLowerCase();

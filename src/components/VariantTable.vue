@@ -178,7 +178,7 @@
 
         <template v-slot:item.pval="{ item }">
           <v-chip v-if="item.pval !== 'NA'" :color="getColour(item.pval)">
-            {{ formatScientific(item.pval) }}
+            {{ item.pval }}
           </v-chip>
           <span v-else>NA</span> 
         </template>
@@ -190,7 +190,8 @@
   <script setup>
   import { ref, computed } from 'vue';
   import { STRATIFICATION_CATEGORIES } from '@/config.js'
-  
+  import { formatScientific, roundEAF } from '../utils/formatters.js';
+
 //   // Add this function in your script setup
 //   const downloadTable = () => {
 //   // Convert all data to CSV format (using formattedVariantList instead of filteredVariantList)
@@ -327,8 +328,8 @@
             effect_allele: props.effectAllele,
             phenocode: pheno.phenocode,
             ...stratifications,
-            pval: pheno.pval,
-            eaf: pheno.af,
+            pval: formatScientific(pheno.pval),
+            eaf: roundEAF(pheno.af),
             beta_se: pheno.beta > 0
                   ? `${pheno.beta} (${pheno.sebeta}) △`
                   : `${pheno.beta} (${pheno.sebeta}) ▽`,
@@ -391,11 +392,6 @@
     if (pval < 5e-8 && pval !== null) return 'green';
     else if (pval === "NA") return null;
     return '#grey';
-  };
-
-  const formatScientific = (num) => {
-    if (!num || isNaN(num)) return 'NA';  
-    return Number(num).toExponential(2);  
   };
 
   const getStratificationTooltip = (category) => {

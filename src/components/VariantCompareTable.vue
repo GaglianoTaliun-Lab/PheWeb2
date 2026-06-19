@@ -147,7 +147,7 @@
         <template v-slot:item.pval_variant1="{ item }">
           <!-- <span style="white-space: nowrap;">{{ item.pval }}</span> -->
           <v-chip v-if="item.pval_variant1 !== 'NA'" :color="getColour(item.pval_variant1)">
-            {{ formatScientific(item.pval_variant1) }}
+            {{ item.pval_variant1 }}
           </v-chip>
           <span v-else>NA</span>
         </template>
@@ -155,7 +155,7 @@
         <template v-slot:item.pval_variant2="{ item }">
           <!-- <span style="white-space: nowrap;">{{ item.pval }}</span> -->
           <v-chip v-if="item.pval_variant2 !== 'NA'" :color="getColour(item.pval_variant2)">
-            {{ formatScientific(item.pval_variant2) }}
+            {{ item.pval_variant2 }}
           </v-chip>
           <span v-else>NA</span>
         </template>
@@ -170,7 +170,7 @@ import { onMounted } from 'vue';
 import { ref, computed, watch } from 'vue';
 
 import { STRATIFICATION_CATEGORIES } from "@/config.js";
-
+import { formatScientific, roundEAF } from '../utils/formatters.js';
 
 //   // Add this function in your script setup
 //   const downloadTable = () => {
@@ -343,8 +343,8 @@ import { STRATIFICATION_CATEGORIES } from "@/config.js";
                   phenocode: pheno.phenocode,
                   stratification: strat,
                   ...stratFields,
-                  pval: isPvalNegative ? "NA" : pheno.pval,
-                  eaf: isPvalNegative ? "NA" : pheno.af,
+                  pval: isPvalNegative ? "NA" : formatScientific(pheno.pval),
+                  eaf: isPvalNegative ? "NA" : roundEAF(pheno.af),
                   beta_se: isPvalNegative ? "NA" : pheno.beta > 0
                   ? `${pheno.beta} (${pheno.sebeta}) △`
                   : `${pheno.beta} (${pheno.sebeta}) ▽`,
@@ -453,11 +453,6 @@ import { STRATIFICATION_CATEGORIES } from "@/config.js";
     if (pval < 5e-8 && pval !== null) return 'green';
     else if (pval === "NA") return null;
     return '#grey';
-  };
-
-  const formatScientific = (num) => {
-    if (!num || isNaN(num)) return 'NA';  
-    return Number(num).toExponential(2);  
   };
 
   onMounted(() => {
