@@ -7,6 +7,7 @@ import d3Tip from 'd3-tip';
 import _ from 'underscore'
 
 import * as utils from '@/pages/pheno/Pheno.js'
+import { roundEAF } from '../utils/formatters.js';
 
 const point_radius = 2.3;
 
@@ -429,11 +430,12 @@ function create_manhattan_plot(variant_bins, unbinned_variants, variants = "filt
             .on('mouseover', significance_threshold_tooltip.show)
             .on('mouseout', significance_threshold_tooltip.hide);
 
-
         // Points & labels
         var tooltip_template = _.template(
             utils.tooltip_underscoretemplate +
-                "<% if(_.has(d, 'num_significant_in_peak') && d.num_significant_in_peak>1) { %>#significant variants in peak: <%= d.num_significant_in_peak %><br><% } %>");
+                "<% if(_.has(d, 'num_significant_in_peak') && d.num_significant_in_peak>1) { %>#significant variants in peak: <%= d.num_significant_in_peak %><br><% } %>" +
+                "<br>Region Plot: <a href='<%= `${window.location.toString().split('?')[0]}/region/${d.chrom}:${Math.max(0, d.pos - 200 * 1000)}-${d.pos + 200 * 1000}` %>' target='_blank'>View</a>"
+            );
         point_tooltip.value = d3Tip()
             .attr('class', 'd3-tip')
             .html(function(d) {

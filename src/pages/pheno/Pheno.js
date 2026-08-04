@@ -1,5 +1,6 @@
 // This is obviously a huge pain and mess but it works great with d3 so keep for now.
 // If someone wants to do me a favour and make it nicer, feel free.
+
 export const tooltip_underscoretemplate = `
 <% if(_.has(d, 'chrom')) { %><b><%= d.chrom %>:<%= d.pos.toLocaleString() %> <%= d.ref %> / <%= d.alt %></b><br><% } %>
 <% if(_.has(d, 'rsids')) { %><% _.each(_.filter((d.rsids||"").split(",")), function(rsid) { %>rsid: <b><%= rsid %></b><br><% }) %><% } %>
@@ -8,6 +9,8 @@ export const tooltip_underscoretemplate = `
 <% if(_.has(d, 'pval')) { %>P-value: <b><%= d['pval'] %></b><br><% } %>
 <% if(_.has(d, 'beta')) { %>Beta (SE): <b><%= d.beta %></b><% if(_.has(d, "sebeta")){ %> (<b><%= d.sebeta %></b>)<% } %><br><% } %>
 <% if(_.has(d, 'or')) { %>Odds Ratio: <b><%= d['or'] %></b><br><% } %>
+<% if(_.has(d, 'sde_pvalue')) { %>SDE-Pvalue: <b><%= d.sde_pvalue %></b><% if(_.has(d, "sde_pvalue")) %><br><% } %>
+<% if(_.has(d, 'sde_zscore')) { %>SDE-zscore: <b><%= d.sde_zscore %></b><% if(_.has(d, "sde_zscore")) %><br><% } %>
 <% if(_.has(d, 'maf')) { %>MAF: <b><%= d['maf'] %></b><br><% } %>
 <% if(_.has(d, 'af')) { %>AF: <b><%= d['af'] %></b><br><% } %>
 <% if(_.has(d, 'case_af')) { %>AF among cases: <b><%= d['case_af'] %></b><br><% } %>

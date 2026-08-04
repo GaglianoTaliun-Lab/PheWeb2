@@ -56,37 +56,53 @@
             </td>
             <td>
               <!-- af1 -->
-              {{ item.af_pheno1 }}
+              {{ roundEAF(item.af_pheno1) }}
             </td>
             <td v-if="props.selectedStratification2 !== props.selectedStratification1 && props.selectedStratification2 !== 'No stratification'" style="border-right:thin dashed rgba(var(--v-border-color), var(--v-border-opacity));">
               <!-- af2 w/ divider-->
-              {{ item.af_pheno2 }}
+              {{ roundEAF(item.af_pheno2) }}
             </td>
             <td>
               <!-- pval1 -->
               <v-chip v-if="item.pval_pheno1 !== 'NA'" :color="getColour(item.pval_pheno1)">
-                {{ item.pval_pheno1 }}
+                {{ formatScientific(item.pval_pheno1) }}
               </v-chip>
               <span v-else>
-                {{ item.pval_pheno1 }}
+                {{ formatScientific(item.pval_pheno1) }}
               </span>
             </td>
             <td v-if="props.selectedStratification2 !== props.selectedStratification1 && props.selectedStratification2 !== 'No stratification'" style="border-right:thin dashed rgba(var(--v-border-color), var(--v-border-opacity));">
               <!-- pval2 w/ divider -->
               <v-chip v-if="item.pval_pheno2 !== 'NA'" :color="getColour(item.pval_pheno2)" >
-                {{ item.pval_pheno2 }}
+                {{ formatScientific(item.pval_pheno2) }}
               </v-chip>
               <span v-else>
-                {{ item.pval_pheno2 }}
+                {{ formatScientific(item.pval_pheno2) }}
               </span>
             </td>
             <td>
               <!-- effect size1 -->
               {{ item.effect_size_pheno1 }}
             </td>
-            <td v-if="props.selectedStratification2 !== props.selectedStratification1 && props.selectedStratification2 !== 'No stratification'">
+            <td v-if="props.selectedStratification2 !== props.selectedStratification1 && props.selectedStratification2 !== 'No stratification'" style="border-right:thin dashed rgba(var(--v-border-color), var(--v-border-opacity));">
               <!-- effect size2 -->
               {{ item.effect_size_pheno2 }}
+            </td>
+            <td>
+              <!-- sde1 -->
+              {{ item.sde_pheno1.split("|")[0] }}
+              {{ item.sde_pheno1.split("|")[2] }}
+              <v-chip v-if="item.pval_pheno2 !== 'NA'" :color="getColour(item.sde_pheno1.split('|')[1])" >
+                {{ formatScientific(item.sde_pheno1.split("|")[1]) }}
+              </v-chip>
+            </td>
+            <td v-if="props.selectedStratification2 !== props.selectedStratification1 && props.selectedStratification2 !== 'No stratification'">
+              <!-- sde2 -->
+              {{ item.sde_pheno2.split("|")[0] }}
+              {{ item.sde_pheno2.split("|")[2] }}
+              <v-chip v-if="item.pval_pheno2 !== 'NA'" :color="getColour(item.sde_pheno2.split('|')[1])" >
+                {{ formatScientific(item.sde_pheno2.split("|")[1]) }}
+              </v-chip>
             </td>
           </tr>
         </template>
@@ -333,6 +349,38 @@
           </div>
         </template>
 
+        <template v-slot:header.sde="{ column }">
+          <div style="display: flex; align-items: center; justify-content: center; text-align: center;">
+            <span style="white-space: nowrap;">{{ column.title }}</span>
+            <v-tooltip location="top">
+              <template v-slot:activator="{ props }">
+                <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
+              </template>
+              <span style="white-space: normal; max-width: 200px; display: block; word-wrap: break-word;">
+                SDE-ZScore (SDE-P-Value)
+              </span>
+            </v-tooltip>
+          </div>
+        </template>
+
+        <template v-slot:header.sde_pheno1="{ column, isSorted, getSortIcon }">
+          <div style="display: flex; align-items: center;">
+            <span style="white-space: nowrap;">{{ column.title }}</span>
+            <template v-if="isSorted(column)">
+              <v-icon :icon="getSortIcon(column)"></v-icon>
+            </template>
+          </div>
+        </template>
+
+        <template v-slot:header.sde_pheno2="{ column, isSorted, getSortIcon }">
+          <div style="display: flex; align-items: center;">
+            <span style="white-space: nowrap;">{{ column.title }}</span>
+            <template v-if="isSorted(column)">
+              <v-icon :icon="getSortIcon(column)"></v-icon>
+            </template>
+          </div>
+        </template>
+
       </v-data-table>
     </v-col>
     </v-row>
@@ -344,7 +392,8 @@
       import { ref, onMounted, watch, computed } from 'vue';
       import axios from 'axios';
       import { useRoute } from 'vue-router';
-  
+      import { formatScientific, roundEAF } from '../utils/formatters.js';
+
       const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URL
       const route = useRoute();
       // const phenocode = route.params.phenocode;
@@ -431,6 +480,19 @@
           key: 'effect_size',
           sortable: false
         },
+        { 
+          title: 'SDE (P-Value)', 
+          children: [
+            { title: pheno1.value.split('.').slice(-3).join(', ').replace(/\b\w/g, l => l.toUpperCase()), key: 'sde_pheno1' }, 
+            ...(props.selectedStratification2 !== props.selectedStratification1 && props.selectedStratification2 !== "No stratification"
+            ? [
+                { title: pheno2.value.split('.').slice(-3).join(', ').replace(/\b\w/g, l => l.toUpperCase()), key: 'sde_pheno2' }, 
+              ]
+            : [])
+          ],
+          key: 'sde',
+          sortable: false
+        }
       ]);
       
       const headerProps = {
@@ -463,7 +525,10 @@
             nearest_genes: item.nearest_genes ? item.nearest_genes.split(',') : [], 
             effect_size: item.beta > 0
                   ? `${item.beta} (${item.sebeta}) △`
-                  : `${item.beta} (${item.sebeta}) ▽`
+                  : `${item.beta} (${item.sebeta}) ▽`,
+            sde: item.sde_zscore > 0
+                  ? `${item.sde_zscore}|${item.sde_pvalue}|△`
+                  : `${item.sde_zscore}|${item.sde_pvalue}|▽`
           }));
           
           if (props.selectedStratification2 !== "No stratification" && props.selectedStratification2 !== props.selectedStratification1){
@@ -476,7 +541,10 @@
               nearest_genes: item.nearest_genes ? item.nearest_genes.split(',') : [], 
               effect_size: item.beta > 0
                   ? `${item.beta} (${item.sebeta}) △`
-                  : `${item.beta} (${item.sebeta}) ▽`
+                  : `${item.beta} (${item.sebeta}) ▽`,
+              sde: item.sde_zscore > 0
+                  ? `${item.sde_zscore}|${item.sde_pvalue}|△`
+                  : `${item.sde_zscore}|${item.sde_pvalue}|▽`
             }));
           } else {
             variants2.value = variants1.value
@@ -498,6 +566,9 @@
               pval_pheno2: variant2?.pval || "NA",
               effect_size_pheno2: variant2?.effect_size || "NA",
               source: variant2 ? 'both' : 'pheno1',
+              sde_pheno1: variant1.sde || "NA",
+              sde_pheno2: variant2?.sde || "NA",
+
             };
           }).concat(
             variants2.value.filter(variant2 => !variants1.value.some(variant1 => variant1.variantid === variant2.variantid))
@@ -514,6 +585,7 @@
                 pval_pheno2: variant2.pval || "NA",
                 effect_size_pheno2: variant2.effect_size || "NA",
                 source: 'pheno2',
+                sde_pheno2: variant2.sde || "NA",
               }))
           );
 

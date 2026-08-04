@@ -1,6 +1,6 @@
 <script setup>
 import axios from 'axios';
-import { onMounted, ref, onBeforeUnmount } from 'vue';
+import { onMounted, ref, onBeforeUnmount, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import * as d3 from 'd3';
 import d3Tip from 'd3-tip';
@@ -14,8 +14,10 @@ const props = defineProps({
     data: {
         String : {String : Object, String : Object},
         String : {String : Object, String : Object}
-    }
+    },
+    hoverVariant: null,
 });
+window.miamiPlotUtils = {};
 
 const info = ref(null);
 const miamiPlotContainer = ref(null)
@@ -378,7 +380,39 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
             .html('Significance Threshold: 5E-8')
             .offset([-8,0]);
         miami_svg.call(significance_threshold_tooltip);
-
+        
+        // Vertical indication line HX
+        var verticalLine = miami_svg.append("line")
+        .attr("id", "vertical-line")
+        .attr("x1", 0)
+        .attr("x2", 0)
+        .attr("y1", 0)
+        .attr("y2", svg_height)
+        .attr("stroke", "red")
+        .attr("stroke-width", 2)
+        .attr("stroke-dasharray", "4,4")
+        .style("display", "none");
+        
+        function updateVerticalLine(hoverVariant) {
+            if (!hoverVariant || hoverVariant==='None') {
+                verticalLine.style("display", "none");
+                return;
+            }
+            const [chrom, pos] = hoverVariant.split("-").slice(0, 2);
+            const VerticalVariant = { chrom, pos };
+            const genomicPosition = parseInt(pos) + get_chrom_offsets_data1.value().chrom_offsets[chrom];
+            // console.log(parseInt(pos) + get_chrom_offsets_data1.value().chrom_offsets[chrom])  
+            // console.log(x_scale.value(get_genomic_position_data1(VerticalVariant)))
+            // console.log(x_scale.value(parseInt(pos) + get_chrom_offsets_data1.value().chrom_offsets[chrom]))
+            // console.log("Chrom Offsets:", get_chrom_offsets_data1.value().chrom_offsets);
+            verticalLine
+                .attr("x1", x_scale.value(genomicPosition))
+                // .attr("x1", x_scale.value(get_genomic_position_data2(VerticalVariant)))
+                .attr("x2", x_scale.value(genomicPosition))
+                .style("display", "block")
+                .attr("transform", utils.fmt("translate({0},{1})", plot_margin.left, plot_margin.top));
+        }
+        window.miamiPlotUtils.updateVerticalLine = updateVerticalLine;
 
         // default to data1 if its available.
         if (variant_bins1 != null){
@@ -623,10 +657,8 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
         // Points & labels
         var tooltip_template = _.template(
             utils.tooltip_underscoretemplate +
-            "<% if(_.has(d, 'num_significant_in_peak') && d.num_significant_in_peak>1) { %>#significant variants in peak: <%= d.num_significant_in_peak %><br><% } %>" //+
-    
-            // add link
-            // "<br>Region Plot: <a href='<%= `${window.location.toString().split('?')[0]}/region/${d.chrom}:${Math.max(0, d.pos - 200 * 1000)}-${d.pos + 200 * 1000}` %>' target='_blank'>View</a>"
+            "<% if(_.has(d, 'num_significant_in_peak') && d.num_significant_in_peak>1) { %>#significant variants in peak: <%= d.num_significant_in_peak %><br><% } %>" +
+            "<br>Region Plot: <a href='<%= `${window.location.toString().split('?')[0]}/region/${d.chrom}:${Math.max(0, d.pos - 200 * 1000)}-${d.pos + 200 * 1000}` %>' target='_blank'>View</a>"
         );
 
             point_tooltip.value = d3Tip()
@@ -1328,6 +1360,14 @@ function reset_for_miami_plot() {
     </svg>
     `
 }
+
+
+watch(
+    () => props.hoverVariant,
+    (newHoverVariant) => {
+        window.miamiPlotUtils.updateVerticalLine(newHoverVariant);
+    }
+);
 
 </script>
 
