@@ -759,7 +759,7 @@ const downloadCurrent = async () => {
 
 const populateDataPreview = () => {
   try {
-    var link = "https://datapreview.clsa-elcv.ca/mica/variable/com%3A"+phenocode+"%3ACollected#/"
+    var link = "https://datapreview.clsa-elcv.ca/variable/com:" + phenocode + ":Collected"
     // just checking if it's working
     //axios.get(link);
     linkUrl.value = link;
