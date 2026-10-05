@@ -1,9 +1,10 @@
 <script setup>
 import LocusZoom from 'locuszoom';
+import { parseFields } from 'locuszoom/esm/helpers/display';
 import 'locuszoom/dist/locuszoom.css';
 import * as d3 from 'd3'
 import _ from 'underscore'
-import { onMounted, ref, watch} from 'vue';
+import { onMounted, ref, watch, nextTick } from 'vue';
 import { useRoute } from 'vue-router';
 import axios from 'axios';
 import * as utils from '@/pages/variant/Variant.js'
@@ -29,6 +30,14 @@ const isLoading = ref(true);
 
 const plot = ref(null)
 const data = ref(null)
+const xAxisTicks = ref([])
+const categoryTooltip = ref({ visible: false, html: '', left: 0, top: 0, arrowLeft: 8 })
+const categoryTooltipEl = ref(null)
+const categoryTooltipLayout = custom_LocusZoom_Layouts_get('data_layer', 'phewas_pvalues', {
+    "tooltip.closable": false,
+    "tooltip.html": ("<div><strong style='color:{{color}}'>{{category_name}}</strong></div>\n" +
+                    "<div>{{n_phenos}} phenotypes</div>"),
+}).tooltip
 const route = useRoute();
 const variantCode = route.params.variant_id;
 
@@ -157,7 +166,7 @@ function generatePlot(variant_list){
         JSON.parse(JSON.stringify(global_unique_categories))
     );
 
-    const gap = 500;
+    const gap = 5;
 
     var categories_position_map = [...new Set(variant_list.flatMap(v => v.phenos.map(p => p.category)))];
 
@@ -353,14 +362,19 @@ function generatePlot(variant_list){
     });
 
     // add x axis labels to last panel
+    const last_phenos = variant_list[panel_list.length -1].phenos
     panel_list[panel_list.length -1]["axes"]["x"]["ticks"] = first_of_each_category_list[panel_list.length -1].map(function(pheno) {
                     return {
                         style: {fill: pheno.color, "font-size":"11px", "font-weight":"bold", "text-anchor":"start"},
                         transform: "translate(15, 0) rotate(50)",
-                        text: pheno.category,
+                        text: pheno.category.length > 17 ? pheno.category.slice(0, 14) + "..." : pheno.category,
+                        category_name: pheno.category,
+                        color: pheno.color,
+                        n_phenos: last_phenos.filter(p => p.category === pheno.category).length,
                         x: global_category_offset[pheno.category] + pheno.idx
                     };
                 })
+    xAxisTicks.value = panel_list[panel_list.length -1]["axes"]["x"]["ticks"]
 
     panel_list[panel_list.length -1]['margin']['bottom'] = 100
     panel_list[panel_list.length -1]['height'] += 100
@@ -420,6 +434,45 @@ onMounted(async () => {
     
 });
 
+// ---------- Category Tooltip ----------
+const TOOLTIP_ARROW_OFFSET = 15;
+
+async function onTickHover(event) {
+    const textEl = event.target.closest('g.tick text');
+    const axisEl = textEl?.closest('g[id$="x_axis"]');
+    if (!axisEl) { return; }
+
+    const tickEls = Array.from(axisEl.querySelectorAll('g.tick'));
+    const tick = xAxisTicks.value[tickEls.indexOf(textEl.parentNode)];
+    if (!tick || tick.text !== textEl.textContent) { return; }
+
+    const containerEl = event.currentTarget;
+    const containerRect = containerEl.getBoundingClientRect();
+    const textRect = textEl.getBoundingClientRect();
+    const anchorX = textRect.left - containerRect.left;
+    categoryTooltip.value = {
+        visible: true,
+        html: parseFields(categoryTooltipLayout.html, tick),
+        left: anchorX - TOOLTIP_ARROW_OFFSET,
+        top: textRect.top - containerRect.top,
+        arrowLeft: TOOLTIP_ARROW_OFFSET - 7,
+    };
+
+    // ----- Keep tooltip inside the plot horizontally -----
+    await nextTick();
+    if (!categoryTooltipEl.value) { return; }
+    const maxLeft = containerEl.clientWidth - categoryTooltipEl.value.offsetWidth;
+    const left = Math.max(0, Math.min(anchorX - TOOLTIP_ARROW_OFFSET, maxLeft));
+    categoryTooltip.value.left = left;
+    categoryTooltip.value.arrowLeft = anchorX - left - 7;
+}
+
+function onTickLeave(event) {
+    if (event.target.closest('g.tick text')) {
+        categoryTooltip.value.visible = false;
+    }
+}
+
 function sanitizeId(str) {
   return String(str)
     .trim()
@@ -433,5 +486,38 @@ function sanitizeId(str) {
 <template>
     <IsLoading v-if="isLoading" :loadingText="'Loading ' + stratification.split('.').join(', ') + ' stratification...'" class="my-5" />
     <IsFailing v-if="isFailedPlotting" :isLoading="isLoading" :isFailed="isFailedPlotting" class="mt-10 mb-5"/>
-    <div :id="sanitizeId(props.stratification)"></div>
+    
+    <!-- X ticks hovering panel-->
+    <div class="phewas-plot-container" @mouseover="onTickHover" @mouseout="onTickLeave">
+        <div :id="sanitizeId(props.stratification)"></div>
+        <div
+            v-if="categoryTooltip.visible"
+            ref="categoryTooltipEl"
+            class="lz-data_layer-tooltip category-tooltip"
+            :style="{ left: categoryTooltip.left + 'px', top: categoryTooltip.top + 'px' }"
+        >
+            <div v-html="categoryTooltip.html"></div>
+            <div class="lz-data_layer-tooltip-arrow_down category-tooltip-arrow" :style="{ left: categoryTooltip.arrowLeft + 'px' }"></div>
+        </div>
+    </div>
+
 </template>
+
+<style scoped>
+/* ---------- Category Tooltip ---------- */
+.phewas-plot-container {
+    position: relative;
+}
+
+.category-tooltip {
+    transform: translateY(calc(-100% - 8px));
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.category-tooltip-arrow {
+    position: absolute;
+    top: 100%;
+}
+</style>

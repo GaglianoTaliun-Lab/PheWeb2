@@ -169,7 +169,8 @@
                             Phenotypes with equal or more than 10 cases and 500 controls were included (counts based on european participants).
                         </li>
                     </ol>
-                    <p>As a result, the final count of binary phenotypes was 533 for the combined dataset, 536 for females, and 536 for males.</p>
+                    <p>We adjusted case and control counts based on CLSA variables' cross references.</p>
+                    <p>As a result, the final count of binary phenotypes was 519 where 511 specific to the sex combined dataset, 486 for females, and 488 for males.</p>
                     <br>
                     <v-card class="pa-4">
                         <span>
