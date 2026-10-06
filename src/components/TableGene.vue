@@ -203,9 +203,7 @@
       <template v-slot:item.num_samples="{ item }">
         <span>
           {{
-            item.num_controls !== "" && item.num_cases !== ""
-              ? `${item.num_cases} + ${item.num_controls}`
-              : item.num_samples
+           getItemSampleSize(item)
           }}
         </span>
       </template>
@@ -265,6 +263,7 @@
   import { ref, onMounted, watch, computed, reactive, watchEffect } from 'vue';
   import axios from 'axios';
   import { STRATIFICATION_CATEGORIES } from '@/config.js';
+  import {getItemSampleSize} from '../utils/formatters.js';
 
   const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URL
   const phenotypes = ref([]);

@@ -190,45 +190,7 @@
   <script setup>
   import { ref, computed } from 'vue';
   import { STRATIFICATION_CATEGORIES } from '@/config.js'
-  import { formatScientific, roundEAF } from '../utils/formatters.js';
-
-//   // Add this function in your script setup
-//   const downloadTable = () => {
-//   // Convert all data to CSV format (using formattedVariantList instead of filteredVariantList)
-//   const headers = [
-//     'Category',
-//     'Phenotype',
-//     'Sex',
-//     'Ancestry',
-//     'P-value',
-//     'Effect Size (se)',
-//     'Number of Samples'
-//   ];
-  
-//   const csvContent = [
-//     headers.join(','),
-//     ...formattedVariantList.value.map(item => [
-//       item.category,
-//       item.phenostring,
-//       item.sex,
-//       item.ancestry,
-//       item.pval,
-//       item.beta_se,
-//       item.num_samples
-//     ].join(','))
-//   ].join('\n');
-
-//   // Create and trigger download
-//   const blob = new Blob([csvContent], { type: 'text/csv' });
-//   const url = window.URL.createObjectURL(blob);
-//   const link = document.createElement('a');
-//   link.href = url;
-//   link.setAttribute('download', 'variant_data.csv');
-//   document.body.appendChild(link);
-//   link.click();
-//   document.body.removeChild(link);
-//   window.URL.revokeObjectURL(url);
-// };  
+  import { formatScientific, roundEAF,  getItemSampleSize} from '../utils/formatters.js';
 
   const props = defineProps({
     selectedStratifications: Object,
@@ -333,9 +295,9 @@
             beta_se: pheno.beta > 0
                   ? `${pheno.beta} (${pheno.sebeta}) △`
                   : `${pheno.beta} (${pheno.sebeta}) ▽`,
-            num_samples: pheno.num_samples,
-            cases: pheno.num_cases,
-            controls: pheno.num_controls,
+            num_samples: getItemSampleSize(pheno.num_samples),
+            cases: new Intl.NumberFormat('en-US').format(pheno.num_cases),
+            controls: new Intl.NumberFormat('en-US').format(pheno.num_controls),
           };
         });
     });

@@ -123,9 +123,7 @@
       <template v-slot:item.num_samples="{ item }">
         <span>
           {{
-            item.num_controls !== "" && item.num_cases !== ""
-              ? `${item.num_cases} + ${item.num_controls}`
-              : item.num_samples
+            getItemSampleSize(item)
           }}
         </span>
       </template>
@@ -372,7 +370,7 @@
 <script setup>
     import { ref, onMounted, computed, watch, reactive, watchEffect } from 'vue';
     import { STRATIFICATION_CATEGORIES} from '@/config.js'
-    import { formatScientific, roundEAF } from '../utils/formatters.js';
+    import { formatScientific, roundEAF, getItemSampleSize } from '../utils/formatters.js';
 
     const props = defineProps({
       data: Array,
@@ -576,7 +574,6 @@
       filteredGene.value = '';
       menu2.value = false;
     };
-
 
     // maybe consider receiving the filtering options through API
     // since there will be a lot of data for the final table

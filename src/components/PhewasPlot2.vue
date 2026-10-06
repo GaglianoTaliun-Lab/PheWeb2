@@ -10,6 +10,7 @@ import axios from 'axios';
 import * as utils from '@/pages/variant/Variant.js'
 import IsLoading from '@/components/IsLoading.vue';
 import IsFailing from '@/components/IsFailing.vue';
+import { getItemSampleSize } from '../utils/formatters.js';
 
 const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URL;
 
@@ -266,6 +267,7 @@ function generatePlot(variant_list){
             d.phewas_string = (d.phenostring || d.phenocode);
             d.category_name = d.category;
             d.color = color_by_category_all(d.category);
+            d.sample_size = getItemSampleSize(d);
             d.idx = i;
         });
     });
@@ -338,7 +340,9 @@ function generatePlot(variant_list){
                         "tooltip.closable": false,
                         "tooltip.html": ("<div><strong>{{phewas_string}}</strong></div>\n" +
                                           "<div><strong style='color:{{color}}'>{{category_name}}</strong></div>\n" +
-                                          utils.lz_template + "<br>" + 
+                                          utils.lz_template +
+                                          "Sample size: <strong>{{sample_size}}</strong><br>" +
+                                          "<br>" + 
                                           "<a href=\"" + window.location.origin + "/phenotypes/{{phewas_code}}\"" + ">Go to Pheno Page</a>"),
                         // Show labels that are: in the top 10, and (by neglog10) >=75% of sig threshold, and >=25% of best
                         "label.text": "{{phewas_string}}",

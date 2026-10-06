@@ -39,3 +39,18 @@ export function roundEAF(eaf) {
 
   return eaf_round;
 }
+
+export function getItemSampleSize(item) {
+
+  let sample_size = new Intl.NumberFormat('en-US').format( item.num_samples )
+
+  if (item.num_controls !== "" && item.num_cases !== "") {
+    let cases = new Intl.NumberFormat('en-US').format( item.num_cases );
+    let controls = new Intl.NumberFormat('en-US').format( item.num_controls );
+
+    sample_size = `${cases} + ${controls}`
+
+  }
+
+  return sample_size
+};

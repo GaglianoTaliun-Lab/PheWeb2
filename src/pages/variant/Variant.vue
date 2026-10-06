@@ -305,6 +305,8 @@ import { useRoute } from 'vue-router';
 
 import { maf_range, keyToLabel } from './Variant.js';
 
+import {getItemSampleSize } from '../../utils/formatters.js';
+
 import Navbar from '@/components/Navbar.vue';
 import PhewasPlot from '@/components/PhewasPlot.vue';
 import PhewasPlot2 from '@/components/PhewasPlot2.vue';

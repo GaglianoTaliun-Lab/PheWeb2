@@ -170,7 +170,7 @@ import { onMounted } from 'vue';
 import { ref, computed, watch } from 'vue';
 
 import { STRATIFICATION_CATEGORIES } from "@/config.js";
-import { formatScientific, roundEAF } from '../utils/formatters.js';
+import { formatScientific, roundEAF, getItemSampleSize } from '../utils/formatters.js';
 
 //   // Add this function in your script setup
 //   const downloadTable = () => {
@@ -348,9 +348,9 @@ import { formatScientific, roundEAF } from '../utils/formatters.js';
                   beta_se: isPvalNegative ? "NA" : pheno.beta > 0
                   ? `${pheno.beta} (${pheno.sebeta}) △`
                   : `${pheno.beta} (${pheno.sebeta}) ▽`,
-                  num_samples: isPvalNegative ? "NA" : pheno.num_samples,
-                  cases: isPvalNegative ? "NA" : pheno.num_cases,
-                  controls: isPvalNegative ? "NA" : pheno.num_controls
+                  num_samples: isPvalNegative ? "NA" : getItemSampleSize(pheno),
+                  cases: isPvalNegative ? "NA" : new Intl.NumberFormat('en-US').format( pheno.num_cases ),
+                  controls: isPvalNegative ? "NA" : new Intl.NumberFormat('en-US').format( pheno.num_controls)
               };
           })
     });

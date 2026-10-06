@@ -13,10 +13,7 @@ export var lz_template = `{{#if rsid}}<strong>{{rsid}}</strong><br>{{/if}}\n
 {{#if control_af}}AF among controls: <strong>{{control_af|percent}}</strong><br>{{/if}}\n
 {{#if ac}}AC: <strong>{{ac}}</strong><br>{{/if}}\n
 {{#if r2}}R2: <strong>{{r2}}</strong><br>{{/if}}\n
-{{#if tstat}}Tstat: <strong>{{tstat}}</strong><br>{{/if}}\n
-{{#if num_cases}}#cases: <strong>{{num_cases}}</strong><br>{{/if}}\n
-{{#if num_controls}}#controls: <strong>{{num_controls}}</strong><br>{{/if}}\n
-{{#if num_samples}}#samples: <strong>{{num_samples}}</strong><br>{{/if}}\n`
+{{#if tstat}}Tstat: <strong>{{tstat}}</strong><br>{{/if}}\n`
 
 function two_digit_format(x) { return (x>=.1)? x.toFixed(2) : (x>=.01)? x.toFixed(3) : x.toExponential(1); }
 
