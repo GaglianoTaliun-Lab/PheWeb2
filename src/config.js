@@ -3,7 +3,7 @@ export const VITE_APP_TITLE="Canadian Longitudinal Study on Aging PheWeb"
 export const VITE_APP_SUBTITLE1="Powered by PheWeb2"
 
 // Set the date of the release, which is displayed in the footer of each page
-export const VITE_APP_DATE = "2025-08"
+export const VITE_APP_DATE = "2026-10"
 
 // This sets the default GWAS stratification to display on the Miami plot
 export const PRIORITY_STRATIFICATIONS = ["european.male", "european.female"]

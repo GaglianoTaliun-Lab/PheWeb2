@@ -54,7 +54,7 @@
               </span>
             </a>,
             <a
-              :href="`https://useast.ensembl.org/Homo_sapiens/Location/Variant/Table?r=${variant_basic_info.chrom}:${variant_basic_info.pos}-${variant_basic_info.pos}`"
+              :href="`https://www.ensembl.org/genome-browser/GCA_000001405.29?focus=variant:${variant_basic_info.chrom}:${variant_basic_info.pos}:${rsid}&location=${variant_basic_info.chrom}:${variant_basic_info.pos}-${variant_basic_info.pos}`"
               target="_blank"
               rel="noopener noreferrer"
               class="variant-link"
@@ -65,7 +65,7 @@
               </span>
             </a>,
             <a
-              :href="`https://genetics.opentargets.org/Variant/${variant_basic_info.chrom}_${variant_basic_info.pos}_${variant_basic_info.ref}_${variant_basic_info.alt}/associations`"
+              :href="`https://platform.opentargets.org/Variant/${variant_basic_info.chrom}_${variant_basic_info.pos}_${variant_basic_info.ref}_${variant_basic_info.alt}/associations`"
               target="_blank"
               rel="noopener noreferrer"
               class="variant-link"
@@ -480,7 +480,7 @@ async function fetchPhewasPlottingData(stratification_list) {
 
 const variantCodeToLabel = (variantCode) => {
   var label_list = variantCode.split("-")
-  var returned_label = label_list[0] + ": " + new Intl.NumberFormat('en-US', { maximumSignificantDigits: 3 }).format(label_list[1]) + " " + label_list[2] + "/" + label_list[3]
+  var returned_label = label_list[0] + ": " + label_list[1] + " " + label_list[2] + "/" + label_list[3]
 
   if (rsids.value && rsids.value.length === 1){
     returned_label = returned_label + " (" + rsids.value + ")"
@@ -671,6 +671,7 @@ const downloadTable = () => {
 
 .dropdown-menu label {
   display: block;
+  white-space: nowrap;
 }
 
 .dropdown-menu-right a {

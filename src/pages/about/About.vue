@@ -166,11 +166,11 @@
                         <li>Only phenotypes with 2 unique values (0, 1) or (1, 2) were retained.</li>
                         <li>Only phenotypes with GWAS relevance were kept.</li>
                         <li>
-                            Phenotypes with equal or more than 10 cases and 500 controls were included (counts based on european participants).
+                            Phenotypes with greater or equal than 10 cases and 500 controls were included (counts based on participants of European-like genetic ancestry)..
                         </li>
                     </ol>
-                    <p>We adjusted case and control counts based on CLSA variables' cross references.</p>
-                    <p>As a result, the final count of binary phenotypes was 519 where 511 specific to the sex combined dataset, 486 for females, and 488 for males.</p>
+                    <p>We adjusted case and control counts to account for dependencies between CLSA variables.</p>
+                    <p>As a result, the final count of binary phenotypes was 511 for the combined dataset, 486 for females, and 488 for males.</p>
                     <br>
                     <v-card class="pa-4">
                         <span>
