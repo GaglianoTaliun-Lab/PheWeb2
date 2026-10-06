@@ -1,7 +1,7 @@
 // This is obviously a huge pain and mess but it works great with d3 so keep for now.
 // If someone wants to do me a favour and make it nicer, feel free.
 export const tooltip_underscoretemplate = `
-<% if(_.has(d, 'chrom')) { %><b><%= d.chrom %>:<%= d.pos.toLocaleString() %> <%= d.ref %> / <%= d.alt %></b><br><% } %>
+<% if(_.has(d, 'chrom')) { %><b><%= d.chrom %>:<%= d.pos %> <%= d.ref %> / <%= d.alt %></b><br><% } %>
 <% if(_.has(d, 'rsids')) { %><% _.each(_.filter((d.rsids||"").split(",")), function(rsid) { %>rsid: <b><%= rsid %></b><br><% }) %><% } %>
 <% if(_.has(d, 'nearest_genes')) { %>nearest gene<%= _.contains(d.nearest_genes, ",")? "s":"" %>: <b><%= d.nearest_genes %></b><br><% } %>
 <% if(_.has(d, 'consequence')) { %>consequence: <b><%= d['consequence'] %></b><br><% } %>
