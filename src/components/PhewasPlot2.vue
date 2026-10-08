@@ -81,6 +81,45 @@ function custom_LocusZoom_Layouts_get(layout_type, layout_name, customizations) 
     return layout;
 }
 
+// ---------- Download ----------
+const LABELLED_PANEL_MARGIN_BOTTOM = 150;
+const DOWNLOAD_MARGIN_BOTTOM = 400;
+const DOWNLOAD_EXTRA_MARGIN_RIGHT = 200;
+
+// lay out panels flagged with `download_margin` with these margins while `generate` runs, then restore them
+function withDownloadLayout(plot, generate) {
+    const panels = Object.values(plot.panels).filter(panel => panel.layout.download_margin);
+    const saved = panels.map(panel => ({ height: panel.layout.height, margin: { ...panel.layout.margin } }));
+
+    panels.forEach(panel => {
+        const { bottom, extra_right } = panel.layout.download_margin;
+        panel.layout.height += bottom - panel.layout.margin.bottom;
+        panel.layout.margin.bottom = bottom;
+        panel.layout.margin.right += extra_right;
+    });
+    plot.positionPanels();
+
+    try {
+        return generate();
+    } finally {
+        panels.forEach((panel, i) => {
+            panel.layout.height = saved[i].height;
+            Object.assign(panel.layout.margin, saved[i].margin);
+        });
+        plot.positionPanels();
+    }
+}
+
+// SVG download button that exports the plot with the download layout
+if (!LocusZoom.Widgets._items.has('download_expanded')) {
+    class DownloadExpanded extends LocusZoom.Widgets.get('download') {
+        _generateSVG() {
+            return withDownloadLayout(this.parent_plot, () => super._generateSVG());
+        }
+    }
+    LocusZoom.Widgets._items.set('download_expanded', DownloadExpanded);
+}
+
 function reorderListByValues(dictList, orderedValues, key ) {
     const dictMap = dictList.reduce((map, obj) => {
         map[obj[key]] = obj;
@@ -282,7 +321,7 @@ function generatePlot(variant_list){
                                 color: 'red',
                                 suppress_confirm : 'false'
                         },
-                        {type: "download", position: "right"},
+                        {type: "download_expanded", position: "right"},
                         {type: "download_png", position: "right"},
                     ]
                 },
@@ -368,8 +407,9 @@ function generatePlot(variant_list){
                 })
     xAxisTicks.value = panel_list[panel_list.length -1]["axes"]["x"]["ticks"]
 
-    panel_list[panel_list.length -1]['margin']['bottom'] = 150
-    panel_list[panel_list.length -1]['height'] += 150
+    panel_list[panel_list.length -1]['margin']['bottom'] = LABELLED_PANEL_MARGIN_BOTTOM
+    panel_list[panel_list.length -1]['height'] += LABELLED_PANEL_MARGIN_BOTTOM
+    panel_list[panel_list.length -1]['download_margin'] = { bottom: DOWNLOAD_MARGIN_BOTTOM, extra_right: DOWNLOAD_EXTRA_MARGIN_RIGHT }
 
     var layout = {
         state: {
