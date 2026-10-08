@@ -5,8 +5,20 @@ export const VITE_APP_SUBTITLE1="Powered by PheWeb2"
 // Set the date of the release, which is displayed in the footer of each page
 export const VITE_APP_DATE = "2026-10"
 
-// This sets the default GWAS stratification to display on the Miami plot
-export const PRIORITY_STRATIFICATIONS = ["european.male", "european.female"]
+// This sets the default GWAS stratification to display on the PheWas plot
+export const PRIORITY_STRATIFICATIONS = ["all.combined", "european.combined"]
+
+// This sets the default GWAS stratification combinations to display on the Miami plot
+export const PRIORITY_STRATIFICATIONS_COMBINATIONS = {
+    "all.combined" : "european.combined",
+    "european.combined" : "all.combined",
+
+    "all.female" : "all.male",
+    "european.female" : "european.male",
+
+    "all.male" : "all.female",
+    "european.male" : "european.female",
+}
 
 // Set the Human Genome version number, which will be used to query UCSC data
 export const HG_BUILD_NUMBER = "38";

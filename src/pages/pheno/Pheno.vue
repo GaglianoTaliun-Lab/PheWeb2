@@ -303,7 +303,7 @@ import InteractionMiamiPlot from '@/components/InteractionMiamiPlot.vue'
 import InteractionTable from '@/components/InteractionTable.vue';
 import IsFailing from '@/components/IsFailing.vue';
 import IsLoading from '@/components/IsLoading.vue';
-import { ENABLE_INTERACTION_MODE } from '@/config.js';
+import { ENABLE_INTERACTION_MODE,  PRIORITY_STRATIFICATIONS_COMBINATIONS } from '@/config.js';
 
 import * as functions from './Pheno.js';
 
@@ -404,9 +404,18 @@ onMounted(async () => {
       // TODO: could likely improve speed here
       var strats = chooseDefaultPhenos(info.value, url_query)
 
-      selectedStratification1.value = strats[0].phenocode +returnInteractionSuffix(strats[0]) + returnStratificationSuffix(strats[0])
-      selectedStratification2.value = strats[1] ? strats[1].phenocode + returnInteractionSuffix(strats[1]) + returnStratificationSuffix(strats[1]): "No stratification"
+      const strat1Suffix = returnStratificationSuffix(strats[0]);
 
+      selectedStratification1.value = strats[0].phenocode + strat1Suffix;
+
+      if (!strats?.[1]) {
+        selectedStratification2.value = "No stratification"
+      }
+      else if (Object.keys(PRIORITY_STRATIFICATIONS_COMBINATIONS).length > 0) {
+        selectedStratification2.value = strats[1].phenocode + "." + PRIORITY_STRATIFICATIONS_COMBINATIONS[strat1Suffix.slice(1,strat1Suffix.length)]
+      } else {
+        selectedStratification2.value = strats[1].phenocode + returnInteractionSuffix(strats[1]) + returnStratificationSuffix(strats[1])
+      }
 
       // just take the first instance...they will all be the same
       phenostring.value = info.value[0].phenostring.replace(/\uFFFD/g, "'")
