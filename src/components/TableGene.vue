@@ -22,6 +22,7 @@
             <v-autocomplete
               v-model="selectedPhenotype"
               :items="phenotypeOptions"
+              :filter-keys="['title', 'value']"
               label="Select/Type a phenotype"
               prepend-icon="mdi-heart-pulse"
               class="ma-2 pa-2"
@@ -189,7 +190,7 @@
       <template v-slot:header.num_samples="{ column, isSorted, getSortIcon, }">
         <div style="display: flex; align-items: center;">
           <span style="white-space: nowrap;">{{ column.title }}</span>
-          <v-tooltip text="Number of samples with non-missing data" location="top">
+          <v-tooltip text="Number of samples with non-missing data or cases + controls" location="top">
             <template v-slot:activator="{ props }">
               <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
             </template>
@@ -372,17 +373,24 @@
   });
 
   const selectedPhenotype = ref();
-  const phenotypeOptions = computed(() => {
-    if (selectedCategory.value && selectedCategory.value !== 'All results' ) {
-      const phenos = phenotypes.value
-        .filter(item => item.category === selectedCategory.value)
-        .map(item => item.phenostring);
-      return ['All results', ...[...new Set(phenos)].sort((a, b) => a.localeCompare(b))];
-    }
+    const phenotypeOptions = computed(() => {
+      const items = (selectedCategory.value && selectedCategory.value !== 'All results')
+        ? phenotypes.value.filter(item => item.category === selectedCategory.value)
+        : phenotypes.value;
 
-    const phenos = phenotypes.value.map(item => item.phenostring);
-    return ['All results', ...[...new Set(phenos)].sort((a, b) => a.localeCompare(b))];
-  });
+      // one option per phenocode, displayed as phenostring, searchable by phenostring or phenocode
+      const phenos = new Map();
+      items.forEach(item => {
+        if (!phenos.has(item.phenocode)) {
+          phenos.set(item.phenocode, { title: `${item.phenostring}`, value: item.phenocode });
+        }
+      });
+
+      return [
+        { title: 'All results', value: 'All results' },
+        ...[...phenos.values()].sort((a, b) => a.title.localeCompare(b.title)),
+      ];
+    });
 
   const filteredPhenotypes = computed(() => {
     return phenotypes.value.filter(item => {

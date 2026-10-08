@@ -121,7 +121,7 @@
                 <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
               </template>
               <span style="white-space: normal;">
-                Number of samples with non-missing data
+                Number of samples with non-missing data or cases + controls
               </span>
             </v-tooltip>
             <template v-if="isSorted(column)">

@@ -68,6 +68,26 @@ const selectType = (type) => {
   selectedType.value = type;
 };
 
+const changeMaxFreq = () => {
+
+    if (maxFreq.value > 0.5) {
+        maxFreq.value = 0.5
+    } else if (maxFreq.value < minFreq.value) {
+        maxFreq.value = minFreq.value
+    }
+
+}
+
+const changeMinFreq = () => {
+
+    if (minFreq.value < 0) {
+        minFreq.value = 0
+    } else if (minFreq.value > maxFreq.value) {
+        minFreq.value = maxFreq.value
+    }
+
+}
+
 const createMiamis = (option) => {
     var keys = Object.keys(info.value)
 
@@ -1557,8 +1577,9 @@ watch(
                   class="form-control form-control-sm mr-1"
                   style="width:70px; border: 1px solid black; color: black; font-size: 16px;"
                   :min="0"
-                  :max="0.5"
+                  :max="maxFreq"
                   :step="0.05"
+                  @change="changeMinFreq()"
                 />
                 <span class="mr-1">-</span>
                 <input
@@ -1566,9 +1587,10 @@ watch(
                   v-model="maxFreq"
                   class="form-control form-control-sm mr-3"
                   style="width:70px; border: 1px solid black; color: black; font-size: 16px;"
-                  :min="0"
+                  :min="minFreq"
                   :max="0.5"
                   :step="0.05"
+                  @change="changeMaxFreq()"
                 />
 
                 <div class="btn-group mr-2">

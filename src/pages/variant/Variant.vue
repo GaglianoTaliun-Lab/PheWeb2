@@ -54,7 +54,7 @@
               </span>
             </a>,
             <a
-              :href="`https://www.ensembl.org/genome-browser/GCA_000001405.29?focus=variant:${variant_basic_info.chrom}:${variant_basic_info.pos}:${rsid}&location=${variant_basic_info.chrom}:${variant_basic_info.pos}-${variant_basic_info.pos}`"
+              :href="`https://www.ensembl.org/genome-browser/GCA_000001405.29?focus=variant:${variant_basic_info.chrom}:${variant_basic_info.pos}:${rsids}&location=${variant_basic_info.chrom}:${variant_basic_info.pos}-${variant_basic_info.pos}`"
               target="_blank"
               rel="noopener noreferrer"
               class="variant-link"
@@ -336,7 +336,7 @@ const variant = ref(null);
 const variant_basic_info = computed(() => {
   return {
     chrom: variantCode.split("-")[0],
-    pos: variantCode.split("-")[1],
+    pos: Number(variantCode.split("-")[1]),
     ref: variantCode.split("-")[2],
     alt: variantCode.split("-")[3],
   }
@@ -396,6 +396,14 @@ onMounted(async () => {
   try {
     const response_rsid = await axios.get(`${api}/variant/rsid/${variantCode}`);
     rsids.value = response_rsid.data.rsid;
+
+    let rsid_link = "";
+
+    // if (rsids.value && rsids.value.length === 1){
+    //   rsid_link = rsids.value
+    // } else if ( rsids.value && rsids.value.length > 1) {
+    //   rsid_link = rsids.value[]
+    // }
 
     const response_nearest_genes = await axios.get(`${api}/variant/nearest_genes/${variantCode}`);
     nearest_genes.value = response_nearest_genes.data.nearest_genes;

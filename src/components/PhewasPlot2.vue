@@ -371,7 +371,7 @@ function generatePlot(variant_list){
                     return {
                         style: {fill: pheno.color, "font-size":"11px", "font-weight":"bold", "text-anchor":"start"},
                         transform: "translate(15, 0) rotate(50)",
-                        text: pheno.category.length > 17 ? pheno.category.slice(0, 14) + "..." : pheno.category,
+                        text: pheno.category,
                         category_name: pheno.category,
                         color: pheno.color,
                         n_phenos: last_phenos.filter(p => p.category === pheno.category).length,
@@ -380,8 +380,8 @@ function generatePlot(variant_list){
                 })
     xAxisTicks.value = panel_list[panel_list.length -1]["axes"]["x"]["ticks"]
 
-    panel_list[panel_list.length -1]['margin']['bottom'] = 100
-    panel_list[panel_list.length -1]['height'] += 100
+    panel_list[panel_list.length -1]['margin']['bottom'] = 150
+    panel_list[panel_list.length -1]['height'] += 150
 
     var layout = {
         state: {
