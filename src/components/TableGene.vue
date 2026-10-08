@@ -70,11 +70,13 @@
     <v-data-table
       elevation="5"
       v-model="selectedItems"
+      height=500
+      fixed-header 
       :loading="isLoading"
       :headers="headers"
       :items="filteredPhenotypes"
       item-value="phenocode"
-      :items-per-page="4"
+      :items-per-page="25"
       :sort-by="sortBy"
       must-sort
       density="default"

@@ -471,8 +471,26 @@ const getLayout = () => {
     });
 }
 
+// LD reference variant currently displayed by an association panel
+const getPanelLDRefvar = (panelId) => {
+    const layer = plot.value.panels[panelId]?.data_layers?.associationpvaluescatalog;
+    const refvar = layer?.data?.find(d => d['ld:isrefvar']);
+    return refvar ? refvar[layer.layout.id_field] : null;
+}
+
 const addNewPanel = () => {
     getPhenoData();
+
+    // added panels use the LD reference variant of the first stratification already displayed
+    if (!plot.value.state.ldrefvar) {
+        const firstPanelId = plot.value.panel_ids_by_y_index.find(id =>
+            data_sources_new.value.has(id) && phenocode_list.value.includes(id));
+        const refvar = firstPanelId ? getPanelLDRefvar(firstPanelId) : null;
+        if (refvar) {
+            plot.value.state.ldrefvar = refvar;
+        }
+    }
+
     phenocode_list.value.forEach(function (phenocode, i){
         // console.log("phenocode", phenocode)
         var phenocode_list = phenocode.split("0")
