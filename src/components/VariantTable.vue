@@ -7,7 +7,8 @@
         :items="filteredVariantList" 
         :headers="headers" 
         fixed-header 
-        :items-per-page="10"
+        height=700 
+        :items-per-page="25"
         hover 
         :sort-by="[{ key: 'pval', order: 'asc' }]"
         :search="search"

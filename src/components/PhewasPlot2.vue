@@ -169,9 +169,9 @@ function generatePlot(variant_list){
 
     const gap = 5;
 
-    var categories_position_map = [...new Set(variant_list.flatMap(v => v.phenos.map(p => p.category)))];
-
-    categories_position_map = categories_position_map.filter(categ => props.categoryList.includes(categ));
+    // categories present in the data, in the order of global_unique_categories
+    const present_categories = new Set(variant_list.flatMap(v => v.phenos.map(p => p.category)));
+    var categories_position_map = global_unique_categories.filter(categ => present_categories.has(categ));
     
     const global_category_offset = Object.fromEntries(
         categories_position_map.map((c, i) => [c, i * gap])
@@ -214,10 +214,18 @@ function generatePlot(variant_list){
     });
 
     // Build global, stable category-to-color mapping
-    const category_palette = d3.schemeCategory10.concat(d3.schemeCategory10); // 20 fixed colors
+    const category_palette = d3.schemeCategory10.concat(d3.schemeCategory10); // 10 fixed colors
     const color_by_category_all = d3.scaleOrdinal()
         .domain(global_unique_categories)
         .range(category_palette.slice(0, global_unique_categories.length));
+
+    // rank of each category in global_unique_categories
+    const category_rank = Object.fromEntries(global_unique_categories.map((c, i) => [c, i]));
+
+    // _.sortBy is a stable sort, so phenos stay sorted by phenocode within each category
+    variant_list.forEach(variant => {
+        variant.phenos = _.sortBy(variant.phenos, d => category_rank[d.category] ?? Infinity);
+    })
 
     const first_of_each_category_list = variant_list.map((variant, j) => {
     const seen = {};
@@ -230,26 +238,6 @@ function generatePlot(variant_list){
     });
     });
 
-    var category_order_list = []
-
-    variant_list.forEach((variant, j) => {      
-      category_order_list.push(
-        (function() {
-            var rv = {};
-            first_of_each_category_list[j].forEach(function(pheno, i) {
-                rv[pheno.category] = i;
-            });
-            return rv;
-        })()
-      )
-    })
-
-    // _.sortBy is a stable sort, so we just sort by category_order and we're good.
-    variant_list.forEach((variant, i) => {
-        variant.phenos = _.sortBy(variant.phenos, function(d) {
-          return category_order_list[i][d.category];
-      });
-    })
 
 
 

@@ -2,9 +2,14 @@
   <div v-if="formattedVariantList.length > 0" class="mt-1">
     <!-- Previous template code remains the same until the category search field -->
     <v-card elevation="5">
-      <v-data-table :items="filteredVariantList" :headers="headers" fixed-header :items-per-page="10"
+      <v-data-table 
+        :items="filteredVariantList" 
+        :headers="headers" 
+        fixed-header
+        height=700
+        :items-per-page="25"
         hover :sort-by="[{ key: 'pval', order: 'asc' }]">
-        <!-- Top slot remains the same -->
+      <!-- Top slot remains the same -->
 
         <template v-slot:header.category="{ column }">
           <div style="display: flex; align-items: center;">
