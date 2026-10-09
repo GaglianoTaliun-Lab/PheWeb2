@@ -399,7 +399,6 @@ onMounted(async () => {
       }
 
       info.value = response.data;
-
       //logic for choosing first two stratifications displayed on load
       // TODO: could likely improve speed here
       var strats = chooseDefaultPhenos(info.value, url_query)
@@ -408,11 +407,16 @@ onMounted(async () => {
 
       selectedStratification1.value = strats[0].phenocode + strat1Suffix;
 
+      // config combination for the first stratification, used only if it exists for this phenotype
+      const availableStrats = new Set(info.value.map(pheno => pheno.phenocode + returnInteractionSuffix(pheno) + returnStratificationSuffix(pheno)));
+      const priorityCombination = PRIORITY_STRATIFICATIONS_COMBINATIONS[strat1Suffix.slice(1)];
+      const priorityStrat = priorityCombination ? strats[0].phenocode + "." + priorityCombination : null;
+
       if (!strats?.[1]) {
         selectedStratification2.value = "No stratification"
       }
-      else if (Object.keys(PRIORITY_STRATIFICATIONS_COMBINATIONS).length > 0) {
-        selectedStratification2.value = strats[1].phenocode + "." + PRIORITY_STRATIFICATIONS_COMBINATIONS[strat1Suffix.slice(1,strat1Suffix.length)]
+      else if (priorityStrat && availableStrats.has(priorityStrat)) {
+        selectedStratification2.value = priorityStrat
       } else {
         selectedStratification2.value = strats[1].phenocode + returnInteractionSuffix(strats[1]) + returnStratificationSuffix(strats[1])
       }
