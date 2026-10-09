@@ -383,8 +383,8 @@
       // one option per phenocode, displayed as phenostring, searchable by phenostring or phenocode
       const phenos = new Map();
       items.forEach(item => {
-        if (!phenos.has(item.phenocode)) {
-          phenos.set(item.phenocode, { title: `${item.phenostring}`, value: item.phenocode });
+        if (!phenos.has(item.phenocode_router)) {
+          phenos.set(item.phenocode_router, { title: `${item.phenostring}`, value: item.phenocode_router });
         }
       });
 
@@ -402,7 +402,7 @@
         return selected === 'All results' || item[key] === selected;
       });
       const categoryMatches = !selectedCategory.value || selectedCategory.value === 'All results' || item.category === selectedCategory.value;
-      const phenotypeMatches = !selectedPhenotype.value || selectedPhenotype.value === 'All results' || item.phenostring === selectedPhenotype.value;
+      const phenotypeMatches = !selectedPhenotype.value || selectedPhenotype.value === 'All results' || item.phenocode_router === selectedPhenotype.value;
       return stratMatches && categoryMatches && phenotypeMatches;
     })
     .sort((a, b) => a.pval - b.pval);;
