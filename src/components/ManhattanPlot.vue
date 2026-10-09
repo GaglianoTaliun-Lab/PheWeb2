@@ -442,7 +442,8 @@ function create_manhattan_plot(variant_bins, unbinned_variants, variants = "filt
             "<% if(_.has(d, 'num_significant_in_peak') && d.num_significant_in_peak>1) { %>#significant variants in peak: <%= d.num_significant_in_peak %><br><% } %>" +
     
             // add link
-            "<br>Region Plot: <a href='<%= `${window.location.toString().split('?')[0]}/region/${d.chrom}:${Math.max(0, d.pos - 200 * 1000)}-${d.pos + 200 * 1000}` %>' target='_blank'>View</a>"
+            "<br>Region Plot: <a href='<%= `${window.location.toString().split('?')[0]}/region/${d.chrom}:${Math.max(0, d.pos - 200 * 1000)}-${d.pos + 200 * 1000}` %>' target='_blank'>View</a>" +
+            "<br>PheWas Plot: <a href='<%= `${window.location.origin}/variant/${d.chrom}-${d.pos}-${d.ref}-${d.alt}` %>' target='_blank'>View</a>"
         );
 
         point_tooltip.value = d3Tip()
