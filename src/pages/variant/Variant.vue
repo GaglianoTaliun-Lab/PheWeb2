@@ -54,7 +54,7 @@
               </span>
             </a>,
             <a
-              :href="`https://www.ensembl.org/genome-browser/GCA_000001405.29?focus=variant:${variant_basic_info.chrom}:${variant_basic_info.pos}:${rsids}&location=${variant_basic_info.chrom}:${variant_basic_info.pos}-${variant_basic_info.pos}`"
+              :href="`https://www.ensembl.org/genome-browser/GCA_000001405.29?focus=variant:${variant_basic_info.chrom}:${variant_basic_info.pos}:${rsids}&location=${variant_basic_info.chrom}:${variant_basic_info.pos - 200000}-${variant_basic_info.pos + 200000}`"
               target="_blank"
               rel="noopener noreferrer"
               class="variant-link"
