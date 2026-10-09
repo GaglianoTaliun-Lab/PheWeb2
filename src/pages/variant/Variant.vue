@@ -316,7 +316,7 @@ import VariantCompareTable from '@/components/VariantCompareTable.vue';
 import IsLoading from '@/components/IsLoading.vue';
 import IsFailing from '@/components/IsFailing.vue';
 
-import { HG_BUILD_NUMBER, PRIORITY_STRATIFICATIONS, STRATIFICATION_CATEGORIES } from "@/config.js";
+import { HG_BUILD_NUMBER, PRIORITY_STRATIFICATIONS, PRIORITY_STRATIFICATIONS_COMBINATIONS, STRATIFICATION_CATEGORIES } from "@/config.js";
 
 const route = useRoute();
 
@@ -415,6 +415,21 @@ onMounted(async () => {
     stratification_list.value = JSON.parse(JSON.stringify(response_stratification.data));
     category_list.value = JSON.parse(JSON.stringify(response_category.data))
     pheno_list.value = JSON.parse(JSON.stringify(response_phenolist.data))
+
+    // stratifications requested in the url query, e.g. ?stratification1=all.female&stratification2=all.male
+    // stratification2 falls back on the config combination of stratification1, then on the default one
+    const availableStratifications = new Set(stratification_list.value);
+    const queryStratification1 = route.query.stratification1;
+    const queryStratification2 = route.query.stratification2;
+    if (availableStratifications.has(queryStratification1)) {
+      selectedStratification1.value = queryStratification1;
+      const priorityCombination = PRIORITY_STRATIFICATIONS_COMBINATIONS[queryStratification1];
+      if (availableStratifications.has(queryStratification2)) {
+        selectedStratification2.value = queryStratification2;
+      } else if (availableStratifications.has(priorityCombination)) {
+        selectedStratification2.value = priorityCombination;
+      }
+    }
 
     // set chosen variants to be male and female automatically
     selectedStratifications.value = [selectedStratification1.value, selectedStratification2.value];

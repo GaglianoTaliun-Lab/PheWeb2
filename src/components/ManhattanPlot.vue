@@ -443,13 +443,18 @@ function create_manhattan_plot(variant_bins, unbinned_variants, variants = "filt
     
             // add link
             "<br>Region Plot: <a href='<%= `${window.location.toString().split('?')[0]}/region/${d.chrom}:${Math.max(0, d.pos - 200 * 1000)}-${d.pos + 200 * 1000}` %>' target='_blank'>View</a>" +
-            "<br>PheWas Plot: <a href='<%= `${window.location.origin}/variant/${d.chrom}-${d.pos}-${d.ref}-${d.alt}` %>' target='_blank'>View</a>"
+            "<br>PheWas Plot: <a href='<%= `${window.location.origin}/variant/${d.chrom}-${d.pos}-${d.ref}-${d.alt}${phewas_query}` %>' target='_blank'>View</a>"
         );
+
+        // PheWAS page opens on the displayed stratification ("<phenocode>.<ancestry>.<sex>" -> "<ancestry>.<sex>")
+        var phewas_query = '?' + new URLSearchParams({
+            stratification1: pheno.value.split('.').slice(1).join('.'),
+        }).toString();
 
         point_tooltip.value = d3Tip()
             .attr('class', 'd3-tip')
             .html(function(d) {
-                return tooltip_template({d: d});
+                return tooltip_template({d: d, phewas_query: phewas_query});
             })
             .offset([-6,0]);
         gwas_svg.call(point_tooltip.value);
