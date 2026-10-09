@@ -201,6 +201,7 @@
           :geneName="geneName"
           :data="geneData"
           :isLoading="isLoading"
+          :stratification="url_query"
           @updateChosenPheno="updateChosenPhenoMethod"
         />
       </div>
@@ -246,6 +247,7 @@ import axios from 'axios';
 const drawer = ref(false);
 const route = useRoute();
 const geneName = route.params.gene;
+const url_query = route.query;
 const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URL;
 const phenocode = computed(() => route.params.phenocode);
 const geneData = ref(null);

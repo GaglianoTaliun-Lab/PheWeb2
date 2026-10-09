@@ -276,6 +276,7 @@
     geneName: String,
     data: Array,
     isLoading: Boolean,
+    stratification: Object,
   });
   const currentPhenocode = ref(props.phenocode) ;
   const sortBy = ref([{ key: 'pval', order: 'asc' }]);
@@ -453,8 +454,19 @@
 
   onMounted( async () => {
     await fetchData();
-    if (filteredPhenotypes.value.length > 0) {
-      selectedItems.value = [filteredPhenotypes.value[0].phenocode];
+
+    // stratification requested in the url query, e.g. ?ancestry=european&sex=female
+    const queryStratification = STRATIFICATION_CATEGORIES
+      .map(cat => cat.toLowerCase())
+      .filter(key => props.stratification?.[key])
+      .map(key => [key, String(props.stratification[key]).toLowerCase()]);
+    const matchesQuery = (item) => queryStratification.every(([key, value]) =>
+      String(item.stratification?.[key] ?? '').toLowerCase() === value);
+
+    // most significant row of the requested stratification, or of all rows if none matches
+    const firstPheno = filteredPhenotypes.value.find(matchesQuery) ?? filteredPhenotypes.value[0];
+    if (firstPheno) {
+      selectedItems.value = [firstPheno.phenocode];
     }
     // console.log(filteredPhenotypes)
     // console.log(typeof filteredPhenotypes)

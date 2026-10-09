@@ -112,7 +112,11 @@
       <template v-slot:item.nearest_genes="{ item }">
         <span v-for="(gene, index) in item.nearest_genes" :key="index">
           <router-link 
-            :to="`/gene/${gene.trim()}/${item.phenocode}`" 
+            :to="{path: `/gene/${gene.trim()}/${item.phenocode}`,
+            query: {
+                ...item.stratification,
+              }
+            }"
             style="white-space: nowrap; font-style: italic;"
           >
             {{ gene.trim() }}
