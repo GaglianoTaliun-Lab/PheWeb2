@@ -7,6 +7,7 @@ import d3Tip from 'd3-tip';
 import _ from 'underscore'
 
 import * as utils from '@/pages/pheno/Pheno.js'
+import { stratificationToQuery } from '@/utils/stratifications.js';
 
 const point_radius = 2.3;
 
@@ -447,9 +448,7 @@ function create_manhattan_plot(variant_bins, unbinned_variants, variants = "filt
         );
 
         // PheWAS page opens on the displayed stratification ("<phenocode>.<ancestry>.<sex>" -> "<ancestry>.<sex>")
-        var phewas_query = '?' + new URLSearchParams({
-            stratification1: pheno.value.split('.').slice(1).join('.'),
-        }).toString();
+        var phewas_query = stratificationToQuery(pheno.value.split('.').slice(1).join('.'));
 
         point_tooltip.value = d3Tip()
             .attr('class', 'd3-tip')

@@ -11,6 +11,7 @@ import * as utils from '@/pages/variant/Variant.js'
 import IsLoading from '@/components/IsLoading.vue';
 import IsFailing from '@/components/IsFailing.vue';
 import { getItemSampleSize } from '../utils/formatters.js';
+import { stratificationToQuery } from '@/utils/stratifications.js';
 
 const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URL;
 
@@ -304,6 +305,9 @@ function generatePlot(variant_list){
 
     variant_list.forEach((variant,i) => {
 
+        // pheno page opens on this panel's stratification (".all.female" -> "?ancestry=all&sex=female")
+        const pheno_query = stratificationToQuery(variant_list[i].stratification.split('.').slice(1).join('.'));
+
         panel_list.push(
             
             custom_LocusZoom_Layouts_get('panel', 'phewas', {
@@ -370,7 +374,7 @@ function generatePlot(variant_list){
                                           utils.lz_template +
                                           "Sample size: <strong>{{sample_size}}</strong><br>" +
                                           "<br>" + 
-                                          "<a href=\"" + window.location.origin + "/phenotypes/{{phewas_code}}\"" + ">Go to Pheno Page</a>"),
+                                          "<a href=\"" + window.location.origin + "/phenotypes/{{phewas_code}}" + pheno_query + "\"" + ">Go to Pheno Page</a>"),
                         // Show labels that are: in the top 10, and (by neglog10) >=75% of sig threshold, and >=25% of best
                         "label.text": "{{phewas_string}}",
                         "label.filters": (function() {

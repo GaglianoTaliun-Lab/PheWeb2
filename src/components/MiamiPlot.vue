@@ -7,6 +7,7 @@ import d3Tip from 'd3-tip';
 import _ from 'underscore'
 
 import * as utils from '@/pages/pheno/Pheno.js'
+import { stratificationToQuery } from '@/utils/stratifications.js';
 
 const point_radius = 2.3;
 
@@ -681,16 +682,16 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
             "<br>PheWas Plot: <a href='<%= `${window.location.origin}/variant/${d.chrom}-${d.pos}-${d.ref}-${d.alt}${phewas_query}` %>' target='_blank'>View</a>"
         );
 
-            // PheWAS page opens on the two displayed stratifications ("<phenocode>.<ancestry>.<sex>" -> "<ancestry>.<sex>")
-            var phewas_query = '?' + new URLSearchParams({
-                stratification1: pheno1.value.split('.').slice(1).join('.'),
-                stratification2: pheno2.value.split('.').slice(1).join('.'),
-            }).toString();
+            // PheWAS page opens on the stratification of the point ("<phenocode>.<ancestry>.<sex>" -> "<ancestry>.<sex>")
+            var upper_variants = new Set(variant_unbinned1);
+            var phewas_query_upper = stratificationToQuery(label1.split('.').slice(1).join('.'));
+            var phewas_query_lower = stratificationToQuery(label2.split('.').slice(1).join('.'));
 
             point_tooltip.value = d3Tip()
                 .attr('class', 'd3-tip')
                 .style('background-color', 'black')
                 .html(function(d) {
+                    var phewas_query = upper_variants.has(d) ? phewas_query_upper : phewas_query_lower;
                     return tooltip_template({d: d, phewas_query: phewas_query});
                 })
                 .offset([-6,0]);

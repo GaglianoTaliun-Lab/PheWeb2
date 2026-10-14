@@ -291,7 +291,6 @@ import axios from 'axios';
 import { ref, onMounted, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
 import '@fortawesome/fontawesome-free/css/all.css';
-import {isEqual} from 'lodash';
 
 import Navbar2 from '@/components/Navbar.vue';
 import ManhattanPlot from '@/components/ManhattanPlot.vue';
@@ -303,7 +302,8 @@ import InteractionMiamiPlot from '@/components/InteractionMiamiPlot.vue'
 import InteractionTable from '@/components/InteractionTable.vue';
 import IsFailing from '@/components/IsFailing.vue';
 import IsLoading from '@/components/IsLoading.vue';
-import { ENABLE_INTERACTION_MODE,  PRIORITY_STRATIFICATIONS_COMBINATIONS } from '@/config.js';
+import { ENABLE_INTERACTION_MODE } from '@/config.js';
+import { chooseStratifications } from '@/utils/stratifications.js';
 
 import * as functions from './Pheno.js';
 
@@ -376,8 +376,8 @@ const isDisabled = ref(false);
 
 onMounted(async () => {
     try {
-      // const response = await axios.get(`${api}/phenotypes/phenotypes_list/` + phenocode);
-      // const responseInteraction = await axios.get(`${api}/phenotypes/interaction_list/` + phenocode);
+
+      // -------------- Backend query --------------
       isLoading.value = true;
       const response = await axios.get(`${api}/phenotypes/${phenocode}/phenotypes_list`);
 
@@ -399,27 +399,10 @@ onMounted(async () => {
       }
 
       info.value = response.data;
-      //logic for choosing first two stratifications displayed on load
-      // TODO: could likely improve speed here
-      var strats = chooseDefaultPhenos(info.value, url_query)
 
-      const strat1Suffix = returnStratificationSuffix(strats[0]);
+      // -------------- Stratification selections --------------
 
-      selectedStratification1.value = strats[0].phenocode + strat1Suffix;
-
-      // config combination for the first stratification, used only if it exists for this phenotype
-      const availableStrats = new Set(info.value.map(pheno => pheno.phenocode + returnInteractionSuffix(pheno) + returnStratificationSuffix(pheno)));
-      const priorityCombination = PRIORITY_STRATIFICATIONS_COMBINATIONS[strat1Suffix.slice(1)];
-      const priorityStrat = priorityCombination ? strats[0].phenocode + "." + priorityCombination : null;
-
-      if (!strats?.[1]) {
-        selectedStratification2.value = "No stratification"
-      }
-      else if (priorityStrat && availableStrats.has(priorityStrat)) {
-        selectedStratification2.value = priorityStrat
-      } else {
-        selectedStratification2.value = strats[1].phenocode + returnInteractionSuffix(strats[1]) + returnStratificationSuffix(strats[1])
-      }
+      [selectedStratification1.value, selectedStratification2.value] = chooseDefaultStratifications(info.value, url_query);
 
       // just take the first instance...they will all be the same
       phenostring.value = info.value[0].phenostring.replace(/\uFFFD/g, "'")
@@ -499,77 +482,24 @@ function updateFilteringParameters({ min, max, type}) {
 
 }
 
-function chooseDefaultPhenos(data, from_url = {}){
-
-  if (!data[0].stratification){
-      return ['', null]  
-  }
-
-  var chosen_stratifications = [];
-
-  // if stratifications are passed from url it will adjust here
-  if (Object.keys(from_url).length !== 0){
-    chosen_stratifications.push(from_url)
-  }
-
-  var all_stratifications = data.map(pheno => {
-    return pheno.stratification
-  })
-
-  if (all_stratifications.length == 1){
-    return [data[0], null];
-  }
-
-  if (all_stratifications.length == 2){
-    return [data[0], data[1]];
-  }
-
-  if (!all_stratifications[0].sex){
-    return [data[0], data[1]];
-  }
-
-  var male = null;
-  var female = null;
-
-  for (var item of all_stratifications){
-
-    if ('female' === item.sex.toLowerCase()){
-      female = item;
-    }
-    else if ('male' === item.sex.toLowerCase()){
-      male = item;
-    }
-  }
-
-  if (female != null && isEqual(from_url, female) === false){
-    chosen_stratifications.push(female);
-  }
-  if (male != null){
-    chosen_stratifications.push(male);
-  }
-
-  while (chosen_stratifications.length < 2 ){
-    chosen_stratifications.push(null)
-  }
-
-  // return phenos with those exact stratification
-  return returnPhenoFromStratifications(data, chosen_stratifications)
+// key of a pheno, as used by the plots and the radio buttons (e.g. "PHENO.interaction-x.all.combined")
+function stratificationKey(pheno){
+  return pheno.phenocode + returnInteractionSuffix(pheno) + returnStratificationSuffix(pheno);
 }
 
-// niche helper function for above
-const returnPhenoFromStratifications = (data, chosen_stratifications) => {
-  var chosen_phenos = [null, null]
-
-  for (var pheno of data){
-    if (JSON.stringify(pheno.stratification) === JSON.stringify(chosen_stratifications[0])){
-      chosen_phenos[0] = pheno
-    } else if (JSON.stringify(pheno.stratification) === JSON.stringify(chosen_stratifications[1])){
-      chosen_phenos[1] = pheno
-    }
+// [first, second] stratification keys displayed on load, chosen among the phenos sharing the interaction of the first one
+function chooseDefaultStratifications(data, query = {}){
+  if (!data || data.length === 0){
+    return ["", "No stratification"];
   }
 
-  return chosen_phenos
+  const group = data.filter(pheno => returnInteractionSuffix(pheno) === returnInteractionSuffix(data[0]));
+  const stratification = pheno => returnStratificationSuffix(pheno).slice(1); // e.g. "all.combined"
 
+  return chooseStratifications(group.map(stratification), query).map(chosen => {
+    const pheno = group.find(p => stratification(p) === chosen);
+    return pheno ? stratificationKey(pheno) : chosen;
+  });
 }
 
 // this function will just change a value that determins if a manhattan or miami plot is generated
@@ -868,15 +798,11 @@ function onInteractionCheckboxChange() {
     return;
   }
   if (isInteractionChecked.value) {
-    var strats = chooseDefaultPhenos(infoInteraction.value)
-    selectedInteractionStratification1.value = strats[0].phenocode +returnInteractionSuffix(strats[0]) + returnStratificationSuffix(strats[0])
-    selectedInteractionStratification2.value = strats[1] ? strats[1].phenocode + returnInteractionSuffix(strats[1]) + returnStratificationSuffix(strats[1]): "No stratification"
+    [selectedInteractionStratification1.value, selectedInteractionStratification2.value] = chooseDefaultStratifications(infoInteraction.value);
     handleInteractionRadioChange(); 
 
   } else {
-    var strats = chooseDefaultPhenos(info.value)
-    selectedStratification1.value = strats[0].phenocode +returnInteractionSuffix(strats[0]) + returnStratificationSuffix(strats[0])
-    selectedStratification2.value = strats[1] ? strats[1].phenocode + returnInteractionSuffix(strats[1]) + returnStratificationSuffix(strats[1]): "No stratification"
+    [selectedStratification1.value, selectedStratification2.value] = chooseDefaultStratifications(info.value);
     handleRadioChange(); 
   }
 }
