@@ -245,7 +245,7 @@ const region = ref(null);
 
 // Define URLs for external resources based on geneName
 const ncbiGeneUrl = computed(() => `https://www.ncbi.nlm.nih.gov/gene/?term=${geneName}`);
-const ensemblGeneUrl = computed(() => `https://www.ensembl.org/Homo_sapiens/Gene/Summary?g=${geneName}`);
+const ensemblGeneUrl = computed(() => `https://www.ensembl.org/search/results?query=${geneName}`);
 const opentargetGeneUrl = computed(() => `https://platform.opentargets.org/search?q=${geneName}&page=1`);
 const geneCardsUrl = computed(() => `https://www.genecards.org/cgi-bin/carddisp.pl?gene=${geneName}`);
 const gwasCatalogUrl = computed(() => `https://www.ebi.ac.uk/gwas/genes/${geneName}`);

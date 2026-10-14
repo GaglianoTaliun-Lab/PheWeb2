@@ -28,12 +28,7 @@
                         </v-btn>
                     </div>
                 </div>
-            </v-alert>
-            <!-- <span class="d-flex justify-center align-center mt-10" style="font-weight: bold;">
-                <v-icon class="mr-2">mdi-file-document-outline</v-icon>
-                Click the button below to access the API documentation
-            </span> -->
-            
+            </v-alert> 
         </v-main>
     </v-app>
 </template>
