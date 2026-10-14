@@ -277,6 +277,7 @@
     data: Array,
     isLoading: Boolean,
     stratification: Object,
+    phenocode: String,
   });
   const currentPhenocode = ref(props.phenocode) ;
   const sortBy = ref([{ key: 'pval', order: 'asc' }]);
@@ -340,14 +341,6 @@
           category: item.category ? String(item.category).replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : ''
         };
       });
-      // phenotypes.value = props.data.map(item => ({
-      //     ...item,
-      //     phenocode_router: item.phenocode.split('.').slice(0, 1).join('.') ,
-      //     ancestry: `${item.stratification.ancestry.replace(/\b\w/g, l => l.toUpperCase())}`, // TODO: don't hardcode these
-      //     sex: `${item.stratification.sex.replace(/\b\w/g, l => l.toUpperCase())}`,
-      //     abs_distance_to_true_start: item.is_in_real_range ? 0 : Math.abs(item.distance_to_true_start),
-      //     category: item.category ? String(item.category).replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : ''
-      //   }));
     } catch (error) {
       console.error('Error fetching data for gene table:', error);
     } finally {
@@ -463,14 +456,19 @@
     const matchesQuery = (item) => queryStratification.every(([key, value]) =>
       String(item.stratification?.[key] ?? '').toLowerCase() === value);
 
-    // most significant row of the requested stratification, or of all rows if none matches
-    const firstPheno = filteredPhenotypes.value.find(matchesQuery) ?? filteredPhenotypes.value[0];
+    // phenotype requested in the route, e.g. /gene/<gene>/<phenocode>
+    const matchesPhenocode = (item) => !props.phenocode || item.phenocode_router === props.phenocode;
+
+    // most significant row of the requested phenotype and stratification,
+    // then of the requested phenotype, then of the requested stratification, then of all rows
+    const rows = filteredPhenotypes.value;
+    const firstPheno = rows.find(item => matchesPhenocode(item) && matchesQuery(item))
+      ?? rows.find(matchesPhenocode)
+      ?? rows.find(matchesQuery)
+      ?? rows[0];
     if (firstPheno) {
       selectedItems.value = [firstPheno.phenocode];
     }
-    // console.log(filteredPhenotypes)
-    // console.log(typeof filteredPhenotypes)
-    // selectedItems.value = [filteredPhenotypes.value[0].phenocode];
   });
 
   watch(
@@ -479,12 +477,7 @@
       currentPhenocode.value = newPhenocode;
     }
   );
-  // watch(
-  //   () => props.data,
-  //   (newValue) => {
-  //     fetchData();
-  //   },
-  // );
+
   watch(
     selectedItems,
     (newPhenocode) => {

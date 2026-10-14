@@ -95,14 +95,7 @@
             <v-icon class="ml-0" size="17">mdi-open-in-new</v-icon>
           </span>
         </a>
-        <!-- <a 
-          :href="ukbTopmedUrl" 
-          target="_blank" 
-          rel="noopener noreferrer"
-          class="gene-link"
-        >
-          UKB-TOPMed (UMich)
-        </a> -->
+
       </div>
       <!-- Mobile external links menu -->
       <div class="gene-links d-flex d-md-none justify-left align-center">
@@ -202,19 +195,11 @@
           :data="geneData"
           :isLoading="isLoading"
           :stratification="url_query"
+          :phenocode="phenocode"
           @updateChosenPheno="updateChosenPhenoMethod"
         />
       </div>
-      <!-- <v-card elevation="5" class="pa-2" v-if="displayPlot">
-        <div class="pt-2" v-if="plottingData && geneChrom && geneStart && geneStop">
-          <RegionPlot :data="plottingData" :region="region"></RegionPlot>
-        </div>
-      </v-card> -->
-      <!-- <v-card elevation="5" class="pa-2" v-if="displayPlot">
-        <div class="pt-2" v-if="plottingData && geneChrom && geneStart && geneStop">
-          <LZ :data="plottingData" :region="region"></LZ>
-        </div>
-      </v-card> -->
+
       <IsLoading v-if="isLoading" :loadingText="loadingText" />
       <IsFailing v-if="isFailed" :isLoading="isLoading" :isFailed="isFailed" />
       <v-card v-if="!isLoading && displayPlot" elevation="5" class="pa-2 mt-2">
