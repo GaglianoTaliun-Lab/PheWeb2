@@ -6,7 +6,7 @@
 Bellavance, J., Xiao, H., Chang, L., Kazemi, M., Wickramasinghe, S., Mayhew, A.J., Raina, P., VandeHaar, P., Taliun, D., & Gagliano Taliun, S.A. (2026). Exploring and visualizing stratified GWAS results with PheWeb2. _Nature Genetics_ [https://doi.org/10.21203/rs.3.rs-7463215/v1](https://doi.org/10.1038/s41588-025-02469-8)
 
 
-<img width="1600" height="900" alt="image" src="https://github.com/user-attachments/assets/3f823732-523a-4659-8173-f4bd42e80a7a" />
+<img width="1898" height="1068" alt="469445596-3f823732-523a-4659-8173-f4bd42e80a7a" src="https://github.com/user-attachments/assets/c7e165e1-34c5-4d29-ae31-3035a6fdf0dc" />
 
 
 PheWeb2 is a new version of the original [PheWeb](https://github.com/statgen/pheweb) tool, designed for interactive querying, visualizing, and sharing summary-level results from GWAS and PheWAS studies.
