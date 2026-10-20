@@ -7,7 +7,8 @@
         :items="filteredVariantList" 
         :headers="headers" 
         fixed-header 
-        :items-per-page="10"
+        height=700 
+        :items-per-page="25"
         hover 
         :sort-by="[{ key: 'pval', order: 'asc' }]"
         :search="search"
@@ -121,7 +122,7 @@
                 <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
               </template>
               <span style="white-space: normal;">
-                Number of samples with non-missing data
+                Number of samples with non-missing data or cases + controls
               </span>
             </v-tooltip>
             <template v-if="isSorted(column)">
@@ -178,7 +179,7 @@
 
         <template v-slot:item.pval="{ item }">
           <v-chip v-if="item.pval !== 'NA'" :color="getColour(item.pval)">
-            {{ formatScientific(item.pval) }}
+            {{ item.pval }}
           </v-chip>
           <span v-else>NA</span> 
         </template>
@@ -190,44 +191,7 @@
   <script setup>
   import { ref, computed } from 'vue';
   import { STRATIFICATION_CATEGORIES } from '@/config.js'
-  
-//   // Add this function in your script setup
-//   const downloadTable = () => {
-//   // Convert all data to CSV format (using formattedVariantList instead of filteredVariantList)
-//   const headers = [
-//     'Category',
-//     'Phenotype',
-//     'Sex',
-//     'Ancestry',
-//     'P-value',
-//     'Effect Size (se)',
-//     'Number of Samples'
-//   ];
-  
-//   const csvContent = [
-//     headers.join(','),
-//     ...formattedVariantList.value.map(item => [
-//       item.category,
-//       item.phenostring,
-//       item.sex,
-//       item.ancestry,
-//       item.pval,
-//       item.beta_se,
-//       item.num_samples
-//     ].join(','))
-//   ].join('\n');
-
-//   // Create and trigger download
-//   const blob = new Blob([csvContent], { type: 'text/csv' });
-//   const url = window.URL.createObjectURL(blob);
-//   const link = document.createElement('a');
-//   link.href = url;
-//   link.setAttribute('download', 'variant_data.csv');
-//   document.body.appendChild(link);
-//   link.click();
-//   document.body.removeChild(link);
-//   window.URL.revokeObjectURL(url);
-// };  
+  import { formatScientific, roundEAF,  getItemSampleSize} from '../utils/formatters.js';
 
   const props = defineProps({
     selectedStratifications: Object,
@@ -327,14 +291,14 @@
             effect_allele: props.effectAllele,
             phenocode: pheno.phenocode,
             ...stratifications,
-            pval: pheno.pval,
-            eaf: pheno.af,
+            pval: formatScientific(pheno.pval),
+            eaf: roundEAF(pheno.af),
             beta_se: pheno.beta > 0
                   ? `${pheno.beta} (${pheno.sebeta}) △`
                   : `${pheno.beta} (${pheno.sebeta}) ▽`,
-            num_samples: pheno.num_samples,
-            cases: pheno.num_cases,
-            controls: pheno.num_controls,
+            num_samples: getItemSampleSize(pheno.num_samples),
+            cases: new Intl.NumberFormat('en-US').format(pheno.num_cases),
+            controls: new Intl.NumberFormat('en-US').format(pheno.num_controls),
           };
         });
     });
@@ -391,11 +355,6 @@
     if (pval < 5e-8 && pval !== null) return 'green';
     else if (pval === "NA") return null;
     return '#grey';
-  };
-
-  const formatScientific = (num) => {
-    if (!num || isNaN(num)) return 'NA';  
-    return Number(num).toExponential(2);  
   };
 
   const getStratificationTooltip = (category) => {

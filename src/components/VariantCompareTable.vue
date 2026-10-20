@@ -2,9 +2,14 @@
   <div v-if="formattedVariantList.length > 0" class="mt-1">
     <!-- Previous template code remains the same until the category search field -->
     <v-card elevation="5">
-      <v-data-table :items="filteredVariantList" :headers="headers" fixed-header :items-per-page="10"
+      <v-data-table 
+        :items="filteredVariantList" 
+        :headers="headers" 
+        fixed-header
+        height=700
+        :items-per-page="25"
         hover :sort-by="[{ key: 'pval', order: 'asc' }]">
-        <!-- Top slot remains the same -->
+      <!-- Top slot remains the same -->
 
         <template v-slot:header.category="{ column }">
           <div style="display: flex; align-items: center;">
@@ -72,7 +77,7 @@
                 <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
               </template>
               <span style="white-space: normal;">
-                Number of samples with non-missing data
+                Number of samples with non-missing data or cases + controls
               </span>
             </v-tooltip>
             <template v-if="isSorted(column)">
@@ -147,7 +152,7 @@
         <template v-slot:item.pval_variant1="{ item }">
           <!-- <span style="white-space: nowrap;">{{ item.pval }}</span> -->
           <v-chip v-if="item.pval_variant1 !== 'NA'" :color="getColour(item.pval_variant1)">
-            {{ formatScientific(item.pval_variant1) }}
+            {{ item.pval_variant1 }}
           </v-chip>
           <span v-else>NA</span>
         </template>
@@ -155,7 +160,7 @@
         <template v-slot:item.pval_variant2="{ item }">
           <!-- <span style="white-space: nowrap;">{{ item.pval }}</span> -->
           <v-chip v-if="item.pval_variant2 !== 'NA'" :color="getColour(item.pval_variant2)">
-            {{ formatScientific(item.pval_variant2) }}
+            {{ item.pval_variant2 }}
           </v-chip>
           <span v-else>NA</span>
         </template>
@@ -170,7 +175,7 @@ import { onMounted } from 'vue';
 import { ref, computed, watch } from 'vue';
 
 import { STRATIFICATION_CATEGORIES } from "@/config.js";
-
+import { formatScientific, roundEAF, getItemSampleSize } from '../utils/formatters.js';
 
 //   // Add this function in your script setup
 //   const downloadTable = () => {
@@ -343,14 +348,14 @@ import { STRATIFICATION_CATEGORIES } from "@/config.js";
                   phenocode: pheno.phenocode,
                   stratification: strat,
                   ...stratFields,
-                  pval: isPvalNegative ? "NA" : pheno.pval,
-                  eaf: isPvalNegative ? "NA" : pheno.af,
+                  pval: isPvalNegative ? "NA" : formatScientific(pheno.pval),
+                  eaf: isPvalNegative ? "NA" : roundEAF(pheno.af),
                   beta_se: isPvalNegative ? "NA" : pheno.beta > 0
                   ? `${pheno.beta} (${pheno.sebeta}) △`
                   : `${pheno.beta} (${pheno.sebeta}) ▽`,
-                  num_samples: isPvalNegative ? "NA" : pheno.num_samples,
-                  cases: isPvalNegative ? "NA" : pheno.num_cases,
-                  controls: isPvalNegative ? "NA" : pheno.num_controls
+                  num_samples: isPvalNegative ? "NA" : getItemSampleSize(pheno),
+                  cases: isPvalNegative ? "NA" : new Intl.NumberFormat('en-US').format( pheno.num_cases ),
+                  controls: isPvalNegative ? "NA" : new Intl.NumberFormat('en-US').format( pheno.num_controls)
               };
           })
     });
@@ -453,11 +458,6 @@ import { STRATIFICATION_CATEGORIES } from "@/config.js";
     if (pval < 5e-8 && pval !== null) return 'green';
     else if (pval === "NA") return null;
     return '#grey';
-  };
-
-  const formatScientific = (num) => {
-    if (!num || isNaN(num)) return 'NA';  
-    return Number(num).toExponential(2);  
   };
 
   onMounted(() => {

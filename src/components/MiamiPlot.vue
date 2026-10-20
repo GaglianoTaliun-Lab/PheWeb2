@@ -7,6 +7,7 @@ import d3Tip from 'd3-tip';
 import _ from 'underscore'
 
 import * as utils from '@/pages/pheno/Pheno.js'
+import { stratificationToQuery } from '@/utils/stratifications.js';
 
 const point_radius = 2.3;
 
@@ -67,6 +68,26 @@ const toggleExpanded = () => {
 const selectType = (type) => {
   selectedType.value = type;
 };
+
+const changeMaxFreq = () => {
+
+    if (maxFreq.value > 0.5) {
+        maxFreq.value = 0.5
+    } else if (maxFreq.value < minFreq.value) {
+        maxFreq.value = minFreq.value
+    }
+
+}
+
+const changeMinFreq = () => {
+
+    if (minFreq.value < 0) {
+        minFreq.value = 0
+    } else if (minFreq.value > maxFreq.value) {
+        minFreq.value = maxFreq.value
+    }
+
+}
 
 const createMiamis = (option) => {
     var keys = Object.keys(info.value)
@@ -657,14 +678,21 @@ function create_miami_plot(variant_bins1, variant_unbinned1, variant_bins2, vari
             "<% if(_.has(d, 'num_significant_in_peak') && d.num_significant_in_peak>1) { %>#significant variants in peak: <%= d.num_significant_in_peak %><br><% } %>" +
     
             // add link
-            "<br>Region Plot: <a href='<%= `${window.location.toString().split('?')[0]}/region/${d.chrom}:${Math.max(0, d.pos - 200 * 1000)}-${d.pos + 200 * 1000}` %>' target='_blank'>View</a>"
+            "<br>Region Plot: <a href='<%= `${window.location.toString().split('?')[0]}/region/${d.chrom}:${Math.max(0, d.pos - 200 * 1000)}-${d.pos + 200 * 1000}` %>' target='_blank'>View</a>" +
+            "<br>PheWas Plot: <a href='<%= `${window.location.origin}/variant/${d.chrom}-${d.pos}-${d.ref}-${d.alt}${phewas_query}` %>' target='_blank'>View</a>"
         );
+
+            // PheWAS page opens on the stratification of the point ("<phenocode>.<ancestry>.<sex>" -> "<ancestry>.<sex>")
+            var upper_variants = new Set(variant_unbinned1);
+            var phewas_query_upper = stratificationToQuery(label1.split('.').slice(1).join('.'));
+            var phewas_query_lower = stratificationToQuery(label2.split('.').slice(1).join('.'));
 
             point_tooltip.value = d3Tip()
                 .attr('class', 'd3-tip')
                 .style('background-color', 'black')
                 .html(function(d) {
-                    return tooltip_template({d: d});
+                    var phewas_query = upper_variants.has(d) ? phewas_query_upper : phewas_query_lower;
+                    return tooltip_template({d: d, phewas_query: phewas_query});
                 })
                 .offset([-6,0]);
         miami_svg.call(point_tooltip.value);
@@ -1557,8 +1585,9 @@ watch(
                   class="form-control form-control-sm mr-1"
                   style="width:70px; border: 1px solid black; color: black; font-size: 16px;"
                   :min="0"
-                  :max="0.5"
+                  :max="maxFreq"
                   :step="0.05"
+                  @change="changeMinFreq()"
                 />
                 <span class="mr-1">-</span>
                 <input
@@ -1566,9 +1595,10 @@ watch(
                   v-model="maxFreq"
                   class="form-control form-control-sm mr-3"
                   style="width:70px; border: 1px solid black; color: black; font-size: 16px;"
-                  :min="0"
+                  :min="minFreq"
                   :max="0.5"
                   :step="0.05"
+                  @change="changeMaxFreq()"
                 />
 
                 <div class="btn-group mr-2">

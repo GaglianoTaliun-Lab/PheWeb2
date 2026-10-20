@@ -6,6 +6,7 @@ import { HG_BUILD_NUMBER } from '@/config.js';
 
 
 import * as utils from '@/pages/region/Region.js'
+import { stratificationToQuery } from '@/utils/stratifications.js';
 
 const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URL
 const hgToGrchBuildNumber = {
@@ -173,6 +174,10 @@ const fetchData = async () => {
 
         phenocodes[dynamicPart] = phenocode
 
+        // PheWAS page opens on this panel's stratification ("<phenocode>.<ancestry>.<sex>" -> "?ancestry=<ancestry>&sex=<sex>")
+        const panel_stratification = phenocode.split('.').slice(1).join('.');
+        const phewas_query = panel_stratification ? stratificationToQuery(panel_stratification) : '';
+
         var template = utils.tooltip_lztemplate.replace(/{{/g, `{{${dynamicPart}:`)
                             .replace(new RegExp(`{{${dynamicPart}:#if `, 'g'), `{{#if ${dynamicPart}:`)
                             .replace(new RegExp(`{{${dynamicPart}:\\/if}}`, 'g'), "{{/if}}");
@@ -308,7 +313,7 @@ const fetchData = async () => {
                                     html: "<strong>{{{{namespace[assoc]}}id}}</strong><br><br>" +
                                         template +
                                         "<br>" +
-                                        "<a href=\"" + window.location.origin + "/variant/{{{{namespace[assoc]}}chr}}-{{{{namespace[assoc]}}position}}-{{{{namespace[assoc]}}ref}}-{{{{namespace[assoc]}}alt}}\"" + ">Go to PheWAS</a>" +
+                                        "<a href=\"" + window.location.origin + "/variant/{{{{namespace[assoc]}}chr}}-{{{{namespace[assoc]}}position}}-{{{{namespace[assoc]}}ref}}-{{{{namespace[assoc]}}alt}}" + phewas_query + "\"" + ">Go to PheWAS</a>" +
                                         "{{#if {{namespace[catalog]}}rsid}}<br><a href=\"https://www.ebi.ac.uk/gwas/search?query={{{{namespace[catalog]}}rsid}}\" target=\"_new\">See hits in GWAS catalog</a>{{/if}}" +
                                         "<br>{{#if {{namespace[ld]}}isrefvar}}<strong>LD Reference Variant</strong>{{#else}}<a href=\"javascript:void(0);\" onclick=\"var data = this.parentNode.__data__;data.getDataLayer().makeLDReference(data);\">Make LD Reference</a>{{/if}}<br>"
                                 },
@@ -323,7 +328,7 @@ const fetchData = async () => {
                             });
                             l.behaviors.onctrlclick = [{
                                 action: "link",
-                                href: window.location.origin+"/variant/{{{{namespace[assoc]}}chr}}-{{{{namespace[assoc]}}position}}-{{{{namespace[assoc]}}ref}}-{{{{namespace[assoc]}}alt}}"
+                                href: window.location.origin+"/variant/{{{{namespace[assoc]}}chr}}-{{{{namespace[assoc]}}position}}-{{{{namespace[assoc]}}ref}}-{{{{namespace[assoc]}}alt}}" + phewas_query
                             }];
                             return l;
                         }()

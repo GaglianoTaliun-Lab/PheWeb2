@@ -7,6 +7,7 @@ import LocusZoom from 'locuszoom';
 import {onMounted, ref, watch} from 'vue'
 import { useRoute } from 'vue-router';
 import * as utils from '../pages/region/Region.js'
+import { stratificationToQuery } from '@/utils/stratifications.js';
 import { HG_BUILD_NUMBER } from '@/config.js';
 
 const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URL
@@ -176,7 +177,15 @@ const getPhenoData = () => {
 }
 
 const all_panels = ref([])
+// "?ancestry=<ancestry>&sex=<sex>" of a panel ("<phenocode>0<ancestry>0<sex>"), from the original "<phenocode>.<ancestry>.<sex>"
+function panelStratificationQuery(phenocode) {
+    const pheno = info.value.find(p => p.phenocode.replace(/\./g, "0") === phenocode);
+    const stratification = pheno ? pheno.phenocode.split('.').slice(1).join('.') : '';
+    return stratification ? stratificationToQuery(stratification) : '';
+}
+
 function createAssociationPanel(phenocode, template) {
+    const phewas_query = panelStratificationQuery(phenocode);
     return LocusZoom.Layouts.get("panel", "association_catalog", {
         namespace: { assoc: phenocode },
         id: phenocode,
@@ -276,7 +285,7 @@ function createAssociationPanel(phenocode, template) {
                         html: "<strong>{{{{namespace[assoc]}}id}}</strong><br><br>" +
                             template +
                             "<br>" +
-                            `<a href="${window.location.origin}/variant/{{{{namespace[assoc]}}chr}}-{{{{namespace[assoc]}}position}}-{{{{namespace[assoc]}}ref}}-{{{{namespace[assoc]}}alt}}">Go to PheWAS</a>` +
+                            `<a href="${window.location.origin}/variant/{{{{namespace[assoc]}}chr}}-{{{{namespace[assoc]}}position}}-{{{{namespace[assoc]}}ref}}-{{{{namespace[assoc]}}alt}}${phewas_query}">Go to PheWAS</a>` +
                             `{{#if {{namespace[catalog]}}rsid}}<br><a href="https://www.ebi.ac.uk/gwas/search?query={{{{namespace[catalog]}}rsid}}}" target="_new">See hits in GWAS catalog</a>{{/if}}` +
                             `<br>{{#if {{namespace[ld]}}isrefvar}}<strong>LD Reference Variant</strong>{{#else}}<a href="javascript:void(0);" onclick="var data = this.parentNode.__data__;data.getDataLayer().makeLDReference(data);">Make LD Reference</a>{{/if}}<br>`
                     },
@@ -292,7 +301,7 @@ function createAssociationPanel(phenocode, template) {
 
                 layer.behaviors.onctrlclick = [{
                     action: "link",
-                    href: `${window.location.origin}/variant/{{{{namespace[assoc]}}chr}}-{{{{namespace[assoc]}}position}}-{{{{namespace[assoc]}}ref}}-{{{{namespace[assoc]}}alt}}`
+                    href: `${window.location.origin}/variant/{{{{namespace[assoc]}}chr}}-{{{{namespace[assoc]}}position}}-{{{{namespace[assoc]}}ref}}-{{{{namespace[assoc]}}alt}}${phewas_query}`
                 }];
 
                 return layer;
@@ -471,8 +480,26 @@ const getLayout = () => {
     });
 }
 
+// LD reference variant currently displayed by an association panel
+const getPanelLDRefvar = (panelId) => {
+    const layer = plot.value.panels[panelId]?.data_layers?.associationpvaluescatalog;
+    const refvar = layer?.data?.find(d => d['ld:isrefvar']);
+    return refvar ? refvar[layer.layout.id_field] : null;
+}
+
 const addNewPanel = () => {
     getPhenoData();
+
+    // added panels use the LD reference variant of the first stratification already displayed
+    if (!plot.value.state.ldrefvar) {
+        const firstPanelId = plot.value.panel_ids_by_y_index.find(id =>
+            data_sources_new.value.has(id) && phenocode_list.value.includes(id));
+        const refvar = firstPanelId ? getPanelLDRefvar(firstPanelId) : null;
+        if (refvar) {
+            plot.value.state.ldrefvar = refvar;
+        }
+    }
+
     phenocode_list.value.forEach(function (phenocode, i){
         // console.log("phenocode", phenocode)
         var phenocode_list = phenocode.split("0")

@@ -1,14 +1,17 @@
 <script setup>
 import LocusZoom from 'locuszoom';
+import { parseFields } from 'locuszoom/esm/helpers/display';
 import 'locuszoom/dist/locuszoom.css';
 import * as d3 from 'd3'
 import _ from 'underscore'
-import { onMounted, ref, watch} from 'vue';
+import { onMounted, ref, watch, nextTick } from 'vue';
 import { useRoute } from 'vue-router';
 import axios from 'axios';
 import * as utils from '@/pages/variant/Variant.js'
 import IsLoading from '@/components/IsLoading.vue';
 import IsFailing from '@/components/IsFailing.vue';
+import { getItemSampleSize } from '../utils/formatters.js';
+import { stratificationToQuery } from '@/utils/stratifications.js';
 
 const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URL;
 
@@ -29,6 +32,14 @@ const isLoading = ref(true);
 
 const plot = ref(null)
 const data = ref(null)
+const xAxisTicks = ref([])
+const categoryTooltip = ref({ visible: false, html: '', left: 0, top: 0, arrowLeft: 8 })
+const categoryTooltipEl = ref(null)
+const categoryTooltipLayout = custom_LocusZoom_Layouts_get('data_layer', 'phewas_pvalues', {
+    "tooltip.closable": false,
+    "tooltip.html": ("<div><strong style='color:{{color}}'>{{category_name}}</strong></div>\n" +
+                    "<div>{{n_phenos}} phenotypes</div>"),
+}).tooltip
 const route = useRoute();
 const variantCode = route.params.variant_id;
 
@@ -69,6 +80,45 @@ function custom_LocusZoom_Layouts_get(layout_type, layout_name, customizations) 
         }
     });
     return layout;
+}
+
+// ---------- Download ----------
+const LABELLED_PANEL_MARGIN_BOTTOM = 150;
+const DOWNLOAD_MARGIN_BOTTOM = 400;
+const DOWNLOAD_EXTRA_MARGIN_RIGHT = 200;
+
+// lay out panels flagged with `download_margin` with these margins while `generate` runs, then restore them
+function withDownloadLayout(plot, generate) {
+    const panels = Object.values(plot.panels).filter(panel => panel.layout.download_margin);
+    const saved = panels.map(panel => ({ height: panel.layout.height, margin: { ...panel.layout.margin } }));
+
+    panels.forEach(panel => {
+        const { bottom, extra_right } = panel.layout.download_margin;
+        panel.layout.height += bottom - panel.layout.margin.bottom;
+        panel.layout.margin.bottom = bottom;
+        panel.layout.margin.right += extra_right;
+    });
+    plot.positionPanels();
+
+    try {
+        return generate();
+    } finally {
+        panels.forEach((panel, i) => {
+            panel.layout.height = saved[i].height;
+            Object.assign(panel.layout.margin, saved[i].margin);
+        });
+        plot.positionPanels();
+    }
+}
+
+// SVG download button that exports the plot with the download layout
+if (!LocusZoom.Widgets._items.has('download_expanded')) {
+    class DownloadExpanded extends LocusZoom.Widgets.get('download') {
+        _generateSVG() {
+            return withDownloadLayout(this.parent_plot, () => super._generateSVG());
+        }
+    }
+    LocusZoom.Widgets._items.set('download_expanded', DownloadExpanded);
 }
 
 function reorderListByValues(dictList, orderedValues, key ) {
@@ -120,43 +170,6 @@ function generatePlot(variant_list){
         LocusZoom.Adapters._items.delete('PheWebSource');
     }
 
-    LocusZoom.Adapters.extend('PheWASLZ', 'PheWebSource', {
-        getData: function(state, fields, outnames, trans) {
-
-            var list = Object.keys(state);
-
-            var panels = list.slice(0, list.indexOf("variant"))
-
-            if (global_panels.length == 0){
-              global_panels = global_panels.concat(panels)
-            } 
-            var panel = global_panels.shift();
-
-
-            // Override all parsing, namespacing, and field extraction mechanisms, and load data embedded within the page
-            trans = trans || [];
-
-            var panel_int = +panel;
-
-            var data = JSON.parse(JSON.stringify(variant_list[panel_int].phenos)); //otherwise LZ adds attributes I don't want to the original data.
-            
-            
-            data.forEach(function(d, i) {
-                data[i].x = i;
-                data[i].id = i.toString();
-                trans.forEach(function(transformation, t){
-                    if (typeof transformation === "function"){
-                        data[i][outnames[t]] = transformation(data[i][fields[t]]);
-                    }
-                });
-            });
-            return function(chain) {
-                return {header: chain.header || {}, body: data};
-            }.bind(this);
-
-        }
-    });
-
     var neglog10_significance_threshold_list = []
 
     variant_list.forEach(variant => {
@@ -164,7 +177,6 @@ function generatePlot(variant_list){
     })
 
     var panel_list = []
-
 
     variant_list.forEach(variant => {
         // sort phenotypes
@@ -195,11 +207,65 @@ function generatePlot(variant_list){
         JSON.parse(JSON.stringify(global_unique_categories))
     );
 
+    const gap = 5;
+
+    // categories present in the data, in the order of global_unique_categories
+    const present_categories = new Set(variant_list.flatMap(v => v.phenos.map(p => p.category)));
+    var categories_position_map = global_unique_categories.filter(categ => present_categories.has(categ));
+    
+    const global_category_offset = Object.fromEntries(
+        categories_position_map.map((c, i) => [c, i * gap])
+    );
+
+    LocusZoom.Adapters.extend('PheWASLZ', 'PheWebSource', {
+        getData: function(state, fields, outnames, trans) {
+
+            var list = Object.keys(state);
+
+            var panels = list.slice(0, list.indexOf("variant"))
+
+            if (global_panels.length == 0){
+              global_panels = global_panels.concat(panels)
+            } 
+            var panel = global_panels.shift();
+
+
+            // Override all parsing, namespacing, and field extraction mechanisms, and load data embedded within the page
+            trans = trans || [];
+
+            var panel_int = +panel;
+
+            var data = JSON.parse(JSON.stringify(variant_list[panel_int].phenos)); //otherwise LZ adds attributes I don't want to the original data.
+
+            data.forEach(function(d, i) {
+                data[i].x = global_category_offset[data[i].category] + i;
+                data[i].id = i.toString();
+                trans.forEach(function(transformation, t){
+                    if (typeof transformation === "function"){
+                        data[i][outnames[t]] = transformation(data[i][fields[t]]);
+                    }
+                });
+            });
+            return function(chain) {
+                return {header: chain.header || {}, body: data};
+            }.bind(this);
+
+        }
+    });
+
     // Build global, stable category-to-color mapping
-    const category_palette = d3.schemeCategory10.concat(d3.schemeCategory10); // 20 fixed colors
+    const category_palette = d3.schemeCategory10.concat(d3.schemeCategory10); // 10 fixed colors
     const color_by_category_all = d3.scaleOrdinal()
         .domain(global_unique_categories)
         .range(category_palette.slice(0, global_unique_categories.length));
+
+    // rank of each category in global_unique_categories
+    const category_rank = Object.fromEntries(global_unique_categories.map((c, i) => [c, i]));
+
+    // _.sortBy is a stable sort, so phenos stay sorted by phenocode within each category
+    variant_list.forEach(variant => {
+        variant.phenos = _.sortBy(variant.phenos, d => category_rank[d.category] ?? Infinity);
+    })
 
     const first_of_each_category_list = variant_list.map((variant, j) => {
     const seen = {};
@@ -212,26 +278,6 @@ function generatePlot(variant_list){
     });
     });
 
-    var category_order_list = []
-
-    variant_list.forEach((variant, j) => {      
-      category_order_list.push(
-        (function() {
-            var rv = {};
-            first_of_each_category_list[j].forEach(function(pheno, i) {
-                rv[pheno.category] = i;
-            });
-            return rv;
-        })()
-      )
-    })
-
-    // _.sortBy is a stable sort, so we just sort by category_order and we're good.
-    variant_list.forEach((variant, i) => {
-        variant.phenos = _.sortBy(variant.phenos, function(d) {
-          return category_order_list[i][d.category];
-      });
-    })
 
 
 
@@ -249,6 +295,7 @@ function generatePlot(variant_list){
             d.phewas_string = (d.phenostring || d.phenocode);
             d.category_name = d.category;
             d.color = color_by_category_all(d.category);
+            d.sample_size = getItemSampleSize(d);
             d.idx = i;
         });
     });
@@ -257,6 +304,9 @@ function generatePlot(variant_list){
     .add("phewas", ["PheWebSource", {url: '/this/is/not/used'}])
 
     variant_list.forEach((variant,i) => {
+
+        // pheno page opens on this panel's stratification (".all.female" -> "?ancestry=all&sex=female")
+        const pheno_query = stratificationToQuery(variant_list[i].stratification.split('.').slice(1).join('.'));
 
         panel_list.push(
             
@@ -275,7 +325,7 @@ function generatePlot(variant_list){
                                 color: 'red',
                                 suppress_confirm : 'false'
                         },
-                        {type: "download", position: "right"},
+                        {type: "download_expanded", position: "right"},
                         {type: "download_png", position: "right"},
                     ]
                 },
@@ -321,8 +371,10 @@ function generatePlot(variant_list){
                         "tooltip.closable": false,
                         "tooltip.html": ("<div><strong>{{phewas_string}}</strong></div>\n" +
                                           "<div><strong style='color:{{color}}'>{{category_name}}</strong></div>\n" +
-                                          utils.lz_template + "<br>" + 
-                                          "<a href=\"" + window.location.origin + "/phenotypes/{{phewas_code}}\"" + ">Go to Pheno Page</a>"),
+                                          utils.lz_template +
+                                          "Sample size: <strong>{{sample_size}}</strong><br>" +
+                                          "<br>" + 
+                                          "<a href=\"" + window.location.origin + "/phenotypes/{{phewas_code}}" + pheno_query + "\"" + ">Go to Pheno Page</a>"),
                         // Show labels that are: in the top 10, and (by neglog10) >=75% of sig threshold, and >=25% of best
                         "label.text": "{{phewas_string}}",
                         "label.filters": (function() {
@@ -345,17 +397,23 @@ function generatePlot(variant_list){
     });
 
     // add x axis labels to last panel
+    const last_phenos = variant_list[panel_list.length -1].phenos
     panel_list[panel_list.length -1]["axes"]["x"]["ticks"] = first_of_each_category_list[panel_list.length -1].map(function(pheno) {
                     return {
                         style: {fill: pheno.color, "font-size":"11px", "font-weight":"bold", "text-anchor":"start"},
                         transform: "translate(15, 0) rotate(50)",
                         text: pheno.category,
-                        x: pheno.idx
+                        category_name: pheno.category,
+                        color: pheno.color,
+                        n_phenos: last_phenos.filter(p => p.category === pheno.category).length,
+                        x: global_category_offset[pheno.category] + pheno.idx
                     };
                 })
+    xAxisTicks.value = panel_list[panel_list.length -1]["axes"]["x"]["ticks"]
 
-    panel_list[panel_list.length -1]['margin']['bottom'] = 100
-    panel_list[panel_list.length -1]['height'] += 100
+    panel_list[panel_list.length -1]['margin']['bottom'] = LABELLED_PANEL_MARGIN_BOTTOM
+    panel_list[panel_list.length -1]['height'] += LABELLED_PANEL_MARGIN_BOTTOM
+    panel_list[panel_list.length -1]['download_margin'] = { bottom: DOWNLOAD_MARGIN_BOTTOM, extra_right: DOWNLOAD_EXTRA_MARGIN_RIGHT }
 
     var layout = {
         state: {
@@ -412,6 +470,45 @@ onMounted(async () => {
     
 });
 
+// ---------- Category Tooltip ----------
+const TOOLTIP_ARROW_OFFSET = 15;
+
+async function onTickHover(event) {
+    const textEl = event.target.closest('g.tick text');
+    const axisEl = textEl?.closest('g[id$="x_axis"]');
+    if (!axisEl) { return; }
+
+    const tickEls = Array.from(axisEl.querySelectorAll('g.tick'));
+    const tick = xAxisTicks.value[tickEls.indexOf(textEl.parentNode)];
+    if (!tick || tick.text !== textEl.textContent) { return; }
+
+    const containerEl = event.currentTarget;
+    const containerRect = containerEl.getBoundingClientRect();
+    const textRect = textEl.getBoundingClientRect();
+    const anchorX = textRect.left - containerRect.left;
+    categoryTooltip.value = {
+        visible: true,
+        html: parseFields(categoryTooltipLayout.html, tick),
+        left: anchorX - TOOLTIP_ARROW_OFFSET,
+        top: textRect.top - containerRect.top,
+        arrowLeft: TOOLTIP_ARROW_OFFSET - 7,
+    };
+
+    // ----- Keep tooltip inside the plot horizontally -----
+    await nextTick();
+    if (!categoryTooltipEl.value) { return; }
+    const maxLeft = containerEl.clientWidth - categoryTooltipEl.value.offsetWidth;
+    const left = Math.max(0, Math.min(anchorX - TOOLTIP_ARROW_OFFSET, maxLeft));
+    categoryTooltip.value.left = left;
+    categoryTooltip.value.arrowLeft = anchorX - left - 7;
+}
+
+function onTickLeave(event) {
+    if (event.target.closest('g.tick text')) {
+        categoryTooltip.value.visible = false;
+    }
+}
+
 function sanitizeId(str) {
   return String(str)
     .trim()
@@ -425,5 +522,38 @@ function sanitizeId(str) {
 <template>
     <IsLoading v-if="isLoading" :loadingText="'Loading ' + stratification.split('.').join(', ') + ' stratification...'" class="my-5" />
     <IsFailing v-if="isFailedPlotting" :isLoading="isLoading" :isFailed="isFailedPlotting" class="mt-10 mb-5"/>
-    <div :id="sanitizeId(props.stratification)"></div>
+    
+    <!-- X ticks hovering panel-->
+    <div class="phewas-plot-container" @mouseover="onTickHover" @mouseout="onTickLeave">
+        <div :id="sanitizeId(props.stratification)"></div>
+        <div
+            v-if="categoryTooltip.visible"
+            ref="categoryTooltipEl"
+            class="lz-data_layer-tooltip category-tooltip"
+            :style="{ left: categoryTooltip.left + 'px', top: categoryTooltip.top + 'px' }"
+        >
+            <div v-html="categoryTooltip.html"></div>
+            <div class="lz-data_layer-tooltip-arrow_down category-tooltip-arrow" :style="{ left: categoryTooltip.arrowLeft + 'px' }"></div>
+        </div>
+    </div>
+
 </template>
+
+<style scoped>
+/* ---------- Category Tooltip ---------- */
+.phewas-plot-container {
+    position: relative;
+}
+
+.category-tooltip {
+    transform: translateY(calc(-100% - 8px));
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.category-tooltip-arrow {
+    position: absolute;
+    top: 100%;
+}
+</style>

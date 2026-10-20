@@ -9,13 +9,13 @@
         ></v-progress-linear>
         <v-main>
           <h2 style="font-weight: bold; display: flex; align-items: center; gap: 8px;">
-            Top Hits
+            Top 1000 Hits
             <v-tooltip location="top">
               <template #activator="{ props }">
                 <v-icon v-bind="props" icon="mdi-information-outline" size="20" />
               </template>
               <span>
-		This page shows loci that have at least one statistical association with p-value < 10⁻⁶. Variants are hidden if any variant within 500kb in the same phenotype has a more significant p-value.
+		This page shows loci (max 1000) that have at least one statistical association with p-value < 10⁻⁶. Variants are hidden if any variant within 500kb in the same phenotype has a more significant p-value.
               </span>
             </v-tooltip>
           </h2>

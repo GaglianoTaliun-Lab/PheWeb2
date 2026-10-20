@@ -26,6 +26,7 @@
               <v-autocomplete
                 v-model="selectedPhenotype"
                 :items="phenotypeOptions"
+                :filter-keys="['title', 'value']"
                 label="Search phenotypes"
                 prepend-icon="mdi-heart-pulse"
                 class="ma-2 pa-2"
@@ -111,7 +112,11 @@
       <template v-slot:item.nearest_genes="{ item }">
         <span v-for="(gene, index) in item.nearest_genes" :key="index">
           <router-link 
-            :to="`/gene/${gene.trim()}/${item.phenocode}`" 
+            :to="{path: `/gene/${gene.trim()}/${item.phenocode}`,
+            query: {
+                ...item.stratification,
+              }
+            }"
             style="white-space: nowrap; font-style: italic;"
           >
             {{ gene.trim() }}
@@ -123,9 +128,7 @@
       <template v-slot:item.num_samples="{ item }">
         <span>
           {{
-            item.num_controls !== "" && item.num_cases !== ""
-              ? `${item.num_cases} + ${item.num_controls}`
-              : item.num_samples
+            getItemSampleSize(item)
           }}
         </span>
       </template>
@@ -140,14 +143,14 @@
 
       <template v-if="hasAF" v-slot:item.af="{ item }">
         <span style="white-space: nowrap;">
-          {{ item.af }}
+          {{ roundEAF(item.af) }}
         </span>
       </template>
 
       <template v-slot:header.num_samples="{ column, isSorted, getSortIcon, }">
         <div style="display: flex; align-items: center;">
           <span style="white-space: nowrap;">{{ column.title }}</span>
-          <v-tooltip text="Number of samples with non-missing data" location="top">
+          <v-tooltip text="Number of samples with non-missing data or cases + controls" location="top">
             <template v-slot:activator="{ props }">
               <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
             </template>
@@ -372,6 +375,7 @@
 <script setup>
     import { ref, onMounted, computed, watch, reactive, watchEffect } from 'vue';
     import { STRATIFICATION_CATEGORIES} from '@/config.js'
+    import { formatScientific, roundEAF, getItemSampleSize } from '../utils/formatters.js';
 
     const props = defineProps({
       data: Array,
@@ -383,12 +387,6 @@
     const errorMessage = ref('');
 
     const search = ref('');
-
-    // scientific notation
-    const formatScientific = (num) => {
-      if (!num || isNaN(num)) return 'N/A';  
-      return Number(num).toExponential(2);  
-    };
 
     const getStratificationIcon = (category) => {
       const key = category.toLowerCase();
@@ -498,15 +496,22 @@
 
     const selectedPhenotype = ref('All results');
     const phenotypeOptions = computed(() => {
-      if (selectedCategory.value && selectedCategory.value !== 'All results' ) {
-        const phenos = phenotypes.value
-          .filter(item => item.category === selectedCategory.value)
-          .map(item => item.phenostring);
-        return ['All results', ...[...new Set(phenos)].sort((a, b) => a.localeCompare(b))];
-      }
+      const items = (selectedCategory.value && selectedCategory.value !== 'All results')
+        ? phenotypes.value.filter(item => item.category === selectedCategory.value)
+        : phenotypes.value;
 
-      const phenos = phenotypes.value.map(item => item.phenostring);
-      return ['All results', ...[...new Set(phenos)].sort((a, b) => a.localeCompare(b))];
+      // one option per phenocode, displayed as phenostring, searchable by phenostring or phenocode
+      const phenos = new Map();
+      items.forEach(item => {
+        if (!phenos.has(item.phenocode)) {
+          phenos.set(item.phenocode, { title: `${item.phenostring}`, value: item.phenocode });
+        }
+      });
+
+      return [
+        { title: 'All results', value: 'All results' },
+        ...[...phenos.values()].sort((a, b) => a.title.localeCompare(b.title)),
+      ];
     });
 
     const clearCategoryOnFocus = () => {
@@ -582,7 +587,6 @@
       menu2.value = false;
     };
 
-
     // maybe consider receiving the filtering options through API
     // since there will be a lot of data for the final table
     const filteredPhenotypes = computed(() => {
@@ -596,7 +600,7 @@
 
         // Other filters
         const categoryMatches = !selectedCategory.value || selectedCategory.value === 'All results' || item.category === selectedCategory.value;
-        const phenotypeMatches = !selectedPhenotype.value || selectedPhenotype.value === 'All results' || item.phenostring === selectedPhenotype.value;
+        const phenotypeMatches = !selectedPhenotype.value || selectedPhenotype.value === 'All results' || item.phenocode === selectedPhenotype.value;
 
         const variantMatches = !filteredVariant.value || filteredVariant.value === '' || 
           (item.rsids && item.rsids.includes(filteredVariant.value)) ||
@@ -613,7 +617,7 @@
 
     // unique phenotype displayed
     const displayedUniquePhenotypesCount = computed(() => {
-      const uniquePhenotypes = new Set(filteredPhenotypes.value.map(item => item.phenostring));
+      const uniquePhenotypes = new Set(filteredPhenotypes.value.map(item => item.phenostring ));
       return uniquePhenotypes.size;
     });
 

@@ -22,6 +22,7 @@
             <v-autocomplete
               v-model="selectedPhenotype"
               :items="phenotypeOptions"
+              :filter-keys="['title', 'value']"
               label="Select/Type a phenotype"
               prepend-icon="mdi-heart-pulse"
               class="ma-2 pa-2"
@@ -69,11 +70,13 @@
     <v-data-table
       elevation="5"
       v-model="selectedItems"
+      height=500
+      fixed-header 
       :loading="isLoading"
       :headers="headers"
       :items="filteredPhenotypes"
       item-value="phenocode"
-      :items-per-page="4"
+      :items-per-page="25"
       :sort-by="sortBy"
       must-sort
       density="default"
@@ -189,7 +192,7 @@
       <template v-slot:header.num_samples="{ column, isSorted, getSortIcon, }">
         <div style="display: flex; align-items: center;">
           <span style="white-space: nowrap;">{{ column.title }}</span>
-          <v-tooltip text="Number of samples with non-missing data" location="top">
+          <v-tooltip text="Number of samples with non-missing data or cases + controls" location="top">
             <template v-slot:activator="{ props }">
               <v-icon small color="primary" v-bind="props" class="ml-2">mdi-help-circle-outline</v-icon>
             </template>
@@ -203,9 +206,7 @@
       <template v-slot:item.num_samples="{ item }">
         <span>
           {{
-            item.num_controls !== "" && item.num_cases !== ""
-              ? `${item.num_cases} + ${item.num_controls}`
-              : item.num_samples
+           getItemSampleSize(item)
           }}
         </span>
       </template>
@@ -265,6 +266,7 @@
   import { ref, onMounted, watch, computed, reactive, watchEffect } from 'vue';
   import axios from 'axios';
   import { STRATIFICATION_CATEGORIES } from '@/config.js';
+  import {getItemSampleSize} from '../utils/formatters.js';
 
   const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URL
   const phenotypes = ref([]);
@@ -274,6 +276,8 @@
     geneName: String,
     data: Array,
     isLoading: Boolean,
+    stratification: Object,
+    phenocode: String,
   });
   const currentPhenocode = ref(props.phenocode) ;
   const sortBy = ref([{ key: 'pval', order: 'asc' }]);
@@ -337,14 +341,6 @@
           category: item.category ? String(item.category).replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : ''
         };
       });
-      // phenotypes.value = props.data.map(item => ({
-      //     ...item,
-      //     phenocode_router: item.phenocode.split('.').slice(0, 1).join('.') ,
-      //     ancestry: `${item.stratification.ancestry.replace(/\b\w/g, l => l.toUpperCase())}`, // TODO: don't hardcode these
-      //     sex: `${item.stratification.sex.replace(/\b\w/g, l => l.toUpperCase())}`,
-      //     abs_distance_to_true_start: item.is_in_real_range ? 0 : Math.abs(item.distance_to_true_start),
-      //     category: item.category ? String(item.category).replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : ''
-      //   }));
     } catch (error) {
       console.error('Error fetching data for gene table:', error);
     } finally {
@@ -373,17 +369,24 @@
   });
 
   const selectedPhenotype = ref();
-  const phenotypeOptions = computed(() => {
-    if (selectedCategory.value && selectedCategory.value !== 'All results' ) {
-      const phenos = phenotypes.value
-        .filter(item => item.category === selectedCategory.value)
-        .map(item => item.phenostring);
-      return ['All results', ...[...new Set(phenos)].sort((a, b) => a.localeCompare(b))];
-    }
+    const phenotypeOptions = computed(() => {
+      const items = (selectedCategory.value && selectedCategory.value !== 'All results')
+        ? phenotypes.value.filter(item => item.category === selectedCategory.value)
+        : phenotypes.value;
 
-    const phenos = phenotypes.value.map(item => item.phenostring);
-    return ['All results', ...[...new Set(phenos)].sort((a, b) => a.localeCompare(b))];
-  });
+      // one option per phenocode, displayed as phenostring, searchable by phenostring or phenocode
+      const phenos = new Map();
+      items.forEach(item => {
+        if (!phenos.has(item.phenocode_router)) {
+          phenos.set(item.phenocode_router, { title: `${item.phenostring}`, value: item.phenocode_router });
+        }
+      });
+
+      return [
+        { title: 'All results', value: 'All results' },
+        ...[...phenos.values()].sort((a, b) => a.title.localeCompare(b.title)),
+      ];
+    });
 
   const filteredPhenotypes = computed(() => {
     return phenotypes.value.filter(item => {
@@ -393,7 +396,7 @@
         return selected === 'All results' || item[key] === selected;
       });
       const categoryMatches = !selectedCategory.value || selectedCategory.value === 'All results' || item.category === selectedCategory.value;
-      const phenotypeMatches = !selectedPhenotype.value || selectedPhenotype.value === 'All results' || item.phenostring === selectedPhenotype.value;
+      const phenotypeMatches = !selectedPhenotype.value || selectedPhenotype.value === 'All results' || item.phenocode_router === selectedPhenotype.value;
       return stratMatches && categoryMatches && phenotypeMatches;
     })
     .sort((a, b) => a.pval - b.pval);;
@@ -444,12 +447,28 @@
 
   onMounted( async () => {
     await fetchData();
-    if (filteredPhenotypes.value.length > 0) {
-      selectedItems.value = [filteredPhenotypes.value[0].phenocode];
+
+    // stratification requested in the url query, e.g. ?ancestry=european&sex=female
+    const queryStratification = STRATIFICATION_CATEGORIES
+      .map(cat => cat.toLowerCase())
+      .filter(key => props.stratification?.[key])
+      .map(key => [key, String(props.stratification[key]).toLowerCase()]);
+    const matchesQuery = (item) => queryStratification.every(([key, value]) =>
+      String(item.stratification?.[key] ?? '').toLowerCase() === value);
+
+    // phenotype requested in the route, e.g. /gene/<gene>/<phenocode>
+    const matchesPhenocode = (item) => !props.phenocode || item.phenocode_router === props.phenocode;
+
+    // most significant row of the requested phenotype and stratification,
+    // then of the requested phenotype, then of the requested stratification, then of all rows
+    const rows = filteredPhenotypes.value;
+    const firstPheno = rows.find(item => matchesPhenocode(item) && matchesQuery(item))
+      ?? rows.find(matchesPhenocode)
+      ?? rows.find(matchesQuery)
+      ?? rows[0];
+    if (firstPheno) {
+      selectedItems.value = [firstPheno.phenocode];
     }
-    // console.log(filteredPhenotypes)
-    // console.log(typeof filteredPhenotypes)
-    // selectedItems.value = [filteredPhenotypes.value[0].phenocode];
   });
 
   watch(
@@ -458,12 +477,7 @@
       currentPhenocode.value = newPhenocode;
     }
   );
-  // watch(
-  //   () => props.data,
-  //   (newValue) => {
-  //     fetchData();
-  //   },
-  // );
+
   watch(
     selectedItems,
     (newPhenocode) => {

@@ -74,11 +74,11 @@
             </td>
             <td>
               <!-- af1 -->
-              {{ item.af_pheno1 }}
+              {{ roundEAF(item.af_pheno1) }}
             </td>
             <td v-if="props.selectedStratification2 !== props.selectedStratification1 && props.selectedStratification2 !== 'No stratification'" style="border-right:thin dashed rgba(var(--v-border-color), var(--v-border-opacity));">
               <!-- af2 w/ divider-->
-              {{ item.af_pheno2 }}
+              {{ roundEAF(item.af_pheno2) }}
             </td>
             <td>
               <!-- pval1 -->
@@ -363,7 +363,8 @@
       import { ref, onMounted, watch, computed } from 'vue';
       import axios from 'axios';
       import { useRoute } from 'vue-router';
-  
+      import { formatScientific, roundEAF } from '../utils/formatters.js';
+
       const api = import.meta.env.VITE_APP_CLSA_PHEWEB_API_URL
       const route = useRoute();
       // const phenocode = route.params.phenocode;
@@ -399,12 +400,6 @@
       const sortBy = ref([{ key: 'pval_pheno1', order: 'asc' }]);
       const updateSortBy = (newSort) => {
         sortBy.value = newSort; 
-      };
-
-      // scientific notation
-      const formatScientific = (num) => {
-        if (!num || isNaN(num)) return 'NA';  
-        return Number(num).toExponential(2);  
       };
 
       const headers = computed(() => [
@@ -468,8 +463,12 @@
         errorMessage.value = '';
         try {
           const phenotype = await props.selectedStratification1.split('.')[0]
-          const stratification1 = '.' + props.selectedStratification1.split('.').slice(-2).join('.')
-          const stratification2 = '.' + props.selectedStratification2.split('.').slice(-2).join('.')
+
+          const n_stratifications_1 = props.selectedStratification1.split('.').length - 1; 
+          const n_stratifications_2 = props.selectedStratification1.split('.').length - 1; 
+
+          const stratification1 = '.' + props.selectedStratification1.split('.').slice(-n_stratifications_1).join('.') 
+          const stratification2 = '.' + props.selectedStratification2.split('.').slice(-n_stratifications_2).join('.') 
 
           const response1 = await axios.get(`${api}/phenotypes/${phenotype}/${stratification1}/manhattan`)
 

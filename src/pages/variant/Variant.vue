@@ -54,7 +54,7 @@
               </span>
             </a>,
             <a
-              :href="`https://useast.ensembl.org/Homo_sapiens/Location/Variant/Table?r=${variant_basic_info.chrom}:${variant_basic_info.pos}-${variant_basic_info.pos}`"
+              :href="`https://www.ensembl.org/genome-browser/GCA_000001405.29?focus=variant:${variant_basic_info.chrom}:${variant_basic_info.pos}:${rsids}&location=${variant_basic_info.chrom}:${variant_basic_info.pos - 200000}-${variant_basic_info.pos + 200000}`"
               target="_blank"
               rel="noopener noreferrer"
               class="variant-link"
@@ -65,7 +65,7 @@
               </span>
             </a>,
             <a
-              :href="`https://genetics.opentargets.org/Variant/${variant_basic_info.chrom}_${variant_basic_info.pos}_${variant_basic_info.ref}_${variant_basic_info.alt}/associations`"
+              :href="`https://platform.opentargets.org/Variant/${variant_basic_info.chrom}_${variant_basic_info.pos}_${variant_basic_info.ref}_${variant_basic_info.alt}/associations`"
               target="_blank"
               rel="noopener noreferrer"
               class="variant-link"
@@ -305,6 +305,8 @@ import { useRoute } from 'vue-router';
 
 import { maf_range, keyToLabel } from './Variant.js';
 
+import {getItemSampleSize } from '../../utils/formatters.js';
+
 import Navbar from '@/components/Navbar.vue';
 import PhewasPlot from '@/components/PhewasPlot.vue';
 import PhewasPlot2 from '@/components/PhewasPlot2.vue';
@@ -315,6 +317,7 @@ import IsLoading from '@/components/IsLoading.vue';
 import IsFailing from '@/components/IsFailing.vue';
 
 import { HG_BUILD_NUMBER, PRIORITY_STRATIFICATIONS, STRATIFICATION_CATEGORIES } from "@/config.js";
+import { chooseStratifications } from "@/utils/stratifications.js";
 
 const route = useRoute();
 
@@ -334,7 +337,7 @@ const variant = ref(null);
 const variant_basic_info = computed(() => {
   return {
     chrom: variantCode.split("-")[0],
-    pos: variantCode.split("-")[1],
+    pos: Number(variantCode.split("-")[1]),
     ref: variantCode.split("-")[2],
     alt: variantCode.split("-")[3],
   }
@@ -395,6 +398,14 @@ onMounted(async () => {
     const response_rsid = await axios.get(`${api}/variant/rsid/${variantCode}`);
     rsids.value = response_rsid.data.rsid;
 
+    let rsid_link = "";
+
+    // if (rsids.value && rsids.value.length === 1){
+    //   rsid_link = rsids.value
+    // } else if ( rsids.value && rsids.value.length > 1) {
+    //   rsid_link = rsids.value[]
+    // }
+
     const response_nearest_genes = await axios.get(`${api}/variant/nearest_genes/${variantCode}`);
     nearest_genes.value = response_nearest_genes.data.nearest_genes;
 
@@ -404,7 +415,10 @@ onMounted(async () => {
 
     stratification_list.value = JSON.parse(JSON.stringify(response_stratification.data));
     category_list.value = JSON.parse(JSON.stringify(response_category.data))
-    pheno_list.value = JSON.parse(JSON.stringify(response_phenolist.data))
+    pheno_list.value = JSON.parse(JSON.stringify(response_phenolist.data));
+
+    // stratifications displayed on load, the first one can be requested in the url query (e.g. ?ancestry=european&sex=female)
+    [selectedStratification1.value, selectedStratification2.value] = chooseStratifications(stratification_list.value, route.query);
 
     // set chosen variants to be male and female automatically
     selectedStratifications.value = [selectedStratification1.value, selectedStratification2.value];
@@ -480,7 +494,7 @@ async function fetchPhewasPlottingData(stratification_list) {
 
 const variantCodeToLabel = (variantCode) => {
   var label_list = variantCode.split("-")
-  var returned_label = label_list[0] + ": " + new Intl.NumberFormat('en-US', { maximumSignificantDigits: 3 }).format(label_list[1]) + " " + label_list[2] + "/" + label_list[3]
+  var returned_label = label_list[0] + ": " + label_list[1] + " " + label_list[2] + "/" + label_list[3]
 
   if (rsids.value && rsids.value.length === 1){
     returned_label = returned_label + " (" + rsids.value + ")"
@@ -671,6 +685,7 @@ const downloadTable = () => {
 
 .dropdown-menu label {
   display: block;
+  white-space: nowrap;
 }
 
 .dropdown-menu-right a {
